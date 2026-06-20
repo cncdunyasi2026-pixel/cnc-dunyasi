@@ -1,6 +1,10 @@
+"use client";
+
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { JobListing } from "@/types/job";
 import FavoriteButton from "@/components/ui/FavoriteButton";
+import ImageLightbox from "@/components/ui/ImageLightbox";
 
 type Props = {
   job: JobListing;
@@ -14,7 +18,16 @@ type Props = {
 const JOB_HERO_FALLBACK = "https://placehold.co/1200x800/0F2A4A/ffffff?text=Is+Ilanı";
 
 export default function JobDetailContent({ job, moderation }: Props) {
-  const heroImage = job.images[0] ?? JOB_HERO_FALLBACK;
+  const gallery = useMemo(() => {
+    if (job.images.length > 0) {
+      return job.images;
+    }
+    return [JOB_HERO_FALLBACK];
+  }, [job.images]);
+
+  const [selectedImage, setSelectedImage] = useState(gallery[0]);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
 
   const specs = [
     { key: "title", label: "Pozisyon", value: job.title },
@@ -25,6 +38,19 @@ export default function JobDetailContent({ job, moderation }: Props) {
     { key: "salary", label: "Maas", value: job.salary },
     { key: "postedAt", label: "Ilan Tarihi", value: job.postedAt },
   ];
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setIsLightboxOpen(true);
+  };
+
+  const goNext = () => {
+    setLightboxIndex((prev) => (prev + 1) % gallery.length);
+  };
+
+  const goPrev = () => {
+    setLightboxIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
+  };
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-6 sm:py-8">
@@ -50,8 +76,38 @@ export default function JobDetailContent({ job, moderation }: Props) {
             <div className="flex items-center justify-end border-b border-[#e8edf3] px-3 py-2">
               <ActionButtons fieldKey="images" label="Gorseller" editValue={job.images} moderation={moderation} />
             </div>
-            <img src={heroImage} alt={job.title} className="block h-[260px] w-full object-cover sm:h-[380px] lg:h-[460px]" />
+            <button
+              type="button"
+              className="block w-full"
+              onClick={() => openLightbox(Math.max(0, gallery.indexOf(selectedImage)))}
+            >
+              <img
+                src={selectedImage}
+                alt={job.title}
+                className="block h-[260px] w-full object-cover sm:h-[380px] lg:h-[460px]"
+              />
+            </button>
           </div>
+
+          {gallery.length > 1 ? (
+            <div className="rounded-xl border border-[#dbe2ea] bg-white p-3 shadow-sm">
+              <p className="mb-2 text-xs font-semibold tracking-wide text-[#7A8CA5]">FOTOGRAF GALERISI</p>
+              <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
+                {gallery.map((image, index) => (
+                  <button
+                    key={`${image}-${index}`}
+                    type="button"
+                    onClick={() => setSelectedImage(image)}
+                    className={`overflow-hidden rounded-md border transition ${
+                      selectedImage === image ? "border-[#0F2A4A] ring-2 ring-[#0F2A4A]/20" : "border-[#dbe2ea]"
+                    }`}
+                  >
+                    <img src={image} alt={`${job.title} gorsel ${index + 1}`} className="h-14 w-full object-cover sm:h-16" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
         </article>
 
         <article className="space-y-3 rounded-xl border border-[#dbe2ea] bg-white p-4 shadow-sm sm:p-5">
@@ -126,6 +182,16 @@ export default function JobDetailContent({ job, moderation }: Props) {
           ))}
         </ul>
       </div>
+
+      <ImageLightbox
+        images={gallery}
+        alt={job.title}
+        isOpen={isLightboxOpen}
+        index={lightboxIndex}
+        onClose={() => setIsLightboxOpen(false)}
+        onPrev={goPrev}
+        onNext={goNext}
+      />
     </section>
   );
 }

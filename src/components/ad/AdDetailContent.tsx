@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Ad } from "@/types/ad";
@@ -8,6 +8,7 @@ import { formatPrice } from "@/lib/utils/format";
 import { DEFAULT_AD_DESCRIPTION } from "@/lib/constants/adDescription";
 import { useAuth } from "@/hooks/useAuth";
 import FavoriteButton from "@/components/ui/FavoriteButton";
+import ImageLightbox from "@/components/ui/ImageLightbox";
 import {
   getOrCreateConversation,
   sendMessage,
@@ -87,7 +88,6 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
   const [selectedImage, setSelectedImage] = useState(gallery[0]);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
-  const touchStartXRef = useRef<number | null>(null);
   const specs = [
     { key: "id", label: "İlan No", value: ad.id.toUpperCase() },
     { key: "createdAt", label: "İlan Tarihi", value: formatDate(ad.createdAt) },
@@ -121,28 +121,6 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
   const goPrev = () => {
     setLightboxIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
   };
-
-  useEffect(() => {
-    if (!isLightboxOpen) {
-      return;
-    }
-
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "ArrowRight") {
-        event.preventDefault();
-        goNext();
-      } else if (event.key === "ArrowLeft") {
-        event.preventDefault();
-        goPrev();
-      } else if (event.key === "Escape") {
-        event.preventDefault();
-        closeLightbox();
-      }
-    };
-
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [isLightboxOpen, gallery.length]);
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-6 sm:py-8">
@@ -351,79 +329,15 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
         ) : null}
       </div>
 
-      {isLightboxOpen ? (
-        <div className="fixed inset-0 z-50 bg-black/90">
-          <button
-            type="button"
-            onClick={closeLightbox}
-            className="absolute right-4 top-4 z-10 rounded-full bg-white/15 px-3 py-1.5 text-sm font-semibold text-white"
-          >
-            Kapat
-          </button>
-
-          <button
-            type="button"
-            onClick={goPrev}
-            className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/15 p-2 text-white"
-            aria-label="Onceki gorsel"
-          >
-            ‹
-          </button>
-          <button
-            type="button"
-            onClick={goNext}
-            className="absolute right-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/15 p-2 text-white"
-            aria-label="Sonraki gorsel"
-          >
-            ›
-          </button>
-
-          <div
-            className="relative h-full overflow-hidden"
-            onTouchStart={(event) => {
-              touchStartXRef.current = event.touches[0]?.clientX ?? null;
-            }}
-            onTouchEnd={(event) => {
-              const startX = touchStartXRef.current;
-              const endX = event.changedTouches[0]?.clientX ?? null;
-
-              if (startX === null || endX === null) {
-                return;
-              }
-
-              const deltaX = endX - startX;
-              if (Math.abs(deltaX) < 40) {
-                return;
-              }
-
-              if (deltaX < 0) {
-                goNext();
-              } else {
-                goPrev();
-              }
-            }}
-          >
-            <div
-              className="flex h-full transition-transform duration-300 ease-out"
-              style={{ transform: `translateX(-${lightboxIndex * 100}%)` }}
-            >
-              {gallery.map((image, index) => (
-                <div key={`${image}-lightbox-${index}`} className="flex h-full min-w-full items-center justify-center p-4">
-                  <img
-                    src={image}
-                    alt={`${ad.title} buyuk gorsel ${index + 1}`}
-                    className="max-h-full w-full max-w-6xl object-contain"
-                  />
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-white/15 px-3 py-1 text-xs text-white">
-            {lightboxIndex + 1} / {gallery.length}
-          </div>
-        </div>
-      ) : null}
+      <ImageLightbox
+        images={gallery}
+        alt={ad.title}
+        isOpen={isLightboxOpen}
+        index={lightboxIndex}
+        onClose={closeLightbox}
+        onPrev={goPrev}
+        onNext={goNext}
+      />
     </section>
   );
 }

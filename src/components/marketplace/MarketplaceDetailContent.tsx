@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import type { MarketplaceProfile } from "@/types/marketplace";
 import FavoriteButton from "@/components/ui/FavoriteButton";
+import ImageLightbox from "@/components/ui/ImageLightbox";
 import type { FavoriteKind } from "@/services/favoritesService";
 
 type Props = {
@@ -19,6 +20,8 @@ type Props = {
 export default function MarketplaceDetailContent({ item, listPath, moderation }: Props) {
   const gallery = useMemo(() => item.images, [item.images]);
   const [selectedImage, setSelectedImage] = useState(gallery[0]);
+  const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState(0);
   const favKind: FavoriteKind = listPath.includes("teknik-servis")
     ? "technical_service_listings"
     : "spare_part_listings";
@@ -31,6 +34,19 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
     { key: "yearLabel", label: "Deneyim", value: item.yearLabel },
     { key: "phone", label: "Telefon", value: item.phone, editValue: item.phone },
   ];
+
+  const openLightbox = (index: number) => {
+    setLightboxIndex(index);
+    setIsLightboxOpen(true);
+  };
+
+  const goNext = () => {
+    setLightboxIndex((prev) => (prev + 1) % gallery.length);
+  };
+
+  const goPrev = () => {
+    setLightboxIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
+  };
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-6 sm:py-8">
@@ -56,7 +72,13 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
             <div className="flex items-center justify-end border-b border-[#e8edf3] px-3 py-2">
               <ActionButtons fieldKey="images" label="Gorseller" editValue={item.images} moderation={moderation} />
             </div>
-            <img src={selectedImage} alt={item.name} className="block h-[260px] w-full object-cover sm:h-[380px] lg:h-[460px]" />
+            <button
+              type="button"
+              className="block w-full"
+              onClick={() => openLightbox(Math.max(0, gallery.indexOf(selectedImage)))}
+            >
+              <img src={selectedImage} alt={item.name} className="block h-[260px] w-full object-cover sm:h-[380px] lg:h-[460px]" />
+            </button>
           </div>
 
           <div className="rounded-xl border border-[#dbe2ea] bg-white p-3 shadow-sm">
@@ -153,6 +175,16 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
         </div>
         <p className="mt-2">{item.description}</p>
       </div>
+
+      <ImageLightbox
+        images={gallery}
+        alt={item.name}
+        isOpen={isLightboxOpen}
+        index={lightboxIndex}
+        onClose={() => setIsLightboxOpen(false)}
+        onPrev={goPrev}
+        onNext={goNext}
+      />
     </section>
   );
 }
