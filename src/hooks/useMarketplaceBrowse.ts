@@ -16,5 +16,5 @@ export function useMarketplaceBrowse(variant: "technical" | "spare") {
     [variant],
   );
 
-  return usePaginatedBrowse(fetchPage, [variant]);
+  return usePaginatedBrowse(fetchPage, [variant], 24, `listings:marketplace:${variant}`);
 }

@@ -1,14 +1,23 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { fetchWithBrowserCache } from "@/lib/cache/browserCache";
+import { LOCATION_CACHE_POLICY } from "@/lib/cache/locationCache";
 import type { District, NeighborhoodOption, Province } from "@/lib/locations/types";
 
-async function fetchJson<T>(url: string): Promise<T> {
-  const response = await fetch(url);
-  if (!response.ok) {
-    throw new Error("Konum verisi alınamadı.");
-  }
-  return response.json() as Promise<T>;
+async function fetchJsonCached<T>(cacheKey: string, url: string): Promise<T> {
+  const { data } = await fetchWithBrowserCache(
+    cacheKey,
+    LOCATION_CACHE_POLICY,
+    async () => {
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Konum verisi alınamadı.");
+      }
+      return response.json() as Promise<T>;
+    },
+  );
+  return data;
 }
 
 export function useLocationOptions() {
@@ -23,7 +32,7 @@ export function useLocationOptions() {
   useEffect(() => {
     let active = true;
     setLoadingProvinces(true);
-    void fetchJson<Province[]>("/api/locations/provinces")
+    void fetchJsonCached<Province[]>("locations:provinces", "/api/locations/provinces")
       .then((data) => {
         if (active) setProvinces(data);
       })
@@ -44,7 +53,10 @@ export function useLocationOptions() {
     if (!provinceId) return;
 
     setLoadingDistricts(true);
-    void fetchJson<District[]>(`/api/locations/districts?ilId=${encodeURIComponent(provinceId)}`)
+    void fetchJsonCached<District[]>(
+      `locations:districts:${provinceId}`,
+      `/api/locations/districts?ilId=${encodeURIComponent(provinceId)}`,
+    )
       .then(setDistricts)
       .catch((err) => setError(err instanceof Error ? err.message : "İlçe listesi yüklenemedi."))
       .finally(() => setLoadingDistricts(false));
@@ -55,7 +67,8 @@ export function useLocationOptions() {
     if (!districtId) return;
 
     setLoadingNeighborhoods(true);
-    void fetchJson<NeighborhoodOption[]>(
+    void fetchJsonCached<NeighborhoodOption[]>(
+      `locations:neighborhoods:${districtId}`,
       `/api/locations/neighborhoods?ilceId=${encodeURIComponent(districtId)}`,
     )
       .then(setNeighborhoods)

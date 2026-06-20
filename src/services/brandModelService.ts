@@ -10,6 +10,7 @@ import {
   writeBatch,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { fetchCachedList } from "@/lib/cache/cachedListFetch";
 
 export type Brand = { id: string; name: string };
 export type BrandModel = { id: string; name: string };
@@ -18,10 +19,12 @@ export type BrandWithModels = Brand & { models: BrandModel[] };
 /* ── Markalar ─────────────────────────────────────────────── */
 
 export async function getBrands(): Promise<Brand[]> {
-  const snap = await getDocs(
-    query(collection(db, "machine_brands"), orderBy("name", "asc")),
-  );
-  return snap.docs.map((d) => ({ id: d.id, name: d.data().name as string }));
+  return fetchCachedList("site:machine-brands", async () => {
+    const snap = await getDocs(
+      query(collection(db, "machine_brands"), orderBy("name", "asc")),
+    );
+    return snap.docs.map((d) => ({ id: d.id, name: d.data().name as string }));
+  });
 }
 
 export async function addBrand(name: string): Promise<string> {

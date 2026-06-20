@@ -9,6 +9,7 @@ import {
   startAfter,
   where,
   type DocumentData,
+  type QueryConstraint,
   type QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { db, isFirebaseClientConfigured } from "@/lib/firebase";
@@ -43,7 +44,7 @@ export async function getPublishedJobListingsPage(
   pageSize = DEFAULT_PAGE_SIZE,
   lastDoc: JobCursor = null,
 ): Promise<JobPageResult> {
-  const constraints = [
+  const constraints: QueryConstraint[] = [
     where("status", "==", "published"),
     orderBy("createdAt", "desc"),
   ];

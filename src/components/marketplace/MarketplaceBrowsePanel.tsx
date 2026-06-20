@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useListingViewMode } from "@/hooks/useListingViewMode";
 import type { MarketplaceProfile } from "@/types/marketplace";
 import MarketplaceCard from "@/components/marketplace/MarketplaceCard";
+import { matchesAnySearch } from "@/lib/utils/searchText";
 
 type SortOption = { value: string; label: string };
 
@@ -49,14 +50,12 @@ export default function MarketplaceBrowsePanel({
     : 0;
 
   const filteredItems = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) return items;
-    return items.filter(
-      (item) =>
-        item.name.toLowerCase().includes(term) ||
-        item.title.toLowerCase().includes(term) ||
-        item.city.toLowerCase().includes(term) ||
-        item.expertise.toLowerCase().includes(term),
+    if (!search.trim()) return items;
+    return items.filter((item) =>
+      matchesAnySearch(
+        [item.name, item.title, item.city, item.expertise, item.expertiseBrand, item.serviceType],
+        search,
+      ),
     );
   }, [items, search]);
 

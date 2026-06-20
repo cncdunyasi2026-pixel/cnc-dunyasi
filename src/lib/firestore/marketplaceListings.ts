@@ -9,6 +9,7 @@ import {
   startAfter,
   where,
   type DocumentData,
+  type QueryConstraint,
   type QueryDocumentSnapshot,
 } from "firebase/firestore";
 import { db, isFirebaseClientConfigured } from "@/lib/firebase";
@@ -33,7 +34,7 @@ async function getPublishedProfilesPage(
   pageSize: number,
   lastDoc: ListingCursor,
 ): Promise<ListingPageResult> {
-  const constraints = [
+  const constraints: QueryConstraint[] = [
     where("status", "==", "published"),
     orderBy("createdAt", "desc"),
   ];

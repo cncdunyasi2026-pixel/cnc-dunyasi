@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { matchesAnySearch } from "@/lib/utils/searchText";
 import { useEffect, useMemo, useState } from "react";
 import { useListingViewMode } from "@/hooks/useListingViewMode";
 import { useAdBrowse } from "@/hooks/useAdBrowse";
@@ -272,14 +273,13 @@ export default function ListingsPage() {
   const displayed = useMemo(() => {
     let result = [...allAds];
 
-    // Metin arama (anlık)
-    const term = search.trim().toLowerCase();
-    if (term) {
-      result = result.filter(
-        (a) =>
-          a.title.toLowerCase().includes(term) ||
-          (a.brand ?? "").toLowerCase().includes(term) ||
-          (a.model ?? "").toLowerCase().includes(term),
+    // Metin arama — yalnızca yüklenen ilanlar üzerinde (başlık, marka, model, şehir, açıklama)
+    if (search.trim()) {
+      result = result.filter((a) =>
+        matchesAnySearch(
+          [a.title, a.brand, a.model, a.city, a.district, a.neighborhood, a.description],
+          search,
+        ),
       );
     }
 

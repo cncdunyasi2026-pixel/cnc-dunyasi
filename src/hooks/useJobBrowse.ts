@@ -11,5 +11,5 @@ export function useJobBrowse() {
     [],
   );
 
-  return usePaginatedBrowse(fetchPage, []);
+  return usePaginatedBrowse(fetchPage, [], 24, "listings:jobs");
 }

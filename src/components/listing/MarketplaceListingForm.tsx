@@ -8,7 +8,7 @@ import { uploadUserImagesWithPaths } from "@/services/storageUpload";
 import type { MarketplaceListingRecord } from "@/types/marketplaceListing";
 import { useAuth } from "@/hooks/useAuth";
 import { serviceTypeService, sparePartCategoryService, sparePartBrandService } from "@/services/siteDataService";
-import { getBrands } from "@/services/brandModelService";
+import { getBrands, type Brand } from "@/services/brandModelService";
 import LocationSelectFields from "@/components/ui/LocationSelectFields";
 import type { LocationSelection } from "@/lib/locations/types";
 

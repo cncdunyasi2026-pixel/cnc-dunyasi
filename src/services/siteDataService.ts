@@ -14,6 +14,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { fetchCachedList } from "@/lib/cache/cachedListFetch";
 
 export type SiteDataItem = { id: string; name: string; order?: number };
 
@@ -22,12 +23,14 @@ export type SiteDataItem = { id: string; name: string; order?: number };
 function makeService(colName: string) {
   return {
     async getAll(): Promise<SiteDataItem[]> {
-      const snap = await getDocs(query(collection(db, colName), orderBy("order", "asc")));
-      return snap.docs.map((d) => ({
-        id: d.id,
-        name: d.data().name as string,
-        order: typeof d.data().order === "number" ? (d.data().order as number) : undefined,
-      }));
+      return fetchCachedList(`site:${colName}`, async () => {
+        const snap = await getDocs(query(collection(db, colName), orderBy("order", "asc")));
+        return snap.docs.map((d) => ({
+          id: d.id,
+          name: d.data().name as string,
+          order: typeof d.data().order === "number" ? (d.data().order as number) : undefined,
+        }));
+      });
     },
 
     async add(name: string): Promise<string> {

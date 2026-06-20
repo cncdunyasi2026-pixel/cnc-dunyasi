@@ -4,6 +4,7 @@ import { useMemo, useState } from "react";
 import { useListingViewMode } from "@/hooks/useListingViewMode";
 import type { JobListing } from "@/types/job";
 import JobCard from "@/components/jobs/JobCard";
+import { matchesAnySearch } from "@/lib/utils/searchText";
 
 type Props = {
   items: JobListing[];
@@ -14,16 +15,11 @@ export default function JobBrowsePanel({ items }: Props) {
   const [search, setSearch] = useState("");
 
   const filteredItems = useMemo(() => {
-    const term = search.trim().toLowerCase();
-    if (!term) {
+    if (!search.trim()) {
       return items;
     }
-    return items.filter(
-      (item) =>
-        item.title.toLowerCase().includes(term) ||
-        item.company.toLowerCase().includes(term) ||
-        item.location.toLowerCase().includes(term) ||
-        item.workModel.toLowerCase().includes(term),
+    return items.filter((item) =>
+      matchesAnySearch([item.title, item.company, item.location, item.workModel, item.position], search),
     );
   }, [items, search]);
 

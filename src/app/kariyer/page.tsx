@@ -7,6 +7,7 @@ import FilterSidebar from "@/components/ui/FilterSidebar";
 import type { FilterGroup } from "@/components/ui/FilterSidebar";
 import JobCard from "@/components/jobs/JobCard";
 import { useJobBrowse } from "@/hooks/useJobBrowse";
+import { matchesAnySearch } from "@/lib/utils/searchText";
 
 /* ── Sıralama ────────────────────────────────────────────────── */
 type SortKey = "date_desc" | "date_asc" | "salary_asc" | "salary_desc";
@@ -117,13 +118,9 @@ export default function CareerPage() {
   const displayed = useMemo(() => {
     let result = allItems;
 
-    const term = search.trim().toLowerCase();
-    if (term) {
-      result = result.filter(
-        (j) =>
-          j.title.toLowerCase().includes(term) ||
-          j.company.toLowerCase().includes(term) ||
-          j.location.toLowerCase().includes(term),
+    if (search.trim()) {
+      result = result.filter((j) =>
+        matchesAnySearch([j.title, j.company, j.location, j.position, j.level], search),
       );
     }
 
