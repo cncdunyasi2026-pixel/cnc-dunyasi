@@ -223,12 +223,13 @@ export default function Header() {
   }, [pathname]);
 
   /* Ana listeler ve statik sayfalar hariç her yerde geri butonu göster */
-  const TOP_LEVEL = ["/", "/ilanlar", "/kategori/teknik-servis", "/kategori/yedek-parca", "/kariyer", "/hesap/giris", "/hesap/kayit", "/hesap/profil"];
+  const TOP_LEVEL = ["/", "/ilanlar", "/kategori/teknik-servis", "/kategori/yedek-parca", "/kariyer", "/hesap/giris", "/hesap/kayit", "/hesap/profil", "/hesap/bildirimler"];
   const showMobileBack = !TOP_LEVEL.includes(pathname);
 
   /* Bazı sayfalar için geri butonu belirli bir URL'e gitsin */
   const backHref: Record<string, string> = {
     "/hesap/mesajlar": "/hesap/profil",
+    "/hesap/bildirimler": "/hesap/profil",
   };
   if (/^\/hesap\/mesajlar\/.+/.test(pathname)) backHref[pathname] = "/hesap/mesajlar";
 

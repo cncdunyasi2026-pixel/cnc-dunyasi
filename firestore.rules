@@ -188,6 +188,15 @@ service cloud.firestore {
       allow create, update, delete: if signedIn() && uid() == userId;
     }
 
+    match /notifications/{userId}/items/{notificationId} {
+      allow read: if signedIn() && uid() == userId;
+      allow update: if signedIn()
+        && uid() == userId
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow create: if isStaff();
+      allow delete: if signedIn() && uid() == userId;
+    }
+
     match /reports/{reportId} {
       allow read: if isStaff();
       allow create: if signedIn()
