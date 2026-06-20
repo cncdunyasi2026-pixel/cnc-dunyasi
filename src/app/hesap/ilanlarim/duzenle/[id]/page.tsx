@@ -263,7 +263,11 @@ export default function EditListingPage({ params }: Props) {
     condition: revisionNoteFor("condition") ?? "",
     year: revisionNoteFor("year") ?? "",
     powerKw: revisionNoteFor("powerKw") ?? "",
-    tableSize: revisionNoteFor("tableSize") ?? revisionNoteFor("tableWidthMm") ?? "",
+    tableSize:
+      revisionNoteFor("tableSize") ??
+      revisionFields.tableWidthMm ??
+      revisionFields.tableLengthMm ??
+      "",
     axisCount: revisionNoteFor("axisCount") ?? "",
     sellerType: revisionNoteFor("sellerType") ?? "",
     trade: revisionNoteFor("trade") ?? "",

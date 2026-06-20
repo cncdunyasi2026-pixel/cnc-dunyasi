@@ -69,7 +69,7 @@ function LogoWordmark({
 
   return (
     <span className={`font-extrabold tracking-tight ${textClass} ${primary}`}>
-      cnc<span className={secondary}>dunyam</span>.com
+      cnc<span className={secondary}>dünyam</span>.com
     </span>
   );
 }
