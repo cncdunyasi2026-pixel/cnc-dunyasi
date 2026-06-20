@@ -145,6 +145,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    /* ── Sayfa içerik görselleri (admin yönetimli) ──────────── */
+    match /page_content_slots/{pageId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /ads/{adId} {
       allow read: if listingReadOk(resource);
       allow create: if createListingOk();

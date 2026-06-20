@@ -11,6 +11,8 @@ import { formatPrice } from "@/lib/utils/format";
 import FilterSidebar from "@/components/ui/FilterSidebar";
 import type { FilterGroup, RangeFilter } from "@/components/ui/FilterSidebar";
 import PageHeroBanner from "@/components/page/PageHeroBanner";
+import PageContentSlot from "@/components/page/PageContentSlot";
+import PageContentProvider from "@/components/page/PageContentProvider";
 
 /* ── Sabit / mock şehir verisi (tasarım amaçlı) ─────────────── */
 
@@ -324,8 +326,11 @@ export default function ListingsPage() {
   const currentSort = SORT_OPTIONS.find((o) => o.value === sortKey)!
 
   return (
+    <PageContentProvider pageId="ilanlar">
     <section className="mx-auto w-full max-w-7xl px-4 py-6">
+      <PageContentSlot pageId="ilanlar" slotId="page_top" />
       <PageHeroBanner pageId="ilanlar" />
+      <PageContentSlot pageId="ilanlar" slotId="below_header" />
 
       {/* Desktop: sol sidebar + içerik | Mobile: tek kolon */}
       <div className="lg:grid lg:grid-cols-[260px_1fr] lg:items-start lg:gap-6">
@@ -363,6 +368,7 @@ export default function ListingsPage() {
 
         {/* Arama + liste */}
         <div className="min-w-0">
+          <PageContentSlot pageId="ilanlar" slotId="above_listings" />
           {/* Toolbar */}
           <div className="mb-6 rounded-2xl border border-[#d8dfeb] bg-gradient-to-b from-white to-[#f6f8fb] p-3 shadow-[0_10px_30px_rgba(15,42,74,0.08)] sm:p-4">
             {/* Satır 1: Arama */}
@@ -589,8 +595,11 @@ export default function ListingsPage() {
               </p>
             </div>
           )}
+          <PageContentSlot pageId="ilanlar" slotId="below_listings" />
         </div>
       </div>
+
+      <PageContentSlot pageId="ilanlar" slotId="page_bottom" />
 
       {/* Sıralama dropdown'u kapatmak için overlay */}
       {sortOpen && (
@@ -659,5 +668,6 @@ export default function ListingsPage() {
         </div>
       )}
     </section>
+    </PageContentProvider>
   );
 }

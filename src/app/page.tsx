@@ -1,9 +1,11 @@
 import Link from "next/link";
 import HomepageSections from "@/components/home/HomepageSections";
 import PageHeroBanner from "@/components/page/PageHeroBanner";
+import PageContentProvider from "@/components/page/PageContentProvider";
 
 export default function HomePage() {
   return (
+    <PageContentProvider pageId="home">
     <div className="relative overflow-x-hidden bg-[#f3f5f8] pb-12">
       {/* ── Hero ─────────────────────────────────────────── */}
       <PageHeroBanner
@@ -114,5 +116,6 @@ export default function HomePage() {
         </div>
       </section>
     </div>
+    </PageContentProvider>
   );
 }

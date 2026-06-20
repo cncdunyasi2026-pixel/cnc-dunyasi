@@ -5,9 +5,12 @@ import AdminAuthGate from "@/components/admin/AdminAuthGate";
 import AdminSectionLayout from "@/components/admin/AdminSectionLayout";
 import { PAGE_HERO_DEFINITIONS } from "@/lib/constants/pageHeroPages";
 import { getPageHeroContent, savePageHeroContent } from "@/services/pageHeroService";
+import PageContentEditor from "@/components/admin/PageContentEditor";
 import type { PageHeroContent, PageHeroId } from "@/types/pageHero";
 
 type Props = { adminCode: string };
+
+type AdminTab = "headings" | "content";
 
 const COLOR_PRESETS = [
   { label: "Beyaz", value: "#FFFFFF" },
@@ -106,6 +109,7 @@ function HeroPreview({
 
 export default function PageManagementScreen({ adminCode }: Props) {
   const [selectedId, setSelectedId] = useState<PageHeroId | null>(null);
+  const [activeTab, setActiveTab] = useState<AdminTab>("headings");
   const [draft, setDraft] = useState<PageHeroContent>(emptyDraft);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -167,7 +171,7 @@ export default function PageManagementScreen({ adminCode }: Props) {
       <AdminSectionLayout
         adminCode={adminCode}
         title="Sayfa Yönetimi"
-        subtitle="Sayfa üst banner metinlerini ve renklerini düzenleyin"
+        subtitle="Sayfa başlıkları ve içerik görsellerini düzenleyin"
       >
         <div className="grid gap-6 lg:grid-cols-[280px_1fr]">
           {/* Sol: sayfa listesi */}
@@ -179,7 +183,10 @@ export default function PageManagementScreen({ adminCode }: Props) {
                 <button
                   key={page.id}
                   type="button"
-                  onClick={() => setSelectedId(page.id)}
+                  onClick={() => {
+                    setSelectedId(page.id);
+                    setActiveTab("headings");
+                  }}
                   className={`w-full rounded-xl border px-4 py-3 text-left transition ${
                     active
                       ? "border-blue-500/40 bg-blue-600/15 shadow-[0_0_0_1px_rgba(59,130,246,0.2)]"
@@ -203,6 +210,35 @@ export default function PageManagementScreen({ adminCode }: Props) {
             </div>
           ) : (
             <div className="space-y-5">
+              <div className="flex flex-wrap gap-2 rounded-2xl border border-white/[0.08] bg-white/[0.03] p-2">
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("headings")}
+                  className={`rounded-xl px-4 py-2 text-sm font-bold transition ${
+                    activeTab === "headings"
+                      ? "bg-blue-600 text-white"
+                      : "text-white/60 hover:bg-white/[0.06] hover:text-white"
+                  }`}
+                >
+                  Başlıklar
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setActiveTab("content")}
+                  className={`rounded-xl px-4 py-2 text-sm font-bold transition ${
+                    activeTab === "content"
+                      ? "bg-blue-600 text-white"
+                      : "text-white/60 hover:bg-white/[0.06] hover:text-white"
+                  }`}
+                >
+                  Sayfaya içerik yükle
+                </button>
+              </div>
+
+              {activeTab === "content" ? (
+                <PageContentEditor pageId={selected.id} pageLabel={selected.label} />
+              ) : (
+                <>
               <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-5">
                 <h2 className="text-lg font-extrabold text-white">{selected.label}</h2>
                 <p className="mt-1 text-sm text-[#6a94bc]">Banner alanındaki üç metin satırını düzenleyin.</p>
@@ -305,6 +341,8 @@ export default function PageManagementScreen({ adminCode }: Props) {
                       Varsayılana dön
                     </button>
                   </div>
+                </>
+              )}
                 </>
               )}
             </div>

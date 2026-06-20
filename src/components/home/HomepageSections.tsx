@@ -17,6 +17,7 @@ import { mapJobListingFromFirestore } from "@/lib/firestore/mapJobDoc";
 import { formatPrice } from "@/lib/utils/format";
 import MarketplaceCard from "@/components/marketplace/MarketplaceCard";
 import JobCard from "@/components/jobs/JobCard";
+import PageContentSlot from "@/components/page/PageContentSlot";
 import type { Ad } from "@/types/ad";
 import type { MarketplaceProfile } from "@/types/marketplace";
 import type { JobListing } from "@/types/job";
@@ -170,6 +171,8 @@ export default function HomepageSections() {
 
   return (
     <>
+      <PageContentSlot pageId="home" slotId="above_weekly_deals" />
+
       {/* ── HAFTANIN FIRSATLARI ─────────────────────────── */}
       {weeklyDeals.length > 0 && (
         <section className="mx-auto mt-6 w-full max-w-7xl px-4">
@@ -262,6 +265,8 @@ export default function HomepageSections() {
             </div>
           )}
 
+          <PageContentSlot pageId="home" slotId="between_ads_and_services" />
+
           {/* Teknik Servisler */}
           {featuredServices.length > 0 && (
             <div>
@@ -319,6 +324,8 @@ export default function HomepageSections() {
               </div>
             </div>
           )}
+
+          <PageContentSlot pageId="home" slotId="below_jobs" />
 
         </div>
       </section>

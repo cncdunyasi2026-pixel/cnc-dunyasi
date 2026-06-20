@@ -10,6 +10,8 @@ import { useJobBrowse } from "@/hooks/useJobBrowse";
 import { useJobSearch } from "@/hooks/useJobSearch";
 import type { JobSearchFilters } from "@/lib/utils/jobSearch";
 import PageHeroBanner from "@/components/page/PageHeroBanner";
+import PageContentSlot from "@/components/page/PageContentSlot";
+import PageContentProvider from "@/components/page/PageContentProvider";
 
 /* ── Sıralama ────────────────────────────────────────────────── */
 type SortKey = "date_desc" | "date_asc" | "salary_asc" | "salary_desc";
@@ -201,8 +203,11 @@ export default function CareerPage() {
   );
 
   return (
+    <PageContentProvider pageId="kariyer">
     <section className="mx-auto w-full max-w-7xl px-4 py-6">
+      <PageContentSlot pageId="kariyer" slotId="page_top" />
       <PageHeroBanner pageId="kariyer" />
+      <PageContentSlot pageId="kariyer" slotId="below_header" />
 
       {/* İçerik: sol sidebar + sağ liste */}
       <div className="lg:grid lg:grid-cols-[260px_1fr] lg:items-start lg:gap-6">
@@ -217,6 +222,7 @@ export default function CareerPage() {
 
         {/* Sağ kolon */}
         <div className="min-w-0 space-y-4">
+          <PageContentSlot pageId="kariyer" slotId="above_listings" />
           {/* Araç çubuğu */}
           <div className="rounded-2xl border border-[#d3dcea] bg-white p-3 shadow-sm">
             {/* Arama */}
@@ -359,8 +365,11 @@ export default function CareerPage() {
               </p>
             </div>
           )}
+          <PageContentSlot pageId="kariyer" slotId="below_listings" />
         </div>
       </div>
+
+      <PageContentSlot pageId="kariyer" slotId="page_bottom" />
 
       {/* Mobil filtre drawer */}
       {mobileFilterOpen && (
@@ -387,5 +396,6 @@ export default function CareerPage() {
         </div>
       )}
     </section>
+    </PageContentProvider>
   );
 }

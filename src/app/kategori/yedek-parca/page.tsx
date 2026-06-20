@@ -11,6 +11,8 @@ import type { MarketplaceProfile } from "@/types/marketplace";
 import type { MarketplaceSearchFilters } from "@/lib/utils/marketplaceSearch";
 import { sparePartCategoryService, sparePartBrandService } from "@/services/siteDataService";
 import PageHeroBanner from "@/components/page/PageHeroBanner";
+import PageContentSlot from "@/components/page/PageContentSlot";
+import PageContentProvider from "@/components/page/PageContentProvider";
 
 
 type SortKey = "date_desc" | "date_asc" | "name_asc";
@@ -165,14 +167,18 @@ export default function SparePartPage() {
   );
 
   return (
+    <PageContentProvider pageId="yedek-parca">
     <section className="mx-auto w-full max-w-7xl px-4 py-6">
+      <PageContentSlot pageId="yedek-parca" slotId="page_top" />
       <PageHeroBanner pageId="yedek-parca" />
+      <PageContentSlot pageId="yedek-parca" slotId="below_header" />
 
       <div className="lg:grid lg:grid-cols-[260px_1fr] lg:items-start lg:gap-6">
         <FilterSidebar groups={filterGroups} className="hidden lg:block"
           activeGroupValues={pendingGroups} onGroupToggle={handleGroupToggle} footer={filterFooter} />
 
         <div className="min-w-0">
+          <PageContentSlot pageId="yedek-parca" slotId="above_listings" />
           {listLoading ? (
             <div className="space-y-3">{[1,2,3].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-[#f0f4f8]" />)}</div>
           ) : (
@@ -217,8 +223,11 @@ export default function SparePartPage() {
               </p>
             </div>
           )}
+          <PageContentSlot pageId="yedek-parca" slotId="below_listings" />
         </div>
       </div>
+
+      <PageContentSlot pageId="yedek-parca" slotId="page_bottom" />
 
       {/* Bilgi kutusu */}
       <div className="mt-8 mb-4 rounded-2xl border border-[#dbe2ea] bg-gradient-to-b from-white to-[#f5f8fc] p-4 shadow-sm sm:p-5">
@@ -248,5 +257,6 @@ export default function SparePartPage() {
         </div>
       )}
     </section>
+    </PageContentProvider>
   );
 }

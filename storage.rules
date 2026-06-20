@@ -59,6 +59,12 @@ service firebase.storage {
       allow delete: if ownUid(userId);
     }
 
+    match /page-content/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if ownUid(userId) && imageWriteOk();
+      allow delete: if ownUid(userId);
+    }
+
     match /{allPaths=**} {
       allow read, write: if false;
     }
