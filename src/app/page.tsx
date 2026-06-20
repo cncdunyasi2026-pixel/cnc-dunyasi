@@ -1,84 +1,69 @@
 import Link from "next/link";
 import HomepageSections from "@/components/home/HomepageSections";
+import PageHeroBanner from "@/components/page/PageHeroBanner";
 
 export default function HomePage() {
   return (
     <div className="relative overflow-x-hidden bg-[#f3f5f8] pb-12">
       {/* ── Hero ─────────────────────────────────────────── */}
-      <section className="w-full pt-0">
-        <div className="relative overflow-hidden">
-          <img
-            src="/banner_1.jpg"
-            alt="Cncdunyam Hero"
-            className="h-[280px] w-full object-cover sm:h-[360px] lg:h-[460px]"
-          />
-          <div className="absolute inset-0 bg-[#0F2A4A]/55" />
-
-          <div className="absolute inset-0 mx-auto flex w-full max-w-7xl items-end justify-between px-4 pb-6 sm:items-center sm:px-8 sm:pb-0">
-            <div className="max-w-xl text-white">
-              <p className="text-xs font-semibold tracking-[0.2em] text-[#7A8CA5] sm:text-sm">TÜRKİYE&apos;NİN</p>
-              <h1 className="text-3xl font-extrabold leading-tight sm:text-4xl lg:text-5xl">CNC BORSASI</h1>
-              <p className="mt-2 text-xs text-white/80 sm:mt-3 sm:text-sm">
-                Güvenilir alım satım, hızlı teklif ve uzman ekspertiz desteği.
-              </p>
+      <PageHeroBanner
+        pageId="home"
+        homeAside={
+          <div className="hidden w-full max-w-sm rounded-md bg-white p-5 shadow-xl md:block">
+            <h2 className="mb-4 text-sm font-bold tracking-wide text-[#0F2A4A]">
+              TEZGAHINIZIN DEĞERİNİ HESAPLA
+            </h2>
+            <div className="grid grid-cols-2 gap-2">
+              <select className="rounded border border-[#d9dee5] px-3 py-2 text-sm text-[#0F2A4A]">
+                <option>Marka</option>
+              </select>
+              <select className="rounded border border-[#d9dee5] px-3 py-2 text-sm text-[#0F2A4A]">
+                <option>Model</option>
+              </select>
+              <select className="rounded border border-[#d9dee5] px-3 py-2 text-sm text-[#0F2A4A]">
+                <option>Yıl</option>
+              </select>
+              <select className="rounded border border-[#d9dee5] px-3 py-2 text-sm text-[#0F2A4A]">
+                <option>Durum</option>
+              </select>
             </div>
+            <Link
+              href="/ilan-ver/ikinci-el"
+              className="mt-3 block w-full rounded bg-[#F26A1B] px-4 py-2 text-center text-sm font-bold !text-white visited:!text-white hover:!text-white focus-visible:!text-white"
+            >
+              İLAN OLUŞTUR
+            </Link>
+          </div>
+        }
+      />
 
-            <div className="hidden w-full max-w-sm rounded-md bg-white p-5 shadow-xl md:block">
-              <h2 className="mb-4 text-sm font-bold tracking-wide text-[#0F2A4A]">
-                TEZGAHINIZIN DEĞERİNİ HESAPLA
-              </h2>
-              <div className="grid grid-cols-2 gap-2">
-                <select className="rounded border border-[#d9dee5] px-3 py-2 text-sm text-[#0F2A4A]">
-                  <option>Marka</option>
-                </select>
-                <select className="rounded border border-[#d9dee5] px-3 py-2 text-sm text-[#0F2A4A]">
-                  <option>Model</option>
-                </select>
-                <select className="rounded border border-[#d9dee5] px-3 py-2 text-sm text-[#0F2A4A]">
-                  <option>Yıl</option>
-                </select>
-                <select className="rounded border border-[#d9dee5] px-3 py-2 text-sm text-[#0F2A4A]">
-                  <option>Durum</option>
-                </select>
-              </div>
-              <Link
-                href="/ilan-ver/ikinci-el"
-                className="mt-3 block w-full rounded bg-[#F26A1B] px-4 py-2 text-center text-sm font-bold !text-white visited:!text-white hover:!text-white focus-visible:!text-white"
-              >
-                İLAN OLUŞTUR
-              </Link>
-            </div>
+      {/* Mobile CTA kartı */}
+      <div className="mx-auto mt-3 w-full max-w-7xl px-4 md:hidden">
+        <div className="rounded-2xl bg-white p-5 shadow-lg">
+          <p className="text-[10px] font-semibold tracking-[0.18em] text-[#7A8CA5]">HIZLI BAŞLA</p>
+          <h2 className="mt-1 text-base font-extrabold text-[#0F2A4A]">İlanını Hemen Oluştur</h2>
+          <p className="mt-1 text-xs text-[#7A8CA5]">Dakikalar içinde ilanını yayınla, alıcılarla buluş.</p>
+
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <Link href="/ilan-ver/ikinci-el" className="flex items-center gap-2 rounded-xl border border-[#dbe2ea] px-3 py-2.5 transition hover:border-[#0F2A4A]/30 hover:bg-[#f4f7fb]">
+              <span className="text-lg">🏭</span>
+              <span className="text-xs font-bold text-[#0F2A4A]">İkinci El CNC</span>
+            </Link>
+            <Link href="/ilan-ver/teknik-servis" className="flex items-center gap-2 rounded-xl border border-[#dbe2ea] px-3 py-2.5 transition hover:border-[#0F2A4A]/30 hover:bg-[#f4f7fb]">
+              <span className="text-lg">🔧</span>
+              <span className="text-xs font-bold text-[#0F2A4A]">Teknik Servis</span>
+            </Link>
+            <Link href="/ilan-ver/yedek-parca" className="flex items-center gap-2 rounded-xl border border-[#dbe2ea] px-3 py-2.5 transition hover:border-[#0F2A4A]/30 hover:bg-[#f4f7fb]">
+              <span className="text-lg">⚙️</span>
+              <span className="text-xs font-bold text-[#0F2A4A]">Yedek Parça</span>
+            </Link>
+            <Link href="/kariyer/is-ilani-ver" className="flex items-center gap-2 rounded-xl border border-[#dbe2ea] px-3 py-2.5 transition hover:border-[#0F2A4A]/30 hover:bg-[#f4f7fb]">
+              <span className="text-lg">💼</span>
+              <span className="text-xs font-bold text-[#0F2A4A]">İş İlanı</span>
+            </Link>
           </div>
         </div>
-
-        {/* Mobile CTA kartı */}
-        <div className="mx-auto mt-3 w-full max-w-7xl px-4 md:hidden">
-          <div className="rounded-2xl bg-white p-5 shadow-lg">
-            <p className="text-[10px] font-semibold tracking-[0.18em] text-[#7A8CA5]">HIZLI BAŞLA</p>
-            <h2 className="mt-1 text-base font-extrabold text-[#0F2A4A]">İlanını Hemen Oluştur</h2>
-            <p className="mt-1 text-xs text-[#7A8CA5]">Dakikalar içinde ilanını yayınla, alıcılarla buluş.</p>
-
-            <div className="mt-3 grid grid-cols-2 gap-2">
-              <Link href="/ilan-ver/ikinci-el" className="flex items-center gap-2 rounded-xl border border-[#dbe2ea] px-3 py-2.5 transition hover:border-[#0F2A4A]/30 hover:bg-[#f4f7fb]">
-                <span className="text-lg">🏭</span>
-                <span className="text-xs font-bold text-[#0F2A4A]">İkinci El CNC</span>
-              </Link>
-              <Link href="/ilan-ver/teknik-servis" className="flex items-center gap-2 rounded-xl border border-[#dbe2ea] px-3 py-2.5 transition hover:border-[#0F2A4A]/30 hover:bg-[#f4f7fb]">
-                <span className="text-lg">🔧</span>
-                <span className="text-xs font-bold text-[#0F2A4A]">Teknik Servis</span>
-              </Link>
-              <Link href="/ilan-ver/yedek-parca" className="flex items-center gap-2 rounded-xl border border-[#dbe2ea] px-3 py-2.5 transition hover:border-[#0F2A4A]/30 hover:bg-[#f4f7fb]">
-                <span className="text-lg">⚙️</span>
-                <span className="text-xs font-bold text-[#0F2A4A]">Yedek Parça</span>
-              </Link>
-              <Link href="/kariyer/is-ilani-ver" className="flex items-center gap-2 rounded-xl border border-[#dbe2ea] px-3 py-2.5 transition hover:border-[#0F2A4A]/30 hover:bg-[#f4f7fb]">
-                <span className="text-lg">💼</span>
-                <span className="text-xs font-bold text-[#0F2A4A]">İş İlanı</span>
-              </Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      </div>
 
       {/* ── Dynamic sections (client-side Firebase) ─────── */}
       <HomepageSections />

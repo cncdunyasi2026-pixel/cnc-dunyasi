@@ -39,6 +39,7 @@ export default function AdminSectionLayout({ adminCode, title, subtitle, childre
   const navItems = [
     { href: `${base}/dashboard`, label: "Dashboard", icon: <GridIcon /> },
     { href: `${base}/anasayfa`, label: "Anasayfa Yönetimi", icon: <HomeIcon /> },
+    { href: `${base}/sayfa-yonetimi`, label: "Sayfa Yönetimi", icon: <PageIcon /> },
     { href: `${base}/moderasyon`, label: "İlan Moderasyonu", icon: <ShieldIcon /> },
     { href: `${base}/kullanicilar`, label: "Kullanıcılar", icon: <UsersIcon /> },
     { href: `${base}/raporlar`, label: "Raporlar & Analiz", icon: <FlagIcon /> },
@@ -265,6 +266,14 @@ function TagIcon() {
   return (
     <svg className="h-[15px] w-[15px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z" />
+    </svg>
+  );
+}
+
+function PageIcon() {
+  return (
+    <svg className="h-[15px] w-[15px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
     </svg>
   );
 }

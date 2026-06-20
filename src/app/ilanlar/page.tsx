@@ -10,6 +10,7 @@ import type { Ad } from "@/types/ad";
 import { formatPrice } from "@/lib/utils/format";
 import FilterSidebar from "@/components/ui/FilterSidebar";
 import type { FilterGroup, RangeFilter } from "@/components/ui/FilterSidebar";
+import PageHeroBanner from "@/components/page/PageHeroBanner";
 
 /* ── Sabit / mock şehir verisi (tasarım amaçlı) ─────────────── */
 
@@ -324,34 +325,7 @@ export default function ListingsPage() {
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-6">
-      {/* Banner */}
-      <div className="full-bleed relative mb-6">
-        <img
-          src="/banner_1.jpg"
-          alt="CNC platform tanitim gorseli"
-          className="h-[230px] w-full object-cover sm:h-[280px]"
-        />
-        <div className="absolute inset-0 bg-[#0F2A4A]/65" />
-        <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-8">
-          <div className="max-w-3xl text-center text-white">
-            <p className="text-[10px] font-semibold tracking-[0.18em] text-[#7A8CA5] sm:text-xs">
-              CNC DUNYASI ILAN PLATFORMU
-            </p>
-            <h1 className="mt-2 text-2xl font-extrabold leading-tight sm:text-4xl">
-              Tezgahini Dogru Aliciyla Bulustur
-            </h1>
-            <p className="mt-2 text-sm text-white/85 sm:text-base">
-              Dakikalar icinde ilanini yayinla, binlerce profesyonel aliciya hemen ulas.
-            </p>
-            <Link
-              href="/ilan-ver/ikinci-el"
-              className="mt-4 inline-flex rounded-[8px] bg-[#F26A1B] px-5 py-2 text-xs font-bold text-white sm:text-sm"
-            >
-              HEMEN UCRETSIZ ILAN VER
-            </Link>
-          </div>
-        </div>
-      </div>
+      <PageHeroBanner pageId="ilanlar" />
 
       {/* Desktop: sol sidebar + içerik | Mobile: tek kolon */}
       <div className="lg:grid lg:grid-cols-[260px_1fr] lg:items-start lg:gap-6">

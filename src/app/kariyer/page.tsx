@@ -9,6 +9,7 @@ import JobCard from "@/components/jobs/JobCard";
 import { useJobBrowse } from "@/hooks/useJobBrowse";
 import { useJobSearch } from "@/hooks/useJobSearch";
 import type { JobSearchFilters } from "@/lib/utils/jobSearch";
+import PageHeroBanner from "@/components/page/PageHeroBanner";
 
 /* ── Sıralama ────────────────────────────────────────────────── */
 type SortKey = "date_desc" | "date_asc" | "salary_asc" | "salary_desc";
@@ -201,26 +202,7 @@ export default function CareerPage() {
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-6">
-      {/* Banner */}
-      <div className="full-bleed relative mb-6">
-        <img src="/kariyer.png" alt="Kariyer banner" className="h-[230px] w-full object-cover sm:h-[280px]" />
-        <div className="absolute inset-0 bg-[#0F2A4A]/65" />
-        <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-8">
-          <div className="max-w-3xl text-center text-white">
-            <p className="text-[10px] font-semibold tracking-[0.18em] text-[#7A8CA5] sm:text-xs">CNC DUNYASI KARIYER</p>
-            <h1 className="mt-2 text-2xl font-extrabold leading-tight sm:text-4xl">Doğru Pozisyonla Kariyerinde İleri Geç</h1>
-            <p className="mt-2 text-sm text-white/85 sm:text-base">
-              İş ilanlarını incele, uzmanlığını değerlendirecek firmalarla hızlı bağlantı kur.
-            </p>
-            <Link
-              href="/kariyer/is-ilani-ver"
-              className="mt-4 inline-flex rounded-[8px] bg-[#F26A1B] px-5 py-2 text-xs font-bold text-white sm:text-sm"
-            >
-              İŞ İLANI VER
-            </Link>
-          </div>
-        </div>
-      </div>
+      <PageHeroBanner pageId="kariyer" />
 
       {/* İçerik: sol sidebar + sağ liste */}
       <div className="lg:grid lg:grid-cols-[260px_1fr] lg:items-start lg:gap-6">

@@ -11,6 +11,7 @@ import type { MarketplaceProfile } from "@/types/marketplace";
 import type { MarketplaceSearchFilters } from "@/lib/utils/marketplaceSearch";
 import { serviceTypeService } from "@/services/siteDataService";
 import { getBrands } from "@/services/brandModelService";
+import PageHeroBanner from "@/components/page/PageHeroBanner";
 
 
 type SortKey = "date_desc" | "date_asc" | "name_asc";
@@ -148,24 +149,7 @@ export default function TechnicalServicePage() {
 
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-6">
-      {/* Banner */}
-      <div className="full-bleed relative mb-6">
-        <img src="/teknik_servis.png" alt="Teknik servis banner" className="h-[230px] w-full object-cover sm:h-[280px]" />
-        <div className="absolute inset-0 bg-[#0F2A4A]/65" />
-        <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-8">
-          <div className="max-w-3xl text-center text-white">
-            <p className="text-[10px] font-semibold tracking-[0.18em] text-[#7A8CA5] sm:text-xs">CNC DUNYASI SERVİS AĞI</p>
-            <h1 className="mt-2 text-2xl font-extrabold leading-tight sm:text-4xl">Uzmana Hemen Ulaş, Üretimi Durdurma</h1>
-            <p className="mt-2 text-sm text-white/85 sm:text-base">
-              Teknik servis ilanlarını incele, bölgendeki uzman ekiplerle hızlı iletişime geç.
-            </p>
-            <Link href="/ilan-ver/teknik-servis"
-              className="mt-4 inline-flex rounded-[8px] bg-[#F26A1B] px-5 py-2 text-xs font-bold text-white sm:text-sm">
-              SERVİS İLANI OLUŞTUR
-            </Link>
-          </div>
-        </div>
-      </div>
+      <PageHeroBanner pageId="teknik-servis" />
 
       <div className="lg:grid lg:grid-cols-[260px_1fr] lg:items-start lg:gap-6">
         <FilterSidebar groups={filterGroups} className="hidden lg:block"
