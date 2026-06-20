@@ -6,7 +6,9 @@ import FilterSidebar from "@/components/ui/FilterSidebar";
 import type { FilterGroup } from "@/components/ui/FilterSidebar";
 import MarketplaceBrowsePanel from "@/components/marketplace/MarketplaceBrowsePanel";
 import { useMarketplaceBrowse } from "@/hooks/useMarketplaceBrowse";
+import { useMarketplaceSearch } from "@/hooks/useMarketplaceSearch";
 import type { MarketplaceProfile } from "@/types/marketplace";
+import type { MarketplaceSearchFilters } from "@/lib/utils/marketplaceSearch";
 import { sparePartCategoryService, sparePartBrandService } from "@/services/siteDataService";
 
 
@@ -19,10 +21,27 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 
 export default function SparePartPage() {
   const { items: allItems, loading: loadingData, loadingMore, hasMore, loadMore } = useMarketplaceBrowse("spare");
+  const [search, setSearch] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("date_desc");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [pendingGroups, setPendingGroups] = useState<Record<string, string[]>>({});
   const [appliedGroups, setAppliedGroups] = useState<Record<string, string[]>>({});
+
+  const searchFilters = useMemo((): MarketplaceSearchFilters => ({
+    partCategories: appliedGroups.kategori?.length ? appliedGroups.kategori : undefined,
+    brandCompats: appliedGroups.marka?.length ? appliedGroups.marka : undefined,
+    cities: appliedGroups.sehir?.length ? appliedGroups.sehir : undefined,
+  }), [appliedGroups]);
+
+  const {
+    results: searchResults,
+    loading: searchLoading,
+    isActive: isSearchMode,
+  } = useMarketplaceSearch("spare", activeSearch, searchFilters);
+
+  const listSource = isSearchMode ? searchResults : allItems;
+  const listLoading = isSearchMode ? searchLoading : loadingData;
 
   // Admin panelinden yönetilen filtre seçenekleri
   const [adminCategories, setAdminCategories] = useState<string[]>([]);
@@ -97,25 +116,35 @@ export default function SparePartPage() {
     });
   };
   const handleApply = () => { setAppliedGroups({ ...pendingGroups }); setMobileFilterOpen(false); };
-  const handleClear = () => { setPendingGroups({}); setAppliedGroups({}); };
+  const handleClear = () => {
+    setPendingGroups({});
+    setAppliedGroups({});
+    setSearch("");
+    setActiveSearch("");
+  };
 
   const filteredItems = useMemo(() => {
-    let result = allItems;
-    const kategori = appliedGroups["kategori"] ?? [];
-    const marka    = appliedGroups["marka"] ?? [];
-    const stok     = appliedGroups["stok"] ?? [];
+    let result = listSource;
+
+    if (!isSearchMode) {
+      const kategori = appliedGroups["kategori"] ?? [];
+      const marka = appliedGroups["marka"] ?? [];
+      if (kategori.length > 0) result = result.filter((i) => kategori.includes(i.partCategory ?? ""));
+      if (marka.length > 0) result = result.filter((i) => marka.includes(i.brandCompat ?? ""));
+
+      const sehir = appliedGroups["sehir"] ?? [];
+      if (sehir.length > 0) result = result.filter((i) => sehir.includes(i.city));
+    }
+
     const uzmanlik = appliedGroups["uzmanlik"] ?? [];
-    if (kategori.length > 0)  result = result.filter((i) => kategori.includes(i.partCategory ?? ""));
-    if (marka.length > 0)     result = result.filter((i) => marka.includes(i.brandCompat ?? ""));
-    if (uzmanlik.length > 0)  result = result.filter((i) => uzmanlik.includes(i.expertise ?? ""));
-    if (stok.length > 0)      result = result.filter((i) => stok.includes(i.stockStatus ?? ""));
+    if (uzmanlik.length > 0) result = result.filter((i) => uzmanlik.includes(i.expertise ?? ""));
 
-    const sehir = appliedGroups["sehir"] ?? [];
-    if (sehir.length > 0) result = result.filter((i) => sehir.includes(i.city));
+    const stok = appliedGroups["stok"] ?? [];
+    if (stok.length > 0) result = result.filter((i) => stok.includes(i.stockStatus ?? ""));
 
-    if (sortKey === "name_asc") result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+    if (sortKey === "name_asc") result = [...result].sort((a, b) => a.name.localeCompare(b.name, "tr"));
     return result;
-  }, [allItems, appliedGroups, sortKey]);
+  }, [listSource, appliedGroups, sortKey, isSearchMode]);
 
   const appliedCount = Object.values(appliedGroups).reduce((s, v) => s + v.length, 0);
 
@@ -160,7 +189,7 @@ export default function SparePartPage() {
           activeGroupValues={pendingGroups} onGroupToggle={handleGroupToggle} footer={filterFooter} />
 
         <div className="min-w-0">
-          {loadingData ? (
+          {listLoading ? (
             <div className="space-y-3">{[1,2,3].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-[#f0f4f8]" />)}</div>
           ) : (
             <MarketplaceBrowsePanel
@@ -174,6 +203,12 @@ export default function SparePartPage() {
               filterBadgeCount={appliedCount}
               totalCount={filteredItems.length}
               appliedGroups={appliedGroups}
+              search={search}
+              onSearchChange={setSearch}
+              onSearchSubmit={() => setActiveSearch(search.trim())}
+              searchLoading={searchLoading}
+              isSearchMode={isSearchMode}
+              activeSearch={activeSearch}
               onRemoveApplied={(groupId, label) => {
                 const next = { ...appliedGroups, [groupId]: (appliedGroups[groupId] ?? []).filter((v) => v !== label) };
                 setAppliedGroups(next);
@@ -183,7 +218,7 @@ export default function SparePartPage() {
             />
           )}
 
-          {!loadingData && hasMore && (
+          {!listLoading && !isSearchMode && hasMore && (
             <div className="mt-8 flex flex-col items-center gap-2">
               <button
                 type="button"

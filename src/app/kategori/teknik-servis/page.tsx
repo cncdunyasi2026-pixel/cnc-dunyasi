@@ -6,7 +6,9 @@ import FilterSidebar from "@/components/ui/FilterSidebar";
 import type { FilterGroup } from "@/components/ui/FilterSidebar";
 import MarketplaceBrowsePanel from "@/components/marketplace/MarketplaceBrowsePanel";
 import { useMarketplaceBrowse } from "@/hooks/useMarketplaceBrowse";
+import { useMarketplaceSearch } from "@/hooks/useMarketplaceSearch";
 import type { MarketplaceProfile } from "@/types/marketplace";
+import type { MarketplaceSearchFilters } from "@/lib/utils/marketplaceSearch";
 import { serviceTypeService } from "@/services/siteDataService";
 import { getBrands } from "@/services/brandModelService";
 
@@ -20,10 +22,27 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 
 export default function TechnicalServicePage() {
   const { items: allItems, loading: loadingData, loadingMore, hasMore, loadMore } = useMarketplaceBrowse("technical");
+  const [search, setSearch] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("date_desc");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [pendingGroups, setPendingGroups] = useState<Record<string, string[]>>({});
   const [appliedGroups, setAppliedGroups] = useState<Record<string, string[]>>({});
+
+  const searchFilters = useMemo((): MarketplaceSearchFilters => ({
+    serviceTypes: appliedGroups.hizmet?.length ? appliedGroups.hizmet : undefined,
+    expertiseBrands: appliedGroups.marka?.length ? appliedGroups.marka : undefined,
+    cities: appliedGroups.sehir?.length ? appliedGroups.sehir : undefined,
+  }), [appliedGroups]);
+
+  const {
+    results: searchResults,
+    loading: searchLoading,
+    isActive: isSearchMode,
+  } = useMarketplaceSearch("technical", activeSearch, searchFilters);
+
+  const listSource = isSearchMode ? searchResults : allItems;
+  const listLoading = isSearchMode ? searchLoading : loadingData;
 
   const [adminServiceTypes, setAdminServiceTypes] = useState<string[]>([]);
   const [adminCncBrands, setAdminCncBrands] = useState<string[]>([]);
@@ -85,22 +104,30 @@ export default function TechnicalServicePage() {
     });
   };
   const handleApply = () => { setAppliedGroups({ ...pendingGroups }); setMobileFilterOpen(false); };
-  const handleClear = () => { setPendingGroups({}); setAppliedGroups({}); };
+  const handleClear = () => {
+    setPendingGroups({});
+    setAppliedGroups({});
+    setSearch("");
+    setActiveSearch("");
+  };
 
   const filteredItems = useMemo(() => {
-    let result = allItems;
-    const hizmet = appliedGroups["hizmet"] ?? [];
-    if (hizmet.length > 0) result = result.filter((i) => hizmet.includes(i.serviceType ?? ""));
+    let result = listSource;
 
-    const marka = appliedGroups["marka"] ?? [];
-    if (marka.length > 0) result = result.filter((i) => marka.includes(i.expertiseBrand ?? ""));
+    if (!isSearchMode) {
+      const hizmet = appliedGroups["hizmet"] ?? [];
+      if (hizmet.length > 0) result = result.filter((i) => hizmet.includes(i.serviceType ?? ""));
 
-    const sehir = appliedGroups["sehir"] ?? [];
-    if (sehir.length > 0) result = result.filter((i) => sehir.includes(i.city));
+      const marka = appliedGroups["marka"] ?? [];
+      if (marka.length > 0) result = result.filter((i) => marka.includes(i.expertiseBrand ?? ""));
 
-    if (sortKey === "name_asc") result = [...result].sort((a, b) => a.name.localeCompare(b.name));
+      const sehir = appliedGroups["sehir"] ?? [];
+      if (sehir.length > 0) result = result.filter((i) => sehir.includes(i.city));
+    }
+
+    if (sortKey === "name_asc") result = [...result].sort((a, b) => a.name.localeCompare(b.name, "tr"));
     return result;
-  }, [allItems, appliedGroups, sortKey]);
+  }, [listSource, appliedGroups, sortKey, isSearchMode]);
 
   const appliedCount = Object.values(appliedGroups).reduce((s, v) => s + v.length, 0);
 
@@ -145,7 +172,7 @@ export default function TechnicalServicePage() {
           activeGroupValues={pendingGroups} onGroupToggle={handleGroupToggle} footer={filterFooter} />
 
         <div className="min-w-0">
-          {loadingData ? (
+          {listLoading ? (
             <div className="space-y-3">{[1,2,3].map((i) => <div key={i} className="h-28 animate-pulse rounded-2xl bg-[#f0f4f8]" />)}</div>
           ) : (
             <MarketplaceBrowsePanel
@@ -160,6 +187,12 @@ export default function TechnicalServicePage() {
               filterBadgeCount={appliedCount}
               totalCount={filteredItems.length}
               appliedGroups={appliedGroups}
+              search={search}
+              onSearchChange={setSearch}
+              onSearchSubmit={() => setActiveSearch(search.trim())}
+              searchLoading={searchLoading}
+              isSearchMode={isSearchMode}
+              activeSearch={activeSearch}
               onRemoveApplied={(groupId, label) => {
                 const next = { ...appliedGroups, [groupId]: (appliedGroups[groupId] ?? []).filter((v) => v !== label) };
                 setAppliedGroups(next);
@@ -169,7 +202,7 @@ export default function TechnicalServicePage() {
             />
           )}
 
-          {!loadingData && hasMore && (
+          {!listLoading && !isSearchMode && hasMore && (
             <div className="mt-8 flex flex-col items-center gap-2">
               <button
                 type="button"

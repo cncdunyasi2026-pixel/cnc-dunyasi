@@ -7,7 +7,8 @@ import FilterSidebar from "@/components/ui/FilterSidebar";
 import type { FilterGroup } from "@/components/ui/FilterSidebar";
 import JobCard from "@/components/jobs/JobCard";
 import { useJobBrowse } from "@/hooks/useJobBrowse";
-import { matchesAnySearch } from "@/lib/utils/searchText";
+import { useJobSearch } from "@/hooks/useJobSearch";
+import type { JobSearchFilters } from "@/lib/utils/jobSearch";
 
 /* ── Sıralama ────────────────────────────────────────────────── */
 type SortKey = "date_desc" | "date_asc" | "salary_asc" | "salary_desc";
@@ -26,6 +27,7 @@ export default function CareerPage() {
   const { items: allItems, loading: loadingData, loadingMore, hasMore, loadMore } = useJobBrowse();
   const { viewMode, setViewMode } = useListingViewMode();
   const [search, setSearch] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("date_desc");
   const [sortOpen, setSortOpen] = useState(false);
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
@@ -34,6 +36,22 @@ export default function CareerPage() {
   const [pendingGroups, setPendingGroups] = useState<Record<string, string[]>>({});
   // Uygulandı
   const [appliedGroups, setAppliedGroups] = useState<Record<string, string[]>>({});
+
+  const searchFilters = useMemo((): JobSearchFilters => ({
+    workModels: appliedGroups.model?.length ? appliedGroups.model : undefined,
+    positions: appliedGroups.pozisyon?.length ? appliedGroups.pozisyon : undefined,
+    experienceLevels: appliedGroups.deneyim?.length ? appliedGroups.deneyim : undefined,
+    cities: appliedGroups.sehir?.length ? appliedGroups.sehir : undefined,
+  }), [appliedGroups]);
+
+  const {
+    results: searchResults,
+    loading: searchLoading,
+    isActive: isSearchMode,
+  } = useJobSearch(activeSearch, searchFilters);
+
+  const listSource = isSearchMode ? searchResults : allItems;
+  const listLoading = isSearchMode ? searchLoading : loadingData;
 
   /* ── Filtre grupları: gerçek veriden dinamik ────────────────── */
   const filterGroups = useMemo<FilterGroup[]>(() => {
@@ -112,36 +130,38 @@ export default function CareerPage() {
   const handleClear = () => {
     setPendingGroups({});
     setAppliedGroups({});
+    setSearch("");
+    setActiveSearch("");
+  };
+
+  const handleSearch = () => {
+    setActiveSearch(search.trim());
   };
 
   /* ── Filtrele + sırala ──────────────────────────────────────── */
   const displayed = useMemo(() => {
-    let result = allItems;
+    let result = listSource;
 
-    if (search.trim()) {
-      result = result.filter((j) =>
-        matchesAnySearch([j.title, j.company, j.location, j.position, j.level], search),
-      );
-    }
+    if (!isSearchMode) {
+      const modelFilter = appliedGroups["model"] ?? [];
+      if (modelFilter.length > 0) {
+        result = result.filter((j) => modelFilter.includes(j.workModel));
+      }
 
-    const modelFilter = appliedGroups["model"] ?? [];
-    if (modelFilter.length > 0) {
-      result = result.filter((j) => modelFilter.includes(j.workModel));
-    }
+      const pozisyonFilter = appliedGroups["pozisyon"] ?? [];
+      if (pozisyonFilter.length > 0) {
+        result = result.filter((j) => pozisyonFilter.includes(j.position ?? j.level));
+      }
 
-    const pozisyonFilter = appliedGroups["pozisyon"] ?? [];
-    if (pozisyonFilter.length > 0) {
-      result = result.filter((j) => pozisyonFilter.includes(j.position ?? j.level));
-    }
+      const deneyimFilter = appliedGroups["deneyim"] ?? [];
+      if (deneyimFilter.length > 0) {
+        result = result.filter((j) => j.experienceLevel && deneyimFilter.includes(j.experienceLevel));
+      }
 
-    const deneyimFilter = appliedGroups["deneyim"] ?? [];
-    if (deneyimFilter.length > 0) {
-      result = result.filter((j) => j.experienceLevel && deneyimFilter.includes(j.experienceLevel));
-    }
-
-    const sehirFilter = appliedGroups["sehir"] ?? [];
-    if (sehirFilter.length > 0) {
-      result = result.filter((j) => sehirFilter.includes(cityFrom(j.location)));
+      const sehirFilter = appliedGroups["sehir"] ?? [];
+      if (sehirFilter.length > 0) {
+        result = result.filter((j) => sehirFilter.includes(cityFrom(j.location)));
+      }
     }
 
     // Sıralama
@@ -153,7 +173,7 @@ export default function CareerPage() {
     });
 
     return result;
-  }, [allItems, search, appliedGroups, sortKey]);
+  }, [listSource, appliedGroups, sortKey, isSearchMode]);
 
   const appliedCount = Object.values(appliedGroups).reduce((s, v) => s + v.length, 0);
   const currentSort = SORT_OPTIONS.find((o) => o.value === sortKey)!;
@@ -218,17 +238,38 @@ export default function CareerPage() {
           {/* Araç çubuğu */}
           <div className="rounded-2xl border border-[#d3dcea] bg-white p-3 shadow-sm">
             {/* Arama */}
-            <div className="relative">
-              <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7A8CA5]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
-              </svg>
-              <input
-                className="h-10 w-full rounded-xl border border-[#d3dcea] bg-[#f7f9fc] pl-9 pr-3 text-sm text-[#0F2A4A] outline-none focus:border-[#0F2A4A] focus:ring-2 focus:ring-[#0F2A4A]/10"
-                placeholder="Pozisyon, firma, lokasyon ara..."
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <svg className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[#7A8CA5]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" />
+                </svg>
+                <input
+                  className="h-10 w-full rounded-xl border border-[#d3dcea] bg-[#f7f9fc] pl-9 pr-3 text-sm text-[#0F2A4A] outline-none focus:border-[#0F2A4A] focus:ring-2 focus:ring-[#0F2A4A]/10"
+                  placeholder="Pozisyon, firma, lokasyon ara..."
+                  value={search}
+                  onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleSearch();
+                    }
+                  }}
+                />
+              </div>
+              <button
+                type="button"
+                onClick={handleSearch}
+                disabled={searchLoading}
+                className="h-10 rounded-xl bg-[#0F2A4A] px-5 text-sm font-semibold text-white transition hover:bg-[#12335c] disabled:opacity-60"
+              >
+                {searchLoading ? "..." : "Ara"}
+              </button>
             </div>
+            {isSearchMode && activeSearch && (
+              <p className="mt-2 text-xs text-[#7A8CA5]">
+                «{activeSearch}» için tüm veritabanında arama
+              </p>
+            )}
 
             {/* Araçlar */}
             <div className="mt-3 flex items-center gap-2">
@@ -303,7 +344,7 @@ export default function CareerPage() {
           </div>
 
           {/* Sonuçlar */}
-          {loadingData ? (
+          {listLoading ? (
             <div className="space-y-3">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="h-28 animate-pulse rounded-2xl bg-[#f0f4f8]" />
@@ -321,7 +362,7 @@ export default function CareerPage() {
             </div>
           )}
 
-          {!loadingData && hasMore && (
+          {!listLoading && !isSearchMode && hasMore && (
             <div className="mt-8 flex flex-col items-center gap-2">
               <button
                 type="button"

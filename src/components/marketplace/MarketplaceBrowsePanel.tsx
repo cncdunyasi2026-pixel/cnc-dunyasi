@@ -19,10 +19,16 @@ type Props = {
   onFilterClick?: () => void;
   filterBadgeCount?: number;
   totalCount?: number;
-  /** Uygulanmış filtre etiketleri (groupId → labels[]) */
   appliedGroups?: Record<string, string[]>;
   onRemoveApplied?: (groupId: string, label: string) => void;
   onClearAll?: () => void;
+  /** Kontrollü arama — Ara butonu ile sunucu araması */
+  search?: string;
+  onSearchChange?: (value: string) => void;
+  onSearchSubmit?: () => void;
+  searchLoading?: boolean;
+  isSearchMode?: boolean;
+  activeSearch?: string;
 };
 
 export default function MarketplaceBrowsePanel({
@@ -39,10 +45,20 @@ export default function MarketplaceBrowsePanel({
   appliedGroups,
   onRemoveApplied,
   onClearAll,
+  search: controlledSearch,
+  onSearchChange,
+  onSearchSubmit,
+  searchLoading = false,
+  isSearchMode = false,
+  activeSearch = "",
 }: Props) {
   const { viewMode, setViewMode } = useListingViewMode();
-  const [search, setSearch] = useState("");
+  const [internalSearch, setInternalSearch] = useState("");
   const [sortOpen, setSortOpen] = useState(false);
+
+  const serverSearch = Boolean(onSearchSubmit);
+  const search = controlledSearch ?? internalSearch;
+  const setSearch = onSearchChange ?? setInternalSearch;
 
   const currentSort = sortOptions?.find((o) => o.value === sortKey);
   const appliedCount = appliedGroups
@@ -50,14 +66,14 @@ export default function MarketplaceBrowsePanel({
     : 0;
 
   const filteredItems = useMemo(() => {
-    if (!search.trim()) return items;
+    if (serverSearch || !search.trim()) return items;
     return items.filter((item) =>
       matchesAnySearch(
         [item.name, item.title, item.city, item.expertise, item.expertiseBrand, item.serviceType],
         search,
       ),
     );
-  }, [items, search]);
+  }, [items, search, serverSearch]);
 
   const displayCount = totalCount ?? filteredItems.length;
 
@@ -81,15 +97,23 @@ export default function MarketplaceBrowsePanel({
             <input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && onSearchSubmit) {
+                  e.preventDefault();
+                  onSearchSubmit();
+                }
+              }}
               placeholder={searchPlaceholder}
               className="h-11 w-full rounded-xl border border-[#d3dcea] bg-white pl-10 pr-3 text-sm text-[#0F2A4A] outline-none transition focus:border-[#0F2A4A] focus:ring-2 focus:ring-[#0F2A4A]/15"
             />
           </div>
           <button
             type="button"
-            className="h-11 rounded-xl bg-[#0F2A4A] px-5 text-sm font-semibold text-white transition hover:bg-[#12335c]"
+            onClick={onSearchSubmit ?? undefined}
+            disabled={searchLoading}
+            className="h-11 rounded-xl bg-[#0F2A4A] px-5 text-sm font-semibold text-white transition hover:bg-[#12335c] disabled:opacity-60"
           >
-            Ara
+            {searchLoading ? "Aranıyor..." : "Ara"}
           </button>
         </div>
 
@@ -235,6 +259,7 @@ export default function MarketplaceBrowsePanel({
         {/* İlan sayısı */}
         <p className="mt-2 text-xs text-[#7A8CA5]">
           {displayCount} ilan
+          {isSearchMode && activeSearch ? ` · «${activeSearch}» için tüm veritabanında arama` : ""}
         </p>
       </div>
 

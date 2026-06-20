@@ -16,6 +16,7 @@ import { db, isFirebaseClientConfigured } from "@/lib/firebase";
 import type { JobListingFirestoreWrite } from "@/types/jobDraft";
 import type { JobListing } from "@/types/job";
 import { mapJobListingFromFirestore } from "@/lib/firestore/mapJobDoc";
+import { buildJobSearchTokens } from "@/lib/utils/jobSearch";
 
 const BROWSE_PAGE_SIZE = 60;
 const DEFAULT_PAGE_SIZE = 24;
@@ -31,6 +32,7 @@ export type JobPageResult = {
 export async function createJobListingDoc(data: JobListingFirestoreWrite) {
   return addDoc(collection(db, "job_listings"), {
     ...data,
+    searchTokens: buildJobSearchTokens(data),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

@@ -17,6 +17,7 @@ import type { MarketplaceListingRecord } from "@/types/marketplaceListing";
 import type { MarketplaceProfile } from "@/types/marketplace";
 import { mapMarketplaceDocToProfile } from "@/lib/firestore/mapMarketplaceDoc";
 import { sparePartFirms, technicalServiceProfiles } from "@/lib/mocks/marketplace";
+import { buildMarketplaceSearchTokens } from "@/lib/utils/marketplaceSearch";
 
 const BROWSE_PAGE_SIZE = 60;
 const DEFAULT_PAGE_SIZE = 24;
@@ -73,6 +74,7 @@ export async function getPublishedSparePartProfilesPage(
 export async function createTechnicalServiceListingDoc(data: MarketplaceListingRecord) {
   return addDoc(collection(db, "technical_service_listings"), {
     ...data,
+    searchTokens: buildMarketplaceSearchTokens(data),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });
@@ -81,6 +83,7 @@ export async function createTechnicalServiceListingDoc(data: MarketplaceListingR
 export async function createSparePartListingDoc(data: MarketplaceListingRecord) {
   return addDoc(collection(db, "spare_part_listings"), {
     ...data,
+    searchTokens: buildMarketplaceSearchTokens(data),
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   });

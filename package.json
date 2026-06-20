@@ -21,7 +21,8 @@
     "firebase:deploy:functions": "firebase deploy --only functions",
     "ops:migrate-ownerid": "node scripts/migrate-ownerid.mjs",
     "ops:grant-admin": "node scripts/grant-admin-claims.mjs",
-    "ops:backfill-ad-search-tokens": "node scripts/backfill-ad-search-tokens.mjs"
+    "ops:backfill-search-tokens": "node scripts/backfill-ad-search-tokens.mjs",
+    "ops:backfill-ad-search-tokens": "npm run ops:backfill-search-tokens"
   },
   "dependencies": {
     "next": "latest",
