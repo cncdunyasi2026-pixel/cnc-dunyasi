@@ -4,7 +4,9 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AdDetailContent from "@/components/ad/AdDetailContent";
+import LocationSelectFields from "@/components/ui/LocationSelectFields";
 import { useAuth } from "@/hooks/useAuth";
+import type { LocationSelection } from "@/lib/locations/types";
 import { getAdById, submitAdUpdateForReview } from "@/services/adService";
 import { getPendingCopyForAd } from "@/lib/firestore/ads";
 import { uploadUserImagesWithPaths } from "@/services/storageUpload";
@@ -19,13 +21,17 @@ type EditableField =
   | "price"
   | "city"
   | "district"
+  | "neighborhood"
   | "category"
   | "condition"
   | "trade"
   | "delivery"
   | "userName"
   | "description";
+type EditModalKey = EditableField | "images" | "location";
 type ConfirmAction = { type: "removeKeptImage"; index: number } | { type: "removeNewImage"; index: number };
+
+const LOCATION_FIELDS = new Set(["city", "district", "neighborhood"]);
 
 export default function EditListingPage({ params }: Props) {
   const router = useRouter();
@@ -55,8 +61,13 @@ export default function EditListingPage({ params }: Props) {
     unchangedLabels: string[];
   }>({ open: false, unchangedLabels: [] });
 
-  const [editModal, setEditModal] = useState<{ key: EditableField | "images"; label: string } | null>(null);
+  const [editModal, setEditModal] = useState<{ key: EditModalKey; label: string } | null>(null);
   const [editDraft, setEditDraft] = useState("");
+  const [locationDraft, setLocationDraft] = useState<LocationSelection>({
+    city: "",
+    district: "",
+    neighborhood: "",
+  });
   const [pendingDeleteImageIndex, setPendingDeleteImageIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -67,6 +78,7 @@ export default function EditListingPage({ params }: Props) {
     price: "",
     city: "",
     district: "",
+    neighborhood: "",
     category: "",
     condition: "",
     trade: "",
@@ -122,6 +134,7 @@ export default function EditListingPage({ params }: Props) {
           price: String(ad.price),
           city: ad.city,
           district: ad.district,
+          neighborhood: ad.neighborhood ?? "",
           category: ad.category,
           condition: ad.condition ?? "Ekspertiz Onayli",
           trade: ad.trade ?? "Degerlendirilebilir",
@@ -175,6 +188,7 @@ export default function EditListingPage({ params }: Props) {
       price: ["price", "salary"],
       city: ["city", "location"],
       district: ["district"],
+      neighborhood: ["neighborhood"],
       category: ["category", "expertise", "workModel", "level"],
       condition: ["condition"],
       trade: ["trade"],
@@ -196,6 +210,7 @@ export default function EditListingPage({ params }: Props) {
     price: Number(form.price) || source.price,
     city: form.city,
     district: form.district,
+    neighborhood: form.neighborhood || undefined,
     category: form.category,
     condition: form.condition,
     trade: form.trade,
@@ -212,6 +227,7 @@ export default function EditListingPage({ params }: Props) {
     price: revisionNoteFor("price") ?? "",
     city: revisionNoteFor("city") ?? "",
     district: revisionNoteFor("district") ?? "",
+    neighborhood: revisionNoteFor("neighborhood") ?? "",
     category: revisionNoteFor("category") ?? "",
     condition: revisionNoteFor("condition") ?? "",
     trade: revisionNoteFor("trade") ?? "",
@@ -220,18 +236,45 @@ export default function EditListingPage({ params }: Props) {
     description: revisionNoteFor("description") ?? "",
   };
 
-  const openEditModal = (key: EditableField | "images", label: string) => {
+  const openEditModal = (key: EditModalKey, label: string) => {
     setPendingDeleteImageIndex(null);
     setEditModal({ key, label });
     if (key === "images") {
       setEditDraft("");
       return;
     }
+    if (key === "location") {
+      setLocationDraft({
+        city: form.city,
+        district: form.district,
+        neighborhood: form.neighborhood,
+      });
+      return;
+    }
     setEditDraft(form[key]);
+  };
+
+  const openLocationEditModal = () => {
+    openEditModal("location", "Konum");
   };
 
   const applyInlineEdit = () => {
     if (!editModal || editModal.key === "images") return;
+    if (editModal.key === "location") {
+      if (!locationDraft.city.trim() || !locationDraft.district.trim() || !locationDraft.neighborhood.trim()) {
+        setError("İl, ilçe ve mahalle/köy seçin.");
+        return;
+      }
+      setForm((prev) => ({
+        ...prev,
+        city: locationDraft.city.trim(),
+        district: locationDraft.district.trim(),
+        neighborhood: locationDraft.neighborhood.trim(),
+      }));
+      setEditModal(null);
+      setError(null);
+      return;
+    }
     setForm((prev) => ({ ...prev, [editModal.key]: editDraft.trim() }));
     setEditModal(null);
     setEditDraft("");
@@ -298,6 +341,7 @@ export default function EditListingPage({ params }: Props) {
         price: Math.round(priceNum),
         city: form.city.trim(),
         district: form.district.trim(),
+        neighborhood: form.neighborhood.trim() || undefined,
         category: form.category.trim(),
         condition: form.condition.trim(),
         trade: form.trade.trim(),
@@ -329,6 +373,7 @@ export default function EditListingPage({ params }: Props) {
         { key: "price", label: "Fiyat", revisionKeys: ["price", "salary"] },
         { key: "city", label: "İl", revisionKeys: ["city", "location"] },
         { key: "district", label: "İlçe", revisionKeys: ["district"] },
+        { key: "neighborhood", label: "Mahalle / Köy", revisionKeys: ["neighborhood"] },
         { key: "category", label: "Kategori", revisionKeys: ["category"] },
         { key: "condition", label: "Durum", revisionKeys: ["condition"] },
         { key: "trade", label: "Takas", revisionKeys: ["trade"] },
@@ -364,13 +409,15 @@ export default function EditListingPage({ params }: Props) {
         moderation={{
           rejectNotes: {},
           onEditField: (field) => {
-            const map: Record<string, { key: EditableField | "images"; label: string }> = {
+            if (LOCATION_FIELDS.has(field.key)) {
+              openLocationEditModal();
+              return;
+            }
+            const map: Record<string, { key: EditModalKey; label: string }> = {
               title: { key: "title", label: "Baslik" },
               brand: { key: "brand", label: "Marka" },
               model: { key: "model", label: "Model" },
               price: { key: "price", label: "Fiyat" },
-              city: { key: "city", label: "Il" },
-              district: { key: "district", label: "Ilce" },
               category: { key: "category", label: "Kategori" },
               condition: { key: "condition", label: "Durum" },
               trade: { key: "trade", label: "Takas" },
@@ -405,7 +452,11 @@ export default function EditListingPage({ params }: Props) {
 
       {editModal ? (
         <div className="fixed inset-0 z-50 grid place-items-center bg-black/40 px-4">
-          <div className="w-full max-w-md rounded-2xl bg-white p-5 shadow-2xl">
+          <div
+            className={`w-full rounded-2xl bg-white p-5 shadow-2xl ${
+              editModal.key === "location" ? "max-w-lg" : "max-w-md"
+            }`}
+          >
             <h3 className="text-lg font-extrabold text-[#0F2A4A]">{editModal.label} düzenle</h3>
             {editModal.key === "images" ? (
               <>
@@ -472,6 +523,15 @@ export default function EditListingPage({ params }: Props) {
                   Bilgisayardan görsel ekle
                 </button>
               </>
+            ) : editModal.key === "location" ? (
+              <div className="mt-3">
+                <LocationSelectFields
+                  value={locationDraft}
+                  onChange={setLocationDraft}
+                  inputClass="h-10 w-full rounded-lg border border-[#d3dcea] bg-white px-3 text-sm text-[#0F2A4A] outline-none transition focus:border-[#0F2A4A] focus:ring-2 focus:ring-[#0F2A4A]/15"
+                  labelClass="mb-1 block text-xs font-semibold text-[#61748f]"
+                />
+              </div>
             ) : editModal.key === "description" ? (
               <textarea
                 className="mt-3 min-h-[120px] w-full rounded-lg border border-[#d3dcea] px-3 py-2 text-sm"

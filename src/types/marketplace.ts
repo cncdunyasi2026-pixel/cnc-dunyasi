@@ -5,6 +5,7 @@ export type MarketplaceProfile = {
   title: string;
   city: string;
   district: string;
+  neighborhood?: string;
   category: string;
   phone: string;
   yearLabel: string;

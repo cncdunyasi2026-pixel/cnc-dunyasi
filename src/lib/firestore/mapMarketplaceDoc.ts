@@ -9,6 +9,7 @@ export function mapMarketplaceDocToProfile(id: string, data: Record<string, unkn
     title: String(data.title ?? ""),
     city: String(data.city ?? ""),
     district: String(data.district ?? ""),
+    ...(data.neighborhood ? { neighborhood: String(data.neighborhood) } : {}),
     category: String(data.category ?? ""),
     phone: String(data.phone ?? ""),
     yearLabel: String(data.yearLabel ?? ""),

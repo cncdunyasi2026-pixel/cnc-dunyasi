@@ -12,7 +12,8 @@ import { DEFAULT_AD_DESCRIPTION } from "@/lib/constants/adDescription";
 import { getBrandsWithModels, type BrandWithModels } from "@/services/brandModelService";
 import { getCategories } from "@/services/categoryService";
 import { CURRENCY_OPTIONS, formatPriceInput } from "@/lib/utils/format";
-import type { Currency } from "@/types/ad";
+import LocationSelectFields from "@/components/ui/LocationSelectFields";
+import type { LocationSelection } from "@/lib/locations/types";
 
 const inputClass =
   "h-11 w-full rounded-xl border border-[#d3dcea] bg-white px-3 text-sm text-[#0F2A4A] outline-none transition focus:border-[#0F2A4A] focus:ring-2 focus:ring-[#0F2A4A]/15";
@@ -35,8 +36,11 @@ function IkinciElForm() {
   const [sellerType, setSellerType] = useState("Satıcıdan");
   const [trade, setTrade] = useState("Değerlendirilebilir");
   const [delivery, setDelivery] = useState("Hazır");
-  const [city, setCity] = useState("");
-  const [district, setDistrict] = useState("");
+  const [location, setLocation] = useState<LocationSelection>({
+    city: "",
+    district: "",
+    neighborhood: "",
+  });
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState<File[]>([]);
   const [labelMissing, setLabelMissing] = useState(false);
@@ -86,8 +90,8 @@ function IkinciElForm() {
       return;
     }
 
-    if (!city.trim() || !district.trim()) {
-      setError("İl ve ilçe girin.");
+    if (!location.city.trim() || !location.district.trim() || !location.neighborhood.trim()) {
+      setError("İl, ilçe ve mahalle/köy seçin.");
       return;
     }
 
@@ -106,8 +110,9 @@ function IkinciElForm() {
         model: model.trim(),
         price: Math.round(priceNum),
         currency,
-        city: city.trim(),
-        district: district.trim(),
+        city: location.city.trim(),
+        district: location.district.trim(),
+        neighborhood: location.neighborhood.trim(),
         category,
         condition,
         ...(year.trim() && Number(year) > 0 ? { year: Number(year) } : {}),
@@ -343,34 +348,7 @@ function IkinciElForm() {
         </div>
       </div>
 
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label htmlFor="ad-city" className={labelClass}>
-            İl
-          </label>
-          <input
-            id="ad-city"
-            className={inputClass}
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="İstanbul"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="ad-district" className={labelClass}>
-            İlçe
-          </label>
-          <input
-            id="ad-district"
-            className={inputClass}
-            value={district}
-            onChange={(e) => setDistrict(e.target.value)}
-            placeholder="Tuzla"
-            required
-          />
-        </div>
-      </div>
+      <LocationSelectFields value={location} onChange={setLocation} inputClass={inputClass} labelClass={labelClass} />
 
       <div>
         <ImageFilePicker value={files} onChange={setFiles} maxFiles={8} />

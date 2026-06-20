@@ -99,6 +99,9 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
     ...(ad.axisCount ? [{ key: "axisCount", label: "Eksen Sayısı", value: ad.axisCount }] : []),
     { key: "city", label: "İl", value: ad.city, editValue: ad.city },
     { key: "district", label: "İlçe", value: ad.district, editValue: ad.district },
+    ...(ad.neighborhood
+      ? [{ key: "neighborhood", label: "Mahalle / Köy", value: ad.neighborhood, editValue: ad.neighborhood }]
+      : []),
     { key: "condition", label: "Durum", value: conditionValue, editValue: conditionValue },
     ...(ad.sellerType ? [{ key: "sellerType", label: "Kimden", value: ad.sellerType }] : []),
     { key: "trade", label: "Takas", value: tradeValue, editValue: tradeValue },
@@ -222,7 +225,7 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
               </p>
             ) : null}
             <p className="mt-1 text-sm text-[#5f6f86]">
-              {ad.city} / {ad.district}
+              {[ad.city, ad.district, ad.neighborhood].filter(Boolean).join(" / ")}
             </p>
           </div>
 

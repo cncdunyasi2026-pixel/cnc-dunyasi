@@ -55,7 +55,7 @@ function ListingCard({ ad, viewMode }: { ad: Ad; viewMode: "card" | "list" }) {
     : ["/banner_1.jpg", "/banner_1.jpg", "/banner_1.jpg"];
 
   const yearDisplay = ad.year ?? null;
-  const location = [ad.city, ad.district].filter(Boolean).join(" · ");
+  const location = [ad.city, ad.district, ad.neighborhood].filter(Boolean).join(" · ");
 
   return (
     <Link

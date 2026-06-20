@@ -32,6 +32,9 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
     { key: "expertise", label: "Uzmanlik", value: item.expertise, editValue: item.expertise },
     { key: "city", label: "Il", value: item.city, editValue: item.city },
     { key: "district", label: "Ilce", value: item.district, editValue: item.district },
+    ...(item.neighborhood
+      ? [{ key: "neighborhood", label: "Mahalle / Koy", value: item.neighborhood, editValue: item.neighborhood }]
+      : []),
     { key: "yearLabel", label: "Deneyim", value: item.yearLabel },
     { key: "phone", label: "Telefon", value: item.phone, editValue: item.phone },
   ];
@@ -127,7 +130,7 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
               <ActionButtons fieldKey="title" label="Baslik" editValue={item.title} moderation={moderation} />
             </div>
             <p className="mt-1 text-sm text-[#5f6f86]">
-              {item.city} / {item.district}
+              {[item.city, item.district, item.neighborhood].filter(Boolean).join(" / ")}
             </p>
           </div>
 

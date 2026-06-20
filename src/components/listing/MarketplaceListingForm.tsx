@@ -9,7 +9,8 @@ import type { MarketplaceListingRecord } from "@/types/marketplaceListing";
 import { useAuth } from "@/hooks/useAuth";
 import { serviceTypeService, sparePartCategoryService, sparePartBrandService } from "@/services/siteDataService";
 import { getBrands } from "@/services/brandModelService";
-import type { Brand } from "@/services/brandModelService";
+import LocationSelectFields from "@/components/ui/LocationSelectFields";
+import type { LocationSelection } from "@/lib/locations/types";
 
 type MarketplaceListingFormProps = {
   category: string;
@@ -31,8 +32,11 @@ export default function MarketplaceListingForm({
   const { user } = useAuth();
   const [name, setName] = useState("");
   const [title, setTitle] = useState("");
-  const [city, setCity] = useState("");
-  const [district, setDistrict] = useState("");
+  const [location, setLocation] = useState<LocationSelection>({
+    city: "",
+    district: "",
+    neighborhood: "",
+  });
   const [phone, setPhone] = useState("");
   const [yearLabel, setYearLabel] = useState("");
   const [expertise, setExpertise] = useState("");
@@ -91,8 +95,8 @@ export default function MarketplaceListingForm({
       setError("Firma adı ve tanıtım başlığı zorunludur.");
       return;
     }
-    if (!city.trim() || !district.trim()) {
-      setError("İl ve ilçe girin.");
+    if (!location.city.trim() || !location.district.trim() || !location.neighborhood.trim()) {
+      setError("İl, ilçe ve mahalle/köy seçin.");
       return;
     }
     if (!phone.trim()) {
@@ -120,8 +124,9 @@ export default function MarketplaceListingForm({
         slug,
         name: name.trim(),
         title: title.trim(),
-        city: city.trim(),
-        district: district.trim(),
+        city: location.city.trim(),
+        district: location.district.trim(),
+        neighborhood: location.neighborhood.trim(),
         category,
         phone: phone.trim(),
         yearLabel: yearLabel.trim(),
@@ -181,34 +186,7 @@ export default function MarketplaceListingForm({
           required
         />
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
-        <div>
-          <label htmlFor="ml-city" className={labelClass}>
-            İl
-          </label>
-          <input
-            id="ml-city"
-            className={inputClass}
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
-            placeholder="İstanbul"
-            required
-          />
-        </div>
-        <div>
-          <label htmlFor="ml-district" className={labelClass}>
-            İlçe
-          </label>
-          <input
-            id="ml-district"
-            className={inputClass}
-            value={district}
-            onChange={(e) => setDistrict(e.target.value)}
-            placeholder="Tuzla"
-            required
-          />
-        </div>
-      </div>
+      <LocationSelectFields value={location} onChange={setLocation} inputClass={inputClass} labelClass={labelClass} />
       <div>
         <label htmlFor="ml-phone" className={labelClass}>
           Telefon

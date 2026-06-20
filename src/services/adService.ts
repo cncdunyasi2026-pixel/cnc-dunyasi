@@ -99,6 +99,7 @@ export async function submitAdUpdateForReview(
     | "currency"
     | "city"
     | "district"
+    | "neighborhood"
     | "category"
     | "condition"
     | "year"

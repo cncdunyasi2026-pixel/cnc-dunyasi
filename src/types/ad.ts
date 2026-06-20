@@ -12,6 +12,8 @@ export type Ad = {
   currency?: Currency;
   city: string;
   district: string;
+  /** Mahalle veya köy adı */
+  neighborhood?: string;
   category: string;
   condition?: string;
   /** Model yılı, ör: 2018 */
