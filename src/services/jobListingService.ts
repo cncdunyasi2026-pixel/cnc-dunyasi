@@ -46,3 +46,39 @@ export async function submitJobListing(data: JobListingFirestoreWrite) {
 
   return createJobListingDoc(data);
 }
+
+export async function getRelatedJobListings(
+  current: Pick<JobListing, "id" | "slug" | "title" | "position" | "workModel">,
+  limit = 4,
+): Promise<JobListing[]> {
+  const { items } = await loadPublishedJobListingsPage({ pageSize: Math.max(limit + 8, 24) });
+
+  const pool = items.filter(
+    (item) => item.id !== current.id && item.slug !== current.slug,
+  );
+
+  if (pool.length === 0) {
+    return [];
+  }
+
+  const matchers: Array<(item: JobListing) => boolean> = [];
+
+  if (current.position) {
+    matchers.push((item) => item.position === current.position);
+  }
+  if (current.title) {
+    matchers.push((item) => item.title === current.title);
+  }
+  if (current.workModel) {
+    matchers.push((item) => item.workModel === current.workModel);
+  }
+
+  for (const match of matchers) {
+    const matched = pool.filter(match);
+    if (matched.length > 0) {
+      return matched.slice(0, limit);
+    }
+  }
+
+  return pool.slice(0, limit);
+}

@@ -59,3 +59,52 @@ export async function loadSparePartBrowseProfiles(): Promise<MarketplaceProfile[
   const { items } = await loadSparePartBrowseProfilesPage({ pageSize: 60 });
   return items;
 }
+
+export async function getRelatedMarketplaceProfiles(
+  variant: "technical" | "spare",
+  current: Pick<
+    MarketplaceProfile,
+    "id" | "slug" | "category" | "partCategory" | "serviceType" | "expertiseBrand" | "brandCompat"
+  >,
+  limit = 4,
+): Promise<MarketplaceProfile[]> {
+  const loadPage =
+    variant === "technical" ? loadTechnicalBrowseProfilesPage : loadSparePartBrowseProfilesPage;
+
+  const { items: published } = await loadPage({ pageSize: Math.max(limit + 8, 24) });
+
+  const pool = published.filter(
+    (item) => item.id !== current.id && item.slug !== current.slug,
+  );
+
+  if (pool.length === 0) {
+    return [];
+  }
+
+  const matchers: Array<(item: MarketplaceProfile) => boolean> = [];
+
+  if (variant === "spare" && current.partCategory) {
+    matchers.push((item) => item.partCategory === current.partCategory);
+  }
+  if (variant === "spare" && current.brandCompat) {
+    matchers.push((item) => item.brandCompat === current.brandCompat);
+  }
+  if (variant === "technical" && current.serviceType) {
+    matchers.push((item) => item.serviceType === current.serviceType);
+  }
+  if (variant === "technical" && current.expertiseBrand) {
+    matchers.push((item) => item.expertiseBrand === current.expertiseBrand);
+  }
+  if (current.category.trim()) {
+    matchers.push((item) => item.category === current.category);
+  }
+
+  for (const match of matchers) {
+    const matched = pool.filter(match);
+    if (matched.length > 0) {
+      return matched.slice(0, limit);
+    }
+  }
+
+  return pool.slice(0, limit);
+}

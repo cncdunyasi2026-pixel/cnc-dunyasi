@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import JobDetailContent from "@/components/jobs/JobDetailContent";
+import RelatedJobsSection from "@/components/jobs/RelatedJobsSection";
 import { getJobListingBySlugClient } from "@/lib/firestore/jobListings";
 import type { JobListing } from "@/types/job";
 
@@ -52,5 +53,10 @@ export default function JobDetailLoader({ slug, publishedJob, legacyJob }: Props
     );
   }
 
-  return <JobDetailContent job={job} />;
+  return (
+    <>
+      <JobDetailContent job={job} />
+      <RelatedJobsSection current={job} />
+    </>
+  );
 }

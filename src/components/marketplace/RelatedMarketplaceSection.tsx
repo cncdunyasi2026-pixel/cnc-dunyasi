@@ -2,13 +2,12 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { getRelatedMarketplaceProfiles } from "@/lib/firestore/marketplaceListings";
+import { getRelatedMarketplaceProfiles } from "@/services/marketplaceBrowseService";
 import type { MarketplaceProfile } from "@/types/marketplace";
 
 type Props = {
   variant: "technical" | "spare";
-  itemId: string;
-  category: string;
+  current: MarketplaceProfile;
   listPath: string;
 };
 
@@ -43,7 +42,7 @@ function RelatedMarketplaceCard({ item, basePath }: { item: MarketplaceProfile; 
   );
 }
 
-export default function RelatedMarketplaceSection({ variant, itemId, category, listPath }: Props) {
+export default function RelatedMarketplaceSection({ variant, current, listPath }: Props) {
   const [items, setItems] = useState<MarketplaceProfile[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,9 +50,12 @@ export default function RelatedMarketplaceSection({ variant, itemId, category, l
     let cancelled = false;
     setLoading(true);
 
-    void getRelatedMarketplaceProfiles(variant, itemId, category, 4)
+    void getRelatedMarketplaceProfiles(variant, current, 4)
       .then((results) => {
         if (!cancelled) setItems(results);
+      })
+      .catch(() => {
+        if (!cancelled) setItems([]);
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -62,16 +64,21 @@ export default function RelatedMarketplaceSection({ variant, itemId, category, l
     return () => {
       cancelled = true;
     };
-  }, [variant, itemId, category]);
+  }, [variant, current.id, current.slug, current.category, current.partCategory, current.serviceType]);
 
   if (!loading && items.length === 0) return null;
+
+  const categoryLabel =
+    variant === "spare"
+      ? current.partCategory ?? current.category
+      : current.serviceType ?? current.category;
 
   return (
     <section className="mx-auto w-full max-w-7xl border-t border-[#e8edf3] px-4 pb-8 pt-8">
       <div className="mb-4 flex flex-wrap items-end justify-between gap-2">
         <div>
           <h2 className="text-lg font-extrabold text-[#0F2A4A] sm:text-xl">Aynı kategoriden diğer ilanlar</h2>
-          {category ? <p className="mt-1 text-sm text-[#7A8CA5]">{category}</p> : null}
+          {categoryLabel ? <p className="mt-1 text-sm text-[#7A8CA5]">{categoryLabel}</p> : null}
         </div>
         <Link href={listPath} className="text-sm font-semibold text-[#F26A1B] transition hover:underline">
           Tümünü gör

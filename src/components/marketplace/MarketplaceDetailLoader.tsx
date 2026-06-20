@@ -74,8 +74,7 @@ export default function MarketplaceDetailLoader({
       <MarketplaceDetailContent item={item} listPath={listPath} />
       <RelatedMarketplaceSection
         variant={variant}
-        itemId={item.id}
-        category={item.category}
+        current={item}
         listPath={listPath}
       />
     </>
