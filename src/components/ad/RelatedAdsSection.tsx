@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { getRelatedAds } from "@/services/adService";
 import { formatPrice } from "@/lib/utils/format";
+import { formatPowerKw, formatTableSizeMm } from "@/lib/constants/listingOptions";
 import type { Ad } from "@/types/ad";
 
 type Props = {
@@ -14,6 +15,8 @@ type Props = {
 function RelatedAdCard({ ad }: { ad: Ad }) {
   const image = ad.images?.[0] ?? "/banner_1.jpg";
   const location = [ad.city, ad.district].filter(Boolean).join(" · ");
+  const powerDisplay = formatPowerKw(ad.powerKw);
+  const tableSizeDisplay = formatTableSizeMm(ad.tableWidthMm, ad.tableLengthMm);
 
   return (
     <Link
@@ -31,6 +34,8 @@ function RelatedAdCard({ ad }: { ad: Ad }) {
         </h3>
         <div className="mt-1 flex flex-wrap gap-x-2 text-xs font-semibold text-[#1f334e]">
           {ad.year ? <span>{ad.year}</span> : null}
+          {powerDisplay ? <span>{powerDisplay}</span> : null}
+          {tableSizeDisplay ? <span>{tableSizeDisplay}</span> : null}
           {ad.axisCount ? <span>{ad.axisCount}</span> : null}
         </div>
         {location ? (

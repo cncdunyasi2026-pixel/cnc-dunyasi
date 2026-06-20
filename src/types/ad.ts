@@ -18,8 +18,14 @@ export type Ad = {
   neighborhood?: string;
   category: string;
   condition?: string;
-  /** Model yılı, ör: 2018 */
+  /** Üretim yılı (1990–2045) */
   year?: number;
+  /** Güç (kW) */
+  powerKw?: number;
+  /** Tezgah genişliği (mm) */
+  tableWidthMm?: number;
+  /** Tezgah uzunluğu (mm) */
+  tableLengthMm?: number;
   /** Eksen sayısı, ör: "3 Eksen" */
   axisCount?: string;
   /** Kimden: "Satıcıdan" | "Mağazadan" */

@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import ImageFilePicker from "@/components/listing/ImageFilePicker";
 import VideoFilePicker from "@/components/listing/VideoFilePicker";
 import ListingPublishShell from "@/components/listing/ListingPublishShell";
-import { CNC_MACHINE_CATEGORIES } from "@/lib/constants/listingOptions";
+import { CNC_MACHINE_CATEGORIES, PRODUCTION_YEARS } from "@/lib/constants/listingOptions";
 import { useAuth } from "@/hooks/useAuth";
 import { createAd } from "@/services/adService";
 import { uploadUserImagesWithPaths, uploadUserVideoWithPath } from "@/services/storageUpload";
@@ -21,6 +21,7 @@ const inputClass =
   "h-11 w-full rounded-xl border border-[#d3dcea] bg-white px-3 text-sm text-[#0F2A4A] outline-none transition focus:border-[#0F2A4A] focus:ring-2 focus:ring-[#0F2A4A]/15";
 
 const labelClass = "mb-1 block text-xs font-semibold text-[#61748f]";
+const DEFAULT_PRODUCTION_YEAR = String(new Date().getFullYear());
 
 function IkinciElForm() {
   const router = useRouter();
@@ -33,7 +34,10 @@ function IkinciElForm() {
   const [categories, setCategories] = useState<string[]>([...CNC_MACHINE_CATEGORIES]);
   const [category, setCategory] = useState<string>(CNC_MACHINE_CATEGORIES[0]);
   const [condition, setCondition] = useState("İkinci El");
-  const [year, setYear] = useState("");
+  const [year, setYear] = useState(DEFAULT_PRODUCTION_YEAR);
+  const [powerKw, setPowerKw] = useState("");
+  const [tableWidthMm, setTableWidthMm] = useState("");
+  const [tableLengthMm, setTableLengthMm] = useState("");
   const [axisCount, setAxisCount] = useState("");
   const [sellerType, setSellerType] = useState("Satıcıdan");
   const [trade, setTrade] = useState("Değerlendirilebilir");
@@ -103,6 +107,27 @@ function IkinciElForm() {
       return;
     }
 
+    const parsedPower = powerKw.trim() ? Number(powerKw) : NaN;
+    if (powerKw.trim() && (!Number.isFinite(parsedPower) || parsedPower < 0)) {
+      setError("Geçerli bir güç değeri girin (kW).");
+      return;
+    }
+
+    const parsedWidth = tableWidthMm.trim() ? Number(tableWidthMm) : NaN;
+    const parsedLength = tableLengthMm.trim() ? Number(tableLengthMm) : NaN;
+    const hasTableWidth = tableWidthMm.trim().length > 0;
+    const hasTableLength = tableLengthMm.trim().length > 0;
+
+    if (hasTableWidth !== hasTableLength) {
+      setError("Tezgah boyutu için genişlik ve uzunluğu birlikte girin.");
+      return;
+    }
+
+    if (hasTableWidth && (!Number.isFinite(parsedWidth) || parsedWidth <= 0 || !Number.isFinite(parsedLength) || parsedLength <= 0)) {
+      setError("Tezgah boyutu için geçerli genişlik ve uzunluk girin (mm).");
+      return;
+    }
+
     setLoading(true);
     try {
       const now = Date.now();
@@ -121,7 +146,11 @@ function IkinciElForm() {
         neighborhood: location.neighborhood.trim(),
         category,
         condition,
-        ...(year.trim() && Number(year) > 0 ? { year: Number(year) } : {}),
+        ...(year ? { year: Number(year) } : {}),
+        ...(powerKw.trim() && Number.isFinite(parsedPower) ? { powerKw: Math.round(parsedPower) } : {}),
+        ...(hasTableWidth && hasTableLength
+          ? { tableWidthMm: Math.round(parsedWidth), tableLengthMm: Math.round(parsedLength) }
+          : {}),
         axisCount: axisCount || undefined,
         sellerType,
         trade,
@@ -293,7 +322,7 @@ function IkinciElForm() {
         </div>
       </div>
 
-      {/* ── Durum · Model Yılı ── */}
+      {/* ── Durum · Üretim Yılı ── */}
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="ad-condition" className={labelClass}>Durum</label>
@@ -303,22 +332,39 @@ function IkinciElForm() {
           </select>
         </div>
         <div>
-          <label htmlFor="ad-year" className={labelClass}>Model Yılı</label>
-          <input
+          <label htmlFor="ad-year" className={labelClass}>Üretim Yılı</label>
+          <select
             id="ad-year"
-            type="number"
-            min={1950}
-            max={new Date().getFullYear() + 1}
             className={inputClass}
             value={year}
             onChange={(e) => setYear(e.target.value)}
-            placeholder="Örn. 2018"
-          />
+          >
+            <option value="">Seçin</option>
+            {PRODUCTION_YEARS.map((value) => (
+              <option key={value} value={value}>
+                {value}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 
-      {/* ── Eksen · Kimden ── */}
+      {/* ── Güç · Eksen ── */}
       <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label htmlFor="ad-power" className={labelClass}>Güç (kW)</label>
+          <input
+            id="ad-power"
+            type="number"
+            min={0}
+            step={1}
+            className={inputClass}
+            value={powerKw}
+            onChange={(e) => setPowerKw(e.target.value)}
+            placeholder="Örn. 15"
+          />
+          <p className="mt-1 text-[11px] text-[#7A8CA5]">0–100 kW veya 100 üzeri değer girebilirsiniz.</p>
+        </div>
         <div>
           <label htmlFor="ad-axis" className={labelClass}>Eksen Sayısı</label>
           <select id="ad-axis" className={inputClass} value={axisCount} onChange={(e) => setAxisCount(e.target.value)}>
@@ -330,6 +376,41 @@ function IkinciElForm() {
             <option>6+ Eksen</option>
           </select>
         </div>
+      </div>
+
+      {/* ── Tezgah Boyutu ── */}
+      <div>
+        <label className={labelClass}>Tezgah Boyutu (mm)</label>
+        <div className="flex items-center gap-2">
+          <input
+            id="ad-table-width"
+            type="number"
+            min={1}
+            step={1}
+            className={inputClass}
+            value={tableWidthMm}
+            onChange={(e) => setTableWidthMm(e.target.value)}
+            placeholder="Genişlik"
+            aria-label="Tezgah genişliği (mm)"
+          />
+          <span className="text-sm font-semibold text-[#7A8CA5]">x</span>
+          <input
+            id="ad-table-length"
+            type="number"
+            min={1}
+            step={1}
+            className={inputClass}
+            value={tableLengthMm}
+            onChange={(e) => setTableLengthMm(e.target.value)}
+            placeholder="Uzunluk"
+            aria-label="Tezgah uzunluğu (mm)"
+          />
+        </div>
+        <p className="mt-1 text-[11px] text-[#7A8CA5]">Örn. 2500 x 6000 mm</p>
+      </div>
+
+      {/* ── Kimden · Takas ── */}
+      <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="ad-seller" className={labelClass}>Kimden</label>
           <select id="ad-seller" className={inputClass} value={sellerType} onChange={(e) => setSellerType(e.target.value)}>
@@ -337,10 +418,6 @@ function IkinciElForm() {
             <option>Mağazadan</option>
           </select>
         </div>
-      </div>
-
-      {/* ── Takas · Teslimat ── */}
-      <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="ad-trade" className={labelClass}>Takas</label>
           <select id="ad-trade" className={inputClass} value={trade} onChange={(e) => setTrade(e.target.value)}>
@@ -348,6 +425,10 @@ function IkinciElForm() {
             <option>Yok</option>
           </select>
         </div>
+      </div>
+
+      {/* ── Teslimat ── */}
+      <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label htmlFor="ad-delivery" className={labelClass}>Teslimat</label>
           <select id="ad-delivery" className={inputClass} value={delivery} onChange={(e) => setDelivery(e.target.value)}>

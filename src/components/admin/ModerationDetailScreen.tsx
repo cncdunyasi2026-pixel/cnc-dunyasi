@@ -12,6 +12,7 @@ import { db } from "@/lib/firebase";
 import { mapAdSnapshotToAd } from "@/lib/firestore/mapAdDoc";
 import { mapJobListingFromFirestore } from "@/lib/firestore/mapJobDoc";
 import { mapMarketplaceDocToProfile } from "@/lib/firestore/mapMarketplaceDoc";
+import { parseTableSizeInput } from "@/lib/constants/listingOptions";
 import { uploadUserImagesWithPaths } from "@/services/storageUpload";
 
 type ListingCollection = "ads" | "technical_service_listings" | "spare_part_listings" | "job_listings";
@@ -262,6 +263,55 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
             : prev,
         );
         await writeAudit("edit_field", `images: ${imageEditUrls.length} adet`);
+      } else if (editModal.key === "tableSize") {
+        const parsed = parseTableSizeInput(String(nextValue));
+        if (!parsed) {
+          setError("Tezgah boyutunu 2500x6000 formatinda gir.");
+          setSaving(false);
+          return;
+        }
+        await updateDoc(doc(db, collectionName, listingId), {
+          tableWidthMm: parsed.tableWidthMm,
+          tableLengthMm: parsed.tableLengthMm,
+          updatedAt: serverTimestamp(),
+        });
+        setData((prev) =>
+          prev
+            ? {
+                ...prev,
+                tableWidthMm: parsed.tableWidthMm,
+                tableLengthMm: parsed.tableLengthMm,
+              }
+            : prev,
+        );
+        await writeAudit(
+          "edit_field",
+          `tableSize: ${parsed.tableWidthMm}x${parsed.tableLengthMm}`,
+        );
+      } else if (editModal.key === "powerKw" || editModal.key === "year") {
+        const raw = String(nextValue).trim();
+        if (!raw) {
+          await updateDoc(doc(db, collectionName, listingId), {
+            [editModal.key]: null,
+            updatedAt: serverTimestamp(),
+          });
+          setData((prev) => (prev ? { ...prev, [editModal.key]: null } : prev));
+          await writeAudit("edit_field", `${editModal.key}: cleared`);
+        } else {
+          const num = Number(raw);
+          if (!Number.isFinite(num)) {
+            setError("Sayisal alan icin gecerli bir deger gir.");
+            setSaving(false);
+            return;
+          }
+          const stored = editModal.key === "year" ? num : Math.round(num);
+          await updateDoc(doc(db, collectionName, listingId), {
+            [editModal.key]: stored,
+            updatedAt: serverTimestamp(),
+          });
+          setData((prev) => (prev ? { ...prev, [editModal.key]: stored } : prev));
+          await writeAudit("edit_field", `${editModal.key}: ${stored}`);
+        }
       } else {
         await updateDoc(doc(db, collectionName, listingId), {
           [editModal.key]: nextValue,

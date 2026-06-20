@@ -71,6 +71,9 @@ export function mapAdSnapshotToAd(id: string, data: Record<string, unknown>): Ad
       ? { paymentDueAt: coerceFirestoreMillis(data.paymentDueAt) }
       : {}),
     ...(typeof data.year === "number" ? { year: data.year } : {}),
+    ...(typeof data.powerKw === "number" ? { powerKw: data.powerKw } : {}),
+    ...(typeof data.tableWidthMm === "number" ? { tableWidthMm: data.tableWidthMm } : {}),
+    ...(typeof data.tableLengthMm === "number" ? { tableLengthMm: data.tableLengthMm } : {}),
     ...(typeof data.axisCount === "string" && data.axisCount ? { axisCount: data.axisCount } : {}),
     ...(typeof data.sellerType === "string" && data.sellerType ? { sellerType: data.sellerType } : {}),
     ...(typeof data.trade    === "string" && data.trade    ? { trade:    data.trade }    : {}),

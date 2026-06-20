@@ -11,6 +11,7 @@ import { getAdById, submitAdUpdateForReview } from "@/services/adService";
 import { getPendingCopyForAd } from "@/lib/firestore/ads";
 import { uploadUserImagesWithPaths } from "@/services/storageUpload";
 import { DEFAULT_AD_DESCRIPTION } from "@/lib/constants/adDescription";
+import { PRODUCTION_YEARS, parseTableSizeInput } from "@/lib/constants/listingOptions";
 import type { Ad } from "@/types/ad";
 
 type Props = { params: Promise<{ id: string }> };
@@ -24,6 +25,11 @@ type EditableField =
   | "neighborhood"
   | "category"
   | "condition"
+  | "year"
+  | "powerKw"
+  | "tableSize"
+  | "axisCount"
+  | "sellerType"
   | "trade"
   | "delivery"
   | "userName"
@@ -81,6 +87,11 @@ export default function EditListingPage({ params }: Props) {
     neighborhood: "",
     category: "",
     condition: "",
+    year: "",
+    powerKw: "",
+    tableSize: "",
+    axisCount: "",
+    sellerType: "",
     trade: "",
     delivery: "",
     userName: "",
@@ -137,6 +148,12 @@ export default function EditListingPage({ params }: Props) {
           neighborhood: ad.neighborhood ?? "",
           category: ad.category,
           condition: ad.condition ?? "Ekspertiz Onayli",
+          year: ad.year != null ? String(ad.year) : "",
+          powerKw: ad.powerKw != null ? String(ad.powerKw) : "",
+          tableSize:
+            ad.tableWidthMm && ad.tableLengthMm ? `${ad.tableWidthMm}x${ad.tableLengthMm}` : "",
+          axisCount: ad.axisCount ?? "",
+          sellerType: ad.sellerType ?? "",
           trade: ad.trade ?? "Degerlendirilebilir",
           delivery: ad.delivery ?? "Hazir",
           userName: ad.userName,
@@ -191,6 +208,11 @@ export default function EditListingPage({ params }: Props) {
       neighborhood: ["neighborhood"],
       category: ["category", "expertise", "workModel", "level"],
       condition: ["condition"],
+      year: ["year"],
+      powerKw: ["powerKw"],
+      tableSize: ["tableSize", "tableWidthMm", "tableLengthMm"],
+      axisCount: ["axisCount"],
+      sellerType: ["sellerType"],
       trade: ["trade"],
       delivery: ["delivery"],
       userName: ["userName"],
@@ -201,6 +223,8 @@ export default function EditListingPage({ params }: Props) {
       .filter((value): value is string => Boolean(value?.trim()));
     return notes.length > 0 ? notes.join(" | ") : undefined;
   };
+
+  const parsedTableSize = parseTableSizeInput(form.tableSize);
 
   const previewAd: Ad = {
     ...source,
@@ -213,6 +237,13 @@ export default function EditListingPage({ params }: Props) {
     neighborhood: form.neighborhood || undefined,
     category: form.category,
     condition: form.condition,
+    ...(form.year ? { year: Number(form.year) } : {}),
+    ...(form.powerKw.trim() && Number.isFinite(Number(form.powerKw))
+      ? { powerKw: Math.round(Number(form.powerKw)) }
+      : {}),
+    ...(parsedTableSize ?? {}),
+    axisCount: form.axisCount || undefined,
+    sellerType: form.sellerType || undefined,
     trade: form.trade,
     delivery: form.delivery,
     userName: form.userName,
@@ -230,6 +261,11 @@ export default function EditListingPage({ params }: Props) {
     neighborhood: revisionNoteFor("neighborhood") ?? "",
     category: revisionNoteFor("category") ?? "",
     condition: revisionNoteFor("condition") ?? "",
+    year: revisionNoteFor("year") ?? "",
+    powerKw: revisionNoteFor("powerKw") ?? "",
+    tableSize: revisionNoteFor("tableSize") ?? revisionNoteFor("tableWidthMm") ?? "",
+    axisCount: revisionNoteFor("axisCount") ?? "",
+    sellerType: revisionNoteFor("sellerType") ?? "",
     trade: revisionNoteFor("trade") ?? "",
     delivery: revisionNoteFor("delivery") ?? "",
     userName: revisionNoteFor("userName") ?? "",
@@ -275,9 +311,18 @@ export default function EditListingPage({ params }: Props) {
       setError(null);
       return;
     }
+    if (editModal.key === "tableSize" && editDraft.trim() && !parseTableSizeInput(editDraft)) {
+      setError("Tezgah boyutunu 2500x6000 formatında girin.");
+      return;
+    }
+    if (editModal.key === "powerKw" && editDraft.trim() && (!Number.isFinite(Number(editDraft)) || Number(editDraft) < 0)) {
+      setError("Geçerli bir güç değeri girin (kW).");
+      return;
+    }
     setForm((prev) => ({ ...prev, [editModal.key]: editDraft.trim() }));
     setEditModal(null);
     setEditDraft("");
+    setError(null);
   };
 
   const askConfirm = (message: string, action: ConfirmAction) => {
@@ -313,8 +358,20 @@ export default function EditListingPage({ params }: Props) {
     formValue: string,
   ): boolean => {
     const hasRevisionNote = revisionKeys.some((k) => revisionFields[k]?.trim());
-    if (!hasRevisionNote) return true; // Admin bu alanı reddetmedi, değişmese de sorun yok
-    const originalValue = String((source as Record<string, unknown>)[fieldKey] ?? "").trim();
+    if (!hasRevisionNote) return true;
+    let originalValue = String((source as Record<string, unknown>)[fieldKey] ?? "").trim();
+    if (fieldKey === "tableSize") {
+      originalValue =
+        source.tableWidthMm && source.tableLengthMm
+          ? `${source.tableWidthMm}x${source.tableLengthMm}`
+          : "";
+    }
+    if (fieldKey === "year" && source.year != null) {
+      originalValue = String(source.year);
+    }
+    if (fieldKey === "powerKw" && source.powerKw != null) {
+      originalValue = String(source.powerKw);
+    }
     return formValue.trim() !== originalValue;
   };
 
@@ -324,6 +381,18 @@ export default function EditListingPage({ params }: Props) {
       setError("Geçerli bir fiyat girin.");
       return;
     }
+
+    if (form.powerKw.trim() && (!Number.isFinite(Number(form.powerKw)) || Number(form.powerKw) < 0)) {
+      setError("Geçerli bir güç değeri girin (kW).");
+      return;
+    }
+
+    if (form.tableSize.trim() && !parseTableSizeInput(form.tableSize)) {
+      setError("Tezgah boyutunu 2500x6000 formatında girin.");
+      return;
+    }
+
+    const tableParsed = parseTableSizeInput(form.tableSize);
     setSaving(true);
     setError(null);
     try {
@@ -344,6 +413,13 @@ export default function EditListingPage({ params }: Props) {
         neighborhood: form.neighborhood.trim() || undefined,
         category: form.category.trim(),
         condition: form.condition.trim(),
+        ...(form.year ? { year: Number(form.year) } : {}),
+        ...(form.powerKw.trim() && Number.isFinite(Number(form.powerKw))
+          ? { powerKw: Math.round(Number(form.powerKw)) }
+          : {}),
+        ...(tableParsed ?? {}),
+        axisCount: form.axisCount.trim() || undefined,
+        sellerType: form.sellerType.trim() || undefined,
         trade: form.trade.trim(),
         delivery: form.delivery.trim(),
         userName: form.userName.trim(),
@@ -376,6 +452,11 @@ export default function EditListingPage({ params }: Props) {
         { key: "neighborhood", label: "Mahalle / Köy", revisionKeys: ["neighborhood"] },
         { key: "category", label: "Kategori", revisionKeys: ["category"] },
         { key: "condition", label: "Durum", revisionKeys: ["condition"] },
+        { key: "year", label: "Üretim Yılı", revisionKeys: ["year"] },
+        { key: "powerKw", label: "Güç", revisionKeys: ["powerKw"] },
+        { key: "tableSize", label: "Tezgah Boyutu", revisionKeys: ["tableSize", "tableWidthMm", "tableLengthMm"] },
+        { key: "axisCount", label: "Eksen Sayısı", revisionKeys: ["axisCount"] },
+        { key: "sellerType", label: "Kimden", revisionKeys: ["sellerType"] },
         { key: "trade", label: "Takas", revisionKeys: ["trade"] },
         { key: "delivery", label: "Teslimat", revisionKeys: ["delivery"] },
         { key: "userName", label: "Satıcı adı", revisionKeys: ["userName"] },
@@ -420,6 +501,11 @@ export default function EditListingPage({ params }: Props) {
               price: { key: "price", label: "Fiyat" },
               category: { key: "category", label: "Kategori" },
               condition: { key: "condition", label: "Durum" },
+              year: { key: "year", label: "Üretim Yılı" },
+              powerKw: { key: "powerKw", label: "Güç" },
+              tableSize: { key: "tableSize", label: "Tezgah Boyutu" },
+              axisCount: { key: "axisCount", label: "Eksen Sayısı" },
+              sellerType: { key: "sellerType", label: "Kimden" },
               trade: { key: "trade", label: "Takas" },
               delivery: { key: "delivery", label: "Teslimat" },
               userName: { key: "userName", label: "Satici" },
@@ -538,6 +624,62 @@ export default function EditListingPage({ params }: Props) {
                 value={editDraft}
                 onChange={(e) => setEditDraft(e.target.value)}
               />
+            ) : editModal.key === "year" ? (
+              <select
+                className="mt-3 h-10 w-full rounded-lg border border-[#d3dcea] px-3 text-sm"
+                value={editDraft}
+                onChange={(e) => setEditDraft(e.target.value)}
+              >
+                <option value="">Seçin</option>
+                {PRODUCTION_YEARS.map((value) => (
+                  <option key={value} value={value}>
+                    {value}
+                  </option>
+                ))}
+              </select>
+            ) : editModal.key === "axisCount" ? (
+              <select
+                className="mt-3 h-10 w-full rounded-lg border border-[#d3dcea] px-3 text-sm"
+                value={editDraft}
+                onChange={(e) => setEditDraft(e.target.value)}
+              >
+                <option value="">Seçin</option>
+                <option>2 Eksen</option>
+                <option>3 Eksen</option>
+                <option>4 Eksen</option>
+                <option>5 Eksen</option>
+                <option>6+ Eksen</option>
+              </select>
+            ) : editModal.key === "sellerType" ? (
+              <select
+                className="mt-3 h-10 w-full rounded-lg border border-[#d3dcea] px-3 text-sm"
+                value={editDraft}
+                onChange={(e) => setEditDraft(e.target.value)}
+              >
+                <option value="">Seçin</option>
+                <option>Satıcıdan</option>
+                <option>Mağazadan</option>
+              </select>
+            ) : editModal.key === "powerKw" ? (
+              <input
+                type="number"
+                min={0}
+                step={1}
+                className="mt-3 h-10 w-full rounded-lg border border-[#d3dcea] px-3 text-sm"
+                value={editDraft}
+                onChange={(e) => setEditDraft(e.target.value)}
+                placeholder="Örn. 15"
+              />
+            ) : editModal.key === "tableSize" ? (
+              <>
+                <input
+                  className="mt-3 h-10 w-full rounded-lg border border-[#d3dcea] px-3 text-sm"
+                  value={editDraft}
+                  onChange={(e) => setEditDraft(e.target.value)}
+                  placeholder="Örn. 2500x6000"
+                />
+                <p className="mt-1 text-[11px] text-[#7A8CA5]">Genişlik x uzunluk (mm)</p>
+              </>
             ) : (
               <input
                 className="mt-3 h-10 w-full rounded-lg border border-[#d3dcea] px-3 text-sm"

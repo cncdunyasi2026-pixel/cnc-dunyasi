@@ -8,6 +8,7 @@ import { useAdSearch } from "@/hooks/useAdSearch";
 import { buildAdServerFilters } from "@/types/adBrowse";
 import type { Ad } from "@/types/ad";
 import { formatPrice } from "@/lib/utils/format";
+import { formatPowerKw, formatTableSizeMm } from "@/lib/constants/listingOptions";
 import FilterSidebar from "@/components/ui/FilterSidebar";
 import type { FilterGroup, RangeFilter } from "@/components/ui/FilterSidebar";
 import PageHeroBanner from "@/components/page/PageHeroBanner";
@@ -31,8 +32,8 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
   { value: "date_asc", label: "En Eski İlan" },
   { value: "price_desc", label: "Fiyat: Yüksekten Düşüğe" },
   { value: "price_asc", label: "Fiyat: Düşükten Yükseğe" },
-  { value: "year_desc", label: "Model Yılı: Yeniden Eskiye" },
-  { value: "year_asc", label: "Model Yılı: Eskiden Yeniye" },
+  { value: "year_desc", label: "Üretim Yılı: Yeniden Eskiye" },
+  { value: "year_asc", label: "Üretim Yılı: Eskiden Yeniye" },
 ];
 
 /* ── Kart bileşeni ──────────────────────────────────────────── */
@@ -45,6 +46,8 @@ function ListingCard({ ad, viewMode }: { ad: Ad; viewMode: "card" | "list" }) {
     : ["/banner_1.jpg", "/banner_1.jpg", "/banner_1.jpg"];
 
   const yearDisplay = ad.year ?? null;
+  const powerDisplay = formatPowerKw(ad.powerKw);
+  const tableSizeDisplay = formatTableSizeMm(ad.tableWidthMm, ad.tableLengthMm);
   const location = [ad.city, ad.district, ad.neighborhood].filter(Boolean).join(" · ");
 
   return (
@@ -77,8 +80,12 @@ function ListingCard({ ad, viewMode }: { ad: Ad; viewMode: "card" | "list" }) {
           </h3>
           <div className="mt-1 flex flex-wrap gap-x-2 gap-y-1 text-xs font-semibold text-[#1f334e] sm:text-sm">
             {yearDisplay && <span>{yearDisplay}</span>}
+            {powerDisplay && <span>{powerDisplay}</span>}
+            {tableSizeDisplay && <span>{tableSizeDisplay}</span>}
             {ad.axisCount && <span>{ad.axisCount}</span>}
-            {!yearDisplay && !ad.axisCount && ad.category && <span>{ad.category}</span>}
+            {!yearDisplay && !powerDisplay && !tableSizeDisplay && !ad.axisCount && ad.category && (
+              <span>{ad.category}</span>
+            )}
           </div>
           <div className="mt-1 flex flex-wrap gap-1.5 text-[10px] text-[#7A8CA5] sm:gap-2 sm:text-xs">
             {location && <span className="rounded-full bg-[#edf1f6] px-2 py-1">{location}</span>}

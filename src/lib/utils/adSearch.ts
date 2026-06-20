@@ -22,6 +22,11 @@ export function getAdSearchableFields(ad: Partial<Ad>): string[] {
     ad.category,
     ad.condition,
     ad.axisCount,
+    ad.year != null ? String(ad.year) : undefined,
+    ad.powerKw != null ? String(ad.powerKw) : undefined,
+    ad.tableWidthMm != null && ad.tableLengthMm != null
+      ? `${ad.tableWidthMm}x${ad.tableLengthMm}`
+      : undefined,
   ].filter((value): value is string => Boolean(value && String(value).trim()));
 }
 

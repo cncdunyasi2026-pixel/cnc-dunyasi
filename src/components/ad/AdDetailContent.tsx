@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import type { Ad } from "@/types/ad";
 import { formatPrice } from "@/lib/utils/format";
 import { DEFAULT_AD_DESCRIPTION } from "@/lib/constants/adDescription";
+import { formatPowerKw, formatTableSizeMm } from "@/lib/constants/listingOptions";
 import { useAuth } from "@/hooks/useAuth";
 import FavoriteButton from "@/components/ui/FavoriteButton";
 import ListingMediaLightbox from "@/components/ui/ListingMediaLightbox";
@@ -84,21 +85,63 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
   const selectedMedia = mediaItems[selectedMediaIndex] ?? mediaItems[0];
+  const tableSizeValue = formatTableSizeMm(ad.tableWidthMm, ad.tableLengthMm);
+  const powerValue = formatPowerKw(ad.powerKw);
+  const canEditSpecs = Boolean(moderation?.onEditField);
+  const tableSizeEditValue =
+    ad.tableWidthMm && ad.tableLengthMm ? `${ad.tableWidthMm}x${ad.tableLengthMm}` : "";
   const specs = [
     { key: "id", label: "İlan No", value: ad.id.toUpperCase() },
     { key: "createdAt", label: "İlan Tarihi", value: formatDate(ad.createdAt) },
     { key: "category", label: "Kategori", value: ad.category, editValue: ad.category },
     { key: "brand", label: "Marka", value: brandValue, editValue: brandValue },
     { key: "model", label: "Model", value: modelValue, editValue: modelValue === "-" ? "" : modelValue },
-    ...(ad.year ? [{ key: "year", label: "Model Yılı", value: String(ad.year) }] : []),
-    ...(ad.axisCount ? [{ key: "axisCount", label: "Eksen Sayısı", value: ad.axisCount }] : []),
+    ...(ad.year != null || canEditSpecs
+      ? [{
+          key: "year",
+          label: "Üretim Yılı",
+          value: ad.year != null ? String(ad.year) : "—",
+          editValue: ad.year ?? "",
+        }]
+      : []),
+    ...(powerValue || ad.powerKw != null || canEditSpecs
+      ? [{
+          key: "powerKw",
+          label: "Güç",
+          value: powerValue ?? "—",
+          editValue: ad.powerKw ?? "",
+        }]
+      : []),
+    ...(tableSizeValue || tableSizeEditValue || canEditSpecs
+      ? [{
+          key: "tableSize",
+          label: "Tezgah Boyutu",
+          value: tableSizeValue ?? "—",
+          editValue: tableSizeEditValue,
+        }]
+      : []),
+    ...(ad.axisCount || canEditSpecs
+      ? [{
+          key: "axisCount",
+          label: "Eksen Sayısı",
+          value: ad.axisCount ?? "—",
+          editValue: ad.axisCount ?? "",
+        }]
+      : []),
     { key: "city", label: "İl", value: ad.city, editValue: ad.city },
     { key: "district", label: "İlçe", value: ad.district, editValue: ad.district },
     ...(ad.neighborhood
       ? [{ key: "neighborhood", label: "Mahalle / Köy", value: ad.neighborhood, editValue: ad.neighborhood }]
       : []),
     { key: "condition", label: "Durum", value: conditionValue, editValue: conditionValue },
-    ...(ad.sellerType ? [{ key: "sellerType", label: "Kimden", value: ad.sellerType }] : []),
+    ...(ad.sellerType || canEditSpecs
+      ? [{
+          key: "sellerType",
+          label: "Kimden",
+          value: ad.sellerType ?? "—",
+          editValue: ad.sellerType ?? "",
+        }]
+      : []),
     { key: "trade", label: "Takas", value: tradeValue, editValue: tradeValue },
     { key: "delivery", label: "Teslimat", value: deliveryValue, editValue: deliveryValue },
     { key: "userName", label: "Satıcı", value: ad.userName, editValue: ad.userName },
