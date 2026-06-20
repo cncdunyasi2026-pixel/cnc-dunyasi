@@ -18,8 +18,8 @@ const ICON = {
 const SIZE = {
   sm: {
     icon: "h-11 w-11",
-    text: "text-xl",
-    gap: "gap-2.5",
+    text: "text-xl leading-none",
+    gap: "gap-2",
   },
   md: {
     icon: "h-12 w-12",
@@ -42,7 +42,7 @@ function LogoIcon({
 }) {
   return (
     <span
-      className={`${frameClass} shrink-0 overflow-hidden rounded-full ring-2 ring-[#0F2A4A]/15 shadow-[0_4px_14px_rgba(15,42,74,0.18)]`}
+      className={`${frameClass} inline-flex shrink-0 items-center justify-center overflow-hidden rounded-full ring-2 ring-[#0F2A4A]/15 shadow-[0_2px_8px_rgba(15,42,74,0.12)]`}
     >
       <Image
         src={ICON.src}

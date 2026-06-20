@@ -3,7 +3,7 @@ import HomepageSections from "@/components/home/HomepageSections";
 
 export default function HomePage() {
   return (
-    <div className="relative bg-[#f3f5f8] pb-12">
+    <div className="relative overflow-x-hidden bg-[#f3f5f8] pb-12">
       {/* ── Hero ─────────────────────────────────────────── */}
       <section className="w-full pt-0">
         <div className="relative overflow-hidden">

@@ -319,7 +319,7 @@ export default function ListingsPage() {
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-6">
       {/* Banner */}
-      <div className="relative left-1/2 mb-6 w-screen -translate-x-1/2 overflow-hidden">
+      <div className="full-bleed relative mb-6">
         <img
           src="/banner_1.jpg"
           alt="CNC platform tanitim gorseli"

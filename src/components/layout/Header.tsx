@@ -237,11 +237,11 @@ export default function Header() {
       <HamburgerDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
 
       <header className="border-b border-[#d7dce3] bg-white/95 backdrop-blur">
-        <div className="mx-auto w-full max-w-7xl px-4 py-4 md:py-5">
+        <div className="mx-auto w-full max-w-7xl px-4 py-2 md:py-5">
           {/* ── Mobil header ── */}
-          <div className="relative flex min-h-11 items-center justify-between md:hidden">
+          <div className="grid min-h-16 grid-cols-[auto_1fr_auto] items-center md:hidden">
             {/* Sol: hamburger (top level) veya geri butonu */}
-            <div className="relative z-10 flex items-center">
+            <div className="flex items-center justify-self-start">
               {!showMobileBack ? (
                 <button
                   type="button"
@@ -277,15 +277,13 @@ export default function Header() {
               )}
             </div>
 
-            {/* Orta: logo — hamburger ile sağ ikonlar arasında ortalanır */}
-            <div className="pointer-events-none absolute inset-y-0 left-9 right-[5.25rem] flex items-center justify-center">
-              <div className="pointer-events-auto translate-x-1">
-                <SiteLogo size="sm" priority />
-              </div>
+            {/* Orta: logo */}
+            <div className="flex min-w-0 items-center justify-center justify-self-center px-1">
+              <SiteLogo size="sm" priority />
             </div>
 
             {/* Sağ: bildirim + profil */}
-            <div className="relative z-10 flex items-center gap-0.5">
+            <div className="flex items-center justify-self-end gap-0.5">
               <Link
                 href={user ? "/hesap/bildirimler" : "/hesap/giris?redirect=%2Fhesap%2Fbildirimler"}
                 aria-label="Bildirimler"

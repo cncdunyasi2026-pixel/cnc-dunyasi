@@ -143,7 +143,7 @@ export default function SparePartPage() {
   return (
     <section className="mx-auto w-full max-w-7xl px-4 py-6">
       {/* Banner */}
-      <div className="relative left-1/2 mb-6 w-screen -translate-x-1/2 overflow-hidden">
+      <div className="full-bleed relative mb-6">
         <img src="/yedek_parca.png" alt="Yedek parca banner" className="h-[230px] w-full object-cover sm:h-[280px]" />
         <div className="absolute inset-0 bg-[#0F2A4A]/65" />
         <div className="absolute inset-0 flex items-center justify-center px-4 sm:px-8">

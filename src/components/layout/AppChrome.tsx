@@ -20,19 +20,19 @@ export default function AppChrome({ children }: Props) {
 
   if (isChatPage) {
     return (
-      <>
+      <div className="overflow-x-hidden">
         <Header />
-        <main className="w-full">{children}</main>
-      </>
+        <main className="w-full max-w-full overflow-x-hidden">{children}</main>
+      </div>
     );
   }
 
   return (
-    <>
+    <div className="overflow-x-hidden">
       <Header />
-      <main className="w-full pb-20 md:pb-0">{children}</main>
+      <main className="w-full max-w-full overflow-x-hidden pb-20 md:pb-0">{children}</main>
       <Footer />
       <MobileBottomNav />
-    </>
+    </div>
   );
 }

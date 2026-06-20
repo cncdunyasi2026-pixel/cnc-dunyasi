@@ -15,8 +15,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="tr">
-      <body className="min-h-screen overflow-x-hidden bg-white text-black">
+    <html lang="tr" className="overflow-x-hidden">
+      <body className="min-h-screen w-full overflow-x-hidden bg-white text-black">
         <FirebaseAnalytics />
         <AppChrome>{children}</AppChrome>
       </body>
