@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { JobListing } from "@/types/job";
 import FavoriteButton from "@/components/ui/FavoriteButton";
 import ImageLightbox from "@/components/ui/ImageLightbox";
+import WatermarkedImage from "@/components/ui/WatermarkedImage";
 
 type Props = {
   job: JobListing;
@@ -81,10 +82,12 @@ export default function JobDetailContent({ job, moderation }: Props) {
               className="block w-full"
               onClick={() => openLightbox(Math.max(0, gallery.indexOf(selectedImage)))}
             >
-              <img
+              <WatermarkedImage
                 src={selectedImage}
                 alt={job.title}
                 className="block h-[260px] w-full object-cover sm:h-[380px] lg:h-[460px]"
+                wrapperClassName="block w-full"
+                watermarkSize="md"
               />
             </button>
           </div>
@@ -102,7 +105,13 @@ export default function JobDetailContent({ job, moderation }: Props) {
                       selectedImage === image ? "border-[#0F2A4A] ring-2 ring-[#0F2A4A]/20" : "border-[#dbe2ea]"
                     }`}
                   >
-                    <img src={image} alt={`${job.title} gorsel ${index + 1}`} className="h-14 w-full object-cover sm:h-16" />
+                    <WatermarkedImage
+                      src={image}
+                      alt={`${job.title} gorsel ${index + 1}`}
+                      className="h-14 w-full object-cover sm:h-16"
+                      wrapperClassName="h-14 w-full sm:h-16"
+                      watermarkSize="sm"
+                    />
                   </button>
                 ))}
               </div>

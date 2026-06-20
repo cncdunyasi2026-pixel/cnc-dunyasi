@@ -5,6 +5,7 @@ import Link from "next/link";
 import type { MarketplaceProfile } from "@/types/marketplace";
 import FavoriteButton from "@/components/ui/FavoriteButton";
 import ImageLightbox from "@/components/ui/ImageLightbox";
+import WatermarkedImage from "@/components/ui/WatermarkedImage";
 import type { FavoriteKind } from "@/services/favoritesService";
 
 type Props = {
@@ -77,7 +78,13 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
               className="block w-full"
               onClick={() => openLightbox(Math.max(0, gallery.indexOf(selectedImage)))}
             >
-              <img src={selectedImage} alt={item.name} className="block h-[260px] w-full object-cover sm:h-[380px] lg:h-[460px]" />
+              <WatermarkedImage
+                src={selectedImage}
+                alt={item.name}
+                className="block h-[260px] w-full object-cover sm:h-[380px] lg:h-[460px]"
+                wrapperClassName="block w-full"
+                watermarkSize="md"
+              />
             </button>
           </div>
 
@@ -96,7 +103,13 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
                     selectedImage === image ? "border-[#0F2A4A] ring-2 ring-[#0F2A4A]/20" : "border-[#dbe2ea]"
                   }`}
                 >
-                  <img src={image} alt={`${item.name} gorsel ${index + 1}`} className="h-14 w-full object-cover sm:h-16" />
+                  <WatermarkedImage
+                    src={image}
+                    alt={`${item.name} gorsel ${index + 1}`}
+                    className="h-14 w-full object-cover sm:h-16"
+                    wrapperClassName="h-14 w-full sm:h-16"
+                    watermarkSize="sm"
+                  />
                 </button>
               ))}
             </div>

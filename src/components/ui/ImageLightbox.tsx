@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { WatermarkOverlayLayer } from "@/components/ui/WatermarkedImage";
 
 type ImageLightboxProps = {
   images: string[];
@@ -111,11 +112,16 @@ export default function ImageLightbox({
         >
           {images.map((image, imageIndex) => (
             <div key={`${image}-lightbox-${imageIndex}`} className="flex h-full min-w-full items-center justify-center p-4">
-              <img
-                src={image}
-                alt={`${alt} buyuk gorsel ${imageIndex + 1}`}
-                className="max-h-full w-full max-w-6xl object-contain"
-              />
+              <div className="relative inline-block max-h-full max-w-full">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={image}
+                  alt={`${alt} buyuk gorsel ${imageIndex + 1}`}
+                  className="max-h-[calc(100vh-2rem)] max-w-full object-contain"
+                  draggable={false}
+                />
+                <WatermarkOverlayLayer size="lg" />
+              </div>
             </div>
           ))}
         </div>
