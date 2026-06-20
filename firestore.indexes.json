@@ -244,34 +244,6 @@
         { "fieldPath": "slug", "order": "ASCENDING" },
         { "fieldPath": "status", "order": "ASCENDING" }
       ]
-    },
-    {
-      "collectionGroup": "career_positions",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "order", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "service_types",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "order", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "spare_part_categories",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "order", "order": "ASCENDING" }
-      ]
-    },
-    {
-      "collectionGroup": "spare_part_brands",
-      "queryScope": "COLLECTION",
-      "fields": [
-        { "fieldPath": "order", "order": "ASCENDING" }
-      ]
     }
   ],
   "fieldOverrides": []

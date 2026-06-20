@@ -3,12 +3,14 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import ImageFilePicker from "@/components/listing/ImageFilePicker";
+import VideoFilePicker from "@/components/listing/VideoFilePicker";
 import ListingPublishShell from "@/components/listing/ListingPublishShell";
 import { CNC_MACHINE_CATEGORIES } from "@/lib/constants/listingOptions";
 import { useAuth } from "@/hooks/useAuth";
 import { createAd } from "@/services/adService";
-import { uploadUserImagesWithPaths } from "@/services/storageUpload";
+import { uploadUserImagesWithPaths, uploadUserVideoWithPath } from "@/services/storageUpload";
 import { DEFAULT_AD_DESCRIPTION } from "@/lib/constants/adDescription";
+import type { Currency } from "@/types/ad";
 import { getBrandsWithModels, type BrandWithModels } from "@/services/brandModelService";
 import { getCategories } from "@/services/categoryService";
 import { CURRENCY_OPTIONS, formatPriceInput } from "@/lib/utils/format";
@@ -43,6 +45,7 @@ function IkinciElForm() {
   });
   const [description, setDescription] = useState("");
   const [files, setFiles] = useState<File[]>([]);
+  const [videoFile, setVideoFile] = useState<File | null>(null);
   const [labelMissing, setLabelMissing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -104,6 +107,9 @@ function IkinciElForm() {
     try {
       const now = Date.now();
       const uploaded = await uploadUserImagesWithPaths(files, `ad-images/${user.uid}`);
+      const uploadedVideo = videoFile
+        ? await uploadUserVideoWithPath(videoFile, `ad-videos/${user.uid}`)
+        : null;
       const ref = await createAd({
         title: title.trim(),
         brand: brand.trim(),
@@ -123,6 +129,9 @@ function IkinciElForm() {
         description: description.trim(),
         images: uploaded.map((item) => item.url),
         imagePaths: uploaded.map((item) => item.path),
+        ...(uploadedVideo
+          ? { video: uploadedVideo.url, videoPath: uploadedVideo.path }
+          : {}),
         ...(labelMissing ? { machineLabelMissing: true } : {}),
         ownerId: user.uid,
         userName: user.displayName ?? user.email?.split("@")[0] ?? "Kullanıcı",
@@ -352,6 +361,9 @@ function IkinciElForm() {
 
       <div>
         <ImageFilePicker value={files} onChange={setFiles} maxFiles={8} />
+        <div className="mt-4">
+          <VideoFilePicker value={videoFile} onChange={setVideoFile} />
+        </div>
         <div className="mt-2 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-[#dbe2ea] bg-[#f8fafc] px-3 py-2.5">
           <p className="text-xs text-[#61748f]">
             <span className="font-semibold text-[#0F2A4A]">🏷️ Lütfen tezgah etiketini de yükleyiniz.</span>
@@ -407,7 +419,7 @@ export default function IkinciElIlanVerPage() {
     <ListingPublishShell
       eyebrow="İKİNCİ EL CNC"
       title="Tezgah ilanı oluştur"
-      subtitle="Başlık, fiyat, konum ve fotoğraflarını ekleyerek ilanını oluştur."
+      subtitle="Başlık, fiyat, konum, fotoğraf ve opsiyonel video ile ilanını oluştur."
     >
       <IkinciElForm />
     </ListingPublishShell>

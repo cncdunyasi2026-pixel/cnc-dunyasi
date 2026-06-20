@@ -16,6 +16,8 @@
     "deploy": "npm run predeploy:clean && firebase experiments:enable webframeworks && firebase deploy --only hosting",
     "deploy:hosting": "npm run deploy",
     "firebase:deploy:rules": "firebase deploy --only firestore:rules,firestore:indexes,storage",
+    "firebase:deploy:storage": "firebase deploy --only storage",
+    "firebase:deploy:firestore-rules": "firebase deploy --only firestore:rules",
     "firebase:deploy:functions": "firebase deploy --only functions",
     "ops:migrate-ownerid": "node scripts/migrate-ownerid.mjs",
     "ops:grant-admin": "node scripts/grant-admin-claims.mjs"

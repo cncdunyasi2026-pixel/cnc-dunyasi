@@ -1,4 +1,5 @@
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { validateVideoFile } from "@/lib/constants/videoUpload";
 import { isFirebaseClientConfigured, storage } from "@/lib/firebase";
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -6,6 +7,11 @@ const TARGET_BYTES = 1.5 * 1024 * 1024;
 const MAX_DIMENSION = 1920;
 
 export type UploadedImage = {
+  url: string;
+  path: string;
+};
+
+export type UploadedVideo = {
   url: string;
   path: string;
 };
@@ -134,4 +140,25 @@ export async function uploadUserImagesWithPaths(
 export async function uploadUserImages(files: File[], folderPath: string): Promise<string[]> {
   const uploaded = await uploadUserImagesWithPaths(files, folderPath);
   return uploaded.map((item) => item.url);
+}
+
+export async function uploadUserVideoWithPath(
+  file: File,
+  folderPath: string,
+): Promise<UploadedVideo> {
+  if (!isFirebaseClientConfigured) {
+    throw new Error("Firebase tasarim modunda devre disi. Video yuklemek icin .env.local tanimlayin.");
+  }
+
+  await validateVideoFile(file);
+
+  const safe = file.name.replace(/[^\w.\-]/g, "_");
+  const objectName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${safe}`;
+  const storageRef = ref(storage, `${folderPath}/${objectName}`);
+  const uploadResult = await uploadBytes(storageRef, file);
+
+  return {
+    url: await getDownloadURL(storageRef),
+    path: uploadResult.metadata.fullPath,
+  };
 }

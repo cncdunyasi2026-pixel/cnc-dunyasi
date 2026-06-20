@@ -131,6 +131,8 @@ export async function submitAdUpdateForReview(
   > & {
     images?: string[];
     imagePaths?: string[];
+    video?: string;
+    videoPath?: string;
   },
 ) {
   if (!isFirebaseClientConfigured) {

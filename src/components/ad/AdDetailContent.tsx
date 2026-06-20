@@ -8,8 +8,9 @@ import { formatPrice } from "@/lib/utils/format";
 import { DEFAULT_AD_DESCRIPTION } from "@/lib/constants/adDescription";
 import { useAuth } from "@/hooks/useAuth";
 import FavoriteButton from "@/components/ui/FavoriteButton";
-import ImageLightbox from "@/components/ui/ImageLightbox";
+import ListingMediaLightbox from "@/components/ui/ListingMediaLightbox";
 import WatermarkedImage from "@/components/ui/WatermarkedImage";
+import { buildAdMediaGallery } from "@/lib/utils/adMediaGallery";
 import {
   getOrCreateConversation,
   sendMessage,
@@ -78,17 +79,11 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
   const conditionValue = ad.condition?.trim() || "Ekspertiz Onayli";
   const tradeValue = ad.trade?.trim() || "Degerlendirilebilir";
   const deliveryValue = ad.delivery?.trim() || "Hazir";
-  const gallery = useMemo(() => {
-    if (ad.images.length >= 3) {
-      return ad.images;
-    }
-
-    return [...ad.images, ...Array.from({ length: 3 - ad.images.length }, () => "https://placehold.co/1200x800?text=CNC")];
-  }, [ad.images]);
-
-  const [selectedImage, setSelectedImage] = useState(gallery[0]);
+  const mediaItems = useMemo(() => buildAdMediaGallery(ad), [ad.images, ad.video]);
+  const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState(0);
+  const selectedMedia = mediaItems[selectedMediaIndex] ?? mediaItems[0];
   const specs = [
     { key: "id", label: "İlan No", value: ad.id.toUpperCase() },
     { key: "createdAt", label: "İlan Tarihi", value: formatDate(ad.createdAt) },
@@ -119,11 +114,11 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
   };
 
   const goNext = () => {
-    setLightboxIndex((prev) => (prev + 1) % gallery.length);
+    setLightboxIndex((prev) => (prev + 1) % mediaItems.length);
   };
 
   const goPrev = () => {
-    setLightboxIndex((prev) => (prev - 1 + gallery.length) % gallery.length);
+    setLightboxIndex((prev) => (prev - 1 + mediaItems.length) % mediaItems.length);
   };
 
   return (
@@ -153,40 +148,60 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
             <button
               type="button"
               className="block w-full"
-              onClick={() => openLightbox(Math.max(0, gallery.indexOf(selectedImage)))}
+              onClick={() => openLightbox(selectedMediaIndex)}
             >
-              <WatermarkedImage
-                src={selectedImage}
-                alt={ad.title}
-                className="block h-[260px] w-full object-cover sm:h-[380px] lg:h-[460px]"
-                wrapperClassName="block w-full"
-                watermarkSize="md"
-              />
+              {selectedMedia?.type === "video" ? (
+                <div className="block h-[260px] w-full bg-black sm:h-[380px] lg:h-[460px]">
+                  <video
+                    src={selectedMedia.src}
+                    controls
+                    playsInline
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+              ) : selectedMedia ? (
+                <WatermarkedImage
+                  src={selectedMedia.src}
+                  alt={ad.title}
+                  className="block h-[260px] w-full object-cover sm:h-[380px] lg:h-[460px]"
+                  wrapperClassName="block w-full"
+                  watermarkSize="md"
+                />
+              ) : null}
             </button>
           </div>
 
           <div className="rounded-xl border border-[#dbe2ea] bg-white p-3 shadow-sm">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">FOTOGRAF GALERISI</p>
+              <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">FOTOGRAF / VIDEO GALERISI</p>
               <ActionButtons fieldKey="images" label="Gorseller" editValue={ad.images} moderation={moderation} isChanged={changedFields?.includes("images")} />
             </div>
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
-              {gallery.map((image, index) => (
+              {mediaItems.map((item, index) => (
                 <button
-                  key={`${image}-${index}`}
+                  key={`${item.type}-${item.src}-${index}`}
                   type="button"
-                  onClick={() => setSelectedImage(image)}
+                  onClick={() => setSelectedMediaIndex(index)}
                   className={`overflow-hidden rounded-md border transition ${
-                    selectedImage === image ? "border-[#0F2A4A] ring-2 ring-[#0F2A4A]/20" : "border-[#dbe2ea]"
+                    selectedMediaIndex === index ? "border-[#0F2A4A] ring-2 ring-[#0F2A4A]/20" : "border-[#dbe2ea]"
                   }`}
                 >
-                  <WatermarkedImage
-                    src={image}
-                    alt={`${ad.title} gorsel ${index + 1}`}
-                    className="h-14 w-full object-cover sm:h-16"
-                    wrapperClassName="h-14 w-full sm:h-16"
-                    watermarkSize="sm"
-                  />
+                  {item.type === "video" ? (
+                    <div className="relative h-14 w-full sm:h-16">
+                      <video src={item.src} className="h-full w-full object-cover" muted playsInline />
+                      <span className="absolute inset-0 grid place-items-center bg-black/30 text-[10px] font-bold text-white">
+                        ▶
+                      </span>
+                    </div>
+                  ) : (
+                    <WatermarkedImage
+                      src={item.src}
+                      alt={`${ad.title} gorsel ${index + 1}`}
+                      className="h-14 w-full object-cover sm:h-16"
+                      wrapperClassName="h-14 w-full sm:h-16"
+                      watermarkSize="sm"
+                    />
+                  )}
                 </button>
               ))}
             </div>
@@ -341,8 +356,8 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
         ) : null}
       </div>
 
-      <ImageLightbox
-        images={gallery}
+      <ListingMediaLightbox
+        items={mediaItems}
         alt={ad.title}
         isOpen={isLightboxOpen}
         index={lightboxIndex}

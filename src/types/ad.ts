@@ -27,6 +27,9 @@ export type Ad = {
   description?: string;
   images: string[];
   imagePaths?: string[];
+  /** Opsiyonel tanıtım videosu (max 1 dk). */
+  video?: string;
+  videoPath?: string;
   ownerId: string;
   userName: string;
   createdAt: number;
