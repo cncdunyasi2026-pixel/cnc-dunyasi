@@ -9,7 +9,7 @@ export default function HomePage() {
         <div className="relative overflow-hidden">
           <img
             src="/banner_1.jpg"
-            alt="Cncdunyasi Hero"
+            alt="Cncdunyam Hero"
             className="h-[280px] w-full object-cover sm:h-[360px] lg:h-[460px]"
           />
           <div className="absolute inset-0 bg-[#0F2A4A]/55" />

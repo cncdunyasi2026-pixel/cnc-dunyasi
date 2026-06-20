@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import SiteLogo from "@/components/layout/SiteLogo";
 import { usePathname, useRouter } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { useAuth } from "@/hooks/useAuth";
@@ -238,9 +239,9 @@ export default function Header() {
       <header className="border-b border-[#d7dce3] bg-white/95 backdrop-blur">
         <div className="mx-auto w-full max-w-7xl px-4 py-4 md:py-5">
           {/* ── Mobil header ── */}
-          <div className="flex items-center justify-between md:hidden">
+          <div className="relative flex min-h-11 items-center justify-between md:hidden">
             {/* Sol: hamburger (top level) veya geri butonu */}
-            <div className="flex w-16 items-center">
+            <div className="relative z-10 flex items-center">
               {!showMobileBack ? (
                 <button
                   type="button"
@@ -276,13 +277,15 @@ export default function Header() {
               )}
             </div>
 
-            {/* Orta: logo */}
-            <Link href="/" className="text-xl font-extrabold tracking-tight text-[#0F2A4A]">
-              cnc<span className="text-[#7A8CA5]">dunyasi</span>.com
-            </Link>
+            {/* Orta: logo — hamburger ile İLAN VER arasında ortalanır */}
+            <div className="pointer-events-none absolute inset-y-0 left-9 right-[4.75rem] flex items-center justify-center">
+              <div className="pointer-events-auto translate-x-1">
+                <SiteLogo size="sm" priority />
+              </div>
+            </div>
 
             {/* Sağ: İlan ver */}
-            <div className="flex w-16 justify-end">
+            <div className="relative z-10 flex">
               <Link
                 href="/ilan-ver"
                 className="whitespace-nowrap rounded-full bg-[#F26A1B] px-3 py-1.5 text-[10px] font-bold tracking-wide !text-white visited:!text-white hover:!text-white shadow-[0_4px_12px_rgba(242,106,27,0.28)] transition hover:bg-[#dd5f15]"
@@ -293,11 +296,9 @@ export default function Header() {
           </div>
 
           {/* ── Masaüstü header ── */}
-          <div className="hidden items-center justify-between md:flex">
-            <Link href="/" className="text-2xl font-extrabold tracking-tight text-[#0F2A4A] sm:text-3xl">
-              cnc<span className="text-[#7A8CA5]">dunyasi</span>.com
-            </Link>
-            <nav className="items-center gap-6 text-sm font-semibold text-[#0F2A4A] md:flex">
+          <div className="hidden items-center justify-between gap-8 md:flex">
+            <SiteLogo size="lg" priority className="-ml-2" />
+            <nav className="flex shrink-0 items-center gap-5 text-sm font-semibold text-[#0F2A4A] lg:gap-6">
               <Link href="/ilanlar" className="transition hover:text-[#F26A1B]">İKİNCİ EL CNC</Link>
               <Link href="/kategori/teknik-servis" className="transition hover:text-[#F26A1B]">TEKNİK SERVİS</Link>
               <Link href="/kategori/yedek-parca" className="transition hover:text-[#F26A1B]">YEDEK PARÇA</Link>

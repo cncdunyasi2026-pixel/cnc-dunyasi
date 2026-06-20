@@ -20,7 +20,7 @@ export default function DashboardPage() {
         >
           <div>
             <p style={{ margin: 0, fontSize: 12, letterSpacing: "0.12em", color: "#61748f", fontWeight: 700 }}>ADMIN PANEL</p>
-            <h1 style={{ margin: "4px 0 0 0" }}>CNCdunyasi Yonetim</h1>
+            <h1 style={{ margin: "4px 0 0 0" }}>CNCdunyam Yonetim</h1>
           </div>
           <button
             type="button"

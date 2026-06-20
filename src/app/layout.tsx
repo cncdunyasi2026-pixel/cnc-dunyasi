@@ -4,8 +4,9 @@ import FirebaseAnalytics from "@/components/analytics/FirebaseAnalytics";
 import AppChrome from "@/components/layout/AppChrome";
 
 export const metadata: Metadata = {
-  title: "Cncdunyasi",
-  description: "Next.js + Firebase ilan platformu",
+  title: "Cncdunyam",
+  description: "İkinci el CNC, teknik servis, yedek parça ve kariyer platformu",
+  applicationName: "Cncdunyam",
 };
 
 export default function RootLayout({

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import SiteLogo from "@/components/layout/SiteLogo";
 import { usePathname } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
@@ -34,19 +35,8 @@ export default function AdminSectionLayout({ adminCode, title, subtitle, childre
       <aside className="flex w-60 flex-shrink-0 flex-col border-r border-white/[0.06] bg-gradient-to-b from-[#0b1729] to-[#09152270]">
         {/* Brand */}
         <div className="border-b border-white/[0.06] px-5 py-5">
-          <div className="flex items-center gap-2">
-            <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-blue-600 shadow-[0_0_16px_rgba(37,99,235,0.5)]">
-              <svg className="h-3.5 w-3.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-              </svg>
-            </div>
-            <div>
-              <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-blue-400/50">
-                Cncdunyası
-              </p>
-              <p className="text-[13px] font-extrabold leading-tight text-white">Admin Panel</p>
-            </div>
-          </div>
+          <SiteLogo variant="white" href="" size="sm" />
+          <p className="mt-2 text-[11px] font-semibold text-white/45">Admin Panel</p>
         </div>
 
         {/* Nav */}

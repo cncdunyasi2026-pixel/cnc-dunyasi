@@ -18,7 +18,7 @@ export function getLegacyListingBySlug(slug: string): Ad | null {
         "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ8PUvD-j8-ceW-w5OtcDnZg49wrIXByKO6wQ&s",
       ],
       ownerId: "legacy-1",
-      userName: "CNC Dunyasi Galeri",
+      userName: "CNC Dunyam Galeri",
       createdAt: now - 1000 * 60 * 60 * 24 * 3,
     },
     "doosan-4500": {
