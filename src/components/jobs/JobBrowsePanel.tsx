@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useListingViewMode } from "@/hooks/useListingViewMode";
 import type { JobListing } from "@/types/job";
 import JobCard from "@/components/jobs/JobCard";
 
@@ -9,7 +10,7 @@ type Props = {
 };
 
 export default function JobBrowsePanel({ items }: Props) {
-  const [viewMode, setViewMode] = useState<"card" | "list">("card");
+  const { viewMode, setViewMode } = useListingViewMode();
   const [search, setSearch] = useState("");
 
   const filteredItems = useMemo(() => {

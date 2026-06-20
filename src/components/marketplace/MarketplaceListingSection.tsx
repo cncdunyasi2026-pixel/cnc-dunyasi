@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useListingViewMode } from "@/hooks/useListingViewMode";
 import type { MarketplaceProfile } from "@/types/marketplace";
 import MarketplaceCard from "@/components/marketplace/MarketplaceCard";
 
@@ -10,7 +10,7 @@ type Props = {
 };
 
 export default function MarketplaceListingSection({ items, basePath }: Props) {
-  const [viewMode, setViewMode] = useState<"card" | "list">("card");
+  const { viewMode, setViewMode } = useListingViewMode();
 
   return (
     <>

@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useListingViewMode } from "@/hooks/useListingViewMode";
 import FilterSidebar from "@/components/ui/FilterSidebar";
 import type { FilterGroup } from "@/components/ui/FilterSidebar";
 import JobCard from "@/components/jobs/JobCard";
@@ -24,7 +25,7 @@ function cityFrom(loc: string) {
 export default function CareerPage() {
   const [allItems, setAllItems] = useState<JobListing[]>([]);
   const [loadingData, setLoadingData] = useState(true);
-  const [viewMode, setViewMode] = useState<"card" | "list">("list");
+  const { viewMode, setViewMode } = useListingViewMode();
   const [search, setSearch] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("date_desc");
   const [sortOpen, setSortOpen] = useState(false);

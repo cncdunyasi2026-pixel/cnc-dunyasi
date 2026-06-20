@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { useListingViewMode } from "@/hooks/useListingViewMode";
 import { getAds } from "@/services/adService";
 import type { Ad } from "@/types/ad";
 import { formatPrice } from "@/lib/utils/format";
@@ -111,7 +112,7 @@ function ListingCard({ ad, viewMode }: { ad: Ad; viewMode: "card" | "list" }) {
 /* ── Ana sayfa ──────────────────────────────────────────────── */
 
 export default function ListingsPage() {
-  const [viewMode, setViewMode] = useState<"card" | "list">("card");
+  const { viewMode, setViewMode } = useListingViewMode();
   const [search, setSearch] = useState("");
   const [allAds, setAllAds] = useState<Ad[]>([]);
   const [loading, setLoading] = useState(true);

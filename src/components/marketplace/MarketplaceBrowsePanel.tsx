@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useListingViewMode } from "@/hooks/useListingViewMode";
 import type { MarketplaceProfile } from "@/types/marketplace";
 import MarketplaceCard from "@/components/marketplace/MarketplaceCard";
 
@@ -38,7 +39,7 @@ export default function MarketplaceBrowsePanel({
   onRemoveApplied,
   onClearAll,
 }: Props) {
-  const [viewMode, setViewMode] = useState<"card" | "list">("card");
+  const { viewMode, setViewMode } = useListingViewMode();
   const [search, setSearch] = useState("");
   const [sortOpen, setSortOpen] = useState(false);
 
