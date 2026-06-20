@@ -1,13 +1,11 @@
 "use client";
 
-"use client";
-
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import FilterSidebar from "@/components/ui/FilterSidebar";
 import type { FilterGroup } from "@/components/ui/FilterSidebar";
 import MarketplaceBrowsePanel from "@/components/marketplace/MarketplaceBrowsePanel";
-import { loadSparePartBrowseProfiles } from "@/services/marketplaceBrowseService";
+import { useMarketplaceBrowse } from "@/hooks/useMarketplaceBrowse";
 import type { MarketplaceProfile } from "@/types/marketplace";
 import { sparePartCategoryService, sparePartBrandService } from "@/services/siteDataService";
 
@@ -20,8 +18,7 @@ const SORT_OPTIONS: { value: SortKey; label: string }[] = [
 ];
 
 export default function SparePartPage() {
-  const [allItems, setAllItems] = useState<MarketplaceProfile[]>([]);
-  const [loadingData, setLoadingData] = useState(true);
+  const { items: allItems, loading: loadingData, loadingMore, hasMore, loadMore } = useMarketplaceBrowse("spare");
   const [sortKey, setSortKey] = useState<SortKey>("date_desc");
   const [mobileFilterOpen, setMobileFilterOpen] = useState(false);
   const [pendingGroups, setPendingGroups] = useState<Record<string, string[]>>({});
@@ -32,9 +29,6 @@ export default function SparePartPage() {
   const [adminBrands, setAdminBrands] = useState<string[]>([]);
 
   useEffect(() => {
-    void loadSparePartBrowseProfiles()
-      .then(setAllItems)
-      .finally(() => setLoadingData(false));
     void sparePartCategoryService.getAll().then((list) => setAdminCategories(list.map((i) => i.name)));
     void sparePartBrandService.getAll().then((list) => setAdminBrands(list.map((i) => i.name)));
   }, []);
@@ -187,6 +181,22 @@ export default function SparePartPage() {
               }}
               onClearAll={handleClear}
             />
+          )}
+
+          {!loadingData && hasMore && (
+            <div className="mt-8 flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void loadMore()}
+                disabled={loadingMore}
+                className="rounded-xl border border-[#0F2A4A] bg-white px-6 py-3 text-sm font-bold text-[#0F2A4A] transition hover:bg-[#0F2A4A] hover:text-white disabled:opacity-60"
+              >
+                {loadingMore ? "Yükleniyor..." : "Daha fazla ilan göster"}
+              </button>
+              <p className="text-xs text-[#7A8CA5]">
+                {allItems.length} ilan yüklendi · sayfa başına 24 kayıt
+              </p>
+            </div>
           )}
         </div>
       </div>

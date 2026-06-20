@@ -1,12 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
 import MarketplaceBrowsePanel from "@/components/marketplace/MarketplaceBrowsePanel";
-import {
-  loadSparePartBrowseProfiles,
-  loadTechnicalBrowseProfiles,
-} from "@/services/marketplaceBrowseService";
-import type { MarketplaceProfile } from "@/types/marketplace";
+import { useMarketplaceBrowse } from "@/hooks/useMarketplaceBrowse";
 
 type Props = {
   variant: "technical" | "spare";
@@ -16,29 +11,7 @@ type Props = {
 };
 
 export default function FirestoreMarketplaceBrowse({ variant, basePath, searchPlaceholder, singleImage }: Props) {
-  const [items, setItems] = useState<MarketplaceProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-    const loader = variant === "technical" ? loadTechnicalBrowseProfiles : loadSparePartBrowseProfiles;
-    void loader()
-      .then((data) => {
-        if (!cancelled) setItems(data);
-      })
-      .catch((err) => {
-        if (!cancelled) setError(err instanceof Error ? err.message : "Liste yüklenemedi.");
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [variant]);
+  const { items, loading, loadingMore, hasMore, loadMore, error } = useMarketplaceBrowse(variant);
 
   if (loading) {
     return (
@@ -55,11 +28,44 @@ export default function FirestoreMarketplaceBrowse({ variant, basePath, searchPl
   }
 
   return (
-    <MarketplaceBrowsePanel
-      items={items}
-      basePath={basePath}
-      searchPlaceholder={searchPlaceholder}
-      singleImage={singleImage}
-    />
+    <>
+      <MarketplaceBrowsePanel
+        items={items}
+        basePath={basePath}
+        searchPlaceholder={searchPlaceholder}
+        singleImage={singleImage}
+      />
+      {hasMore && (
+        <LoadMoreButton
+          count={items.length}
+          loading={loadingMore}
+          onClick={loadMore}
+        />
+      )}
+    </>
+  );
+}
+
+function LoadMoreButton({
+  count,
+  loading,
+  onClick,
+}: {
+  count: number;
+  loading: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <div className="mt-8 flex flex-col items-center gap-2">
+      <button
+        type="button"
+        onClick={() => void onClick()}
+        disabled={loading}
+        className="rounded-xl border border-[#0F2A4A] bg-white px-6 py-3 text-sm font-bold text-[#0F2A4A] transition hover:bg-[#0F2A4A] hover:text-white disabled:opacity-60"
+      >
+        {loading ? "Yükleniyor..." : "Daha fazla ilan göster"}
+      </button>
+      <p className="text-xs text-[#7A8CA5]">{count} ilan yüklendi · sayfa başına 24 kayıt</p>
+    </div>
   );
 }

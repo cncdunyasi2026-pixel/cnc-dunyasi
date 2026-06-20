@@ -18,12 +18,36 @@ import {
 import { db, isFirebaseClientConfigured } from "@/lib/firebase";
 import { mockAds } from "@/lib/mocks/ads";
 
-type GetAdsParams = {
-  city?: string;
-  category?: string;
-  pageSize?: number;
-  lastDoc?: AdCursor;
+import type { AdBrowseParams } from "@/types/adBrowse";
+
+export type GetAdsParams = AdBrowseParams & {
+  /** Mock modda sayfalama için (Firebase cursor yerine). */
+  offset?: number;
 };
+
+function applyMockServerFilters(ads: Ad[], params: GetAdsParams): Ad[] {
+  let result = ads.filter((item) => item.status === "published" || !item.status);
+
+  if (params.city) {
+    result = result.filter((item) => item.city === params.city);
+  } else if (params.cities?.length) {
+    result = result.filter((item) => params.cities!.includes(item.city));
+  }
+
+  if (params.category) {
+    result = result.filter((item) => item.category === params.category);
+  } else if (params.categories?.length) {
+    result = result.filter((item) => params.categories!.includes(item.category));
+  }
+
+  if (params.brand) {
+    result = result.filter((item) => item.brand === params.brand);
+  } else if (params.brands?.length) {
+    result = result.filter((item) => item.brand && params.brands!.includes(item.brand));
+  }
+
+  return result.sort((a, b) => b.createdAt - a.createdAt);
+}
 
 export async function createAd(data: Omit<Ad, "id" | "createdAt">) {
   if (!isFirebaseClientConfigured) {
@@ -34,26 +58,23 @@ export async function createAd(data: Omit<Ad, "id" | "createdAt">) {
 }
 
 export async function getAdsPage(params: GetAdsParams = {}): Promise<AdPageResult> {
-  if (!isFirebaseClientConfigured) {
-    const filteredAds = mockAds
-      .filter((item) => (params.city ? item.city === params.city : true))
-      .filter((item) => (params.category ? item.category === params.category : true))
-      .sort((a, b) => b.createdAt - a.createdAt);
+  const pageSize = params.pageSize ?? 20;
 
-    const pageSize = params.pageSize ?? 20;
-    const ads = params.lastDoc ? [] : filteredAds.slice(0, pageSize);
+  if (!isFirebaseClientConfigured) {
+    const filteredAds = applyMockServerFilters(mockAds, params);
+    const offset = params.offset ?? 0;
+    const page = filteredAds.slice(offset, offset + pageSize);
 
     return {
-      ads,
+      ads: page,
       lastDoc: null,
-      hasMore: false,
+      hasMore: offset + pageSize < filteredAds.length,
     };
   }
 
   return getAdDocs({
-    city: params.city,
-    category: params.category,
-    pageSize: params.pageSize ?? 20,
+    ...params,
+    pageSize,
     lastDoc: params.lastDoc ?? null,
   });
 }

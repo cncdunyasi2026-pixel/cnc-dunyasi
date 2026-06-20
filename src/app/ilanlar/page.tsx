@@ -3,28 +3,14 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { useListingViewMode } from "@/hooks/useListingViewMode";
-import { getAds } from "@/services/adService";
+import { useAdBrowse } from "@/hooks/useAdBrowse";
+import { buildAdServerFilters } from "@/types/adBrowse";
 import type { Ad } from "@/types/ad";
 import { formatPrice } from "@/lib/utils/format";
 import FilterSidebar from "@/components/ui/FilterSidebar";
 import type { FilterGroup, RangeFilter } from "@/components/ui/FilterSidebar";
 
 /* ── Sabit / mock şehir verisi (tasarım amaçlı) ─────────────── */
-
-const CITY_GROUP: FilterGroup = {
-  id: "sehir",
-  label: "Şehir",
-  readOnly: true,
-  defaultCollapsed: true,
-  options: [
-    { label: "İstanbul" },
-    { label: "Ankara" },
-    { label: "Bursa" },
-    { label: "İzmir" },
-    { label: "Konya" },
-    { label: "Kocaeli" },
-  ],
-};
 
 /* ── Sıralama seçenekleri ───────────────────────────────────── */
 
@@ -111,21 +97,37 @@ function ListingCard({ ad, viewMode }: { ad: Ad; viewMode: "card" | "list" }) {
 
 /* ── Ana sayfa ──────────────────────────────────────────────── */
 
+const EMPTY_GROUPS = {
+  marka: [],
+  durum: [],
+  eksen: [],
+  kategori: [],
+  kimden: [],
+  takas: [],
+  teslimat: [],
+  sehir: [],
+};
+
 export default function ListingsPage() {
   const { viewMode, setViewMode } = useListingViewMode();
   const [search, setSearch] = useState("");
-  const [allAds, setAllAds] = useState<Ad[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [listError, setListError] = useState<string | null>(null);
 
   /* ── Filtre state: pending (kullanıcı seçiyor) vs applied (listeye yansıyan) ── */
-  const emptyGroups = { marka: [], durum: [], eksen: [], kategori: [], kimden: [], takas: [], teslimat: [] };
-
-  const [pendingGroups, setPendingGroups] = useState<Record<string, string[]>>(emptyGroups);
+  const [pendingGroups, setPendingGroups] = useState<Record<string, string[]>>(EMPTY_GROUPS);
   const [pendingPriceRange, setPendingPriceRange] = useState<{ min: number; max: number } | null>(null);
 
-  const [appliedGroups, setAppliedGroups] = useState<Record<string, string[]>>(emptyGroups);
+  const [appliedGroups, setAppliedGroups] = useState<Record<string, string[]>>(EMPTY_GROUPS);
   const [appliedPriceRange, setAppliedPriceRange] = useState<{ min: number; max: number } | null>(null);
+
+  const serverFilters = useMemo(() => buildAdServerFilters(appliedGroups), [appliedGroups]);
+  const {
+    ads: allAds,
+    loading,
+    loadingMore,
+    hasMore,
+    loadMore,
+    error: listError,
+  } = useAdBrowse(serverFilters);
 
   const [sortKey, setSortKey] = useState<SortKey>("date_desc");
   const [sortOpen, setSortOpen] = useState(false);
@@ -134,17 +136,6 @@ export default function ListingsPage() {
   /* Kaç seçim pending ama henüz uygulanmadı */
   const pendingCount = Object.values(pendingGroups).flat().length + (pendingPriceRange ? 1 : 0);
   const appliedCount = Object.values(appliedGroups).flat().length + (appliedPriceRange ? 1 : 0);
-
-  /* ── Veri yükle ────────────────────────────────────────────── */
-  useEffect(() => {
-    let cancelled = false;
-    setLoading(true);
-    void getAds({ pageSize: 200 })
-      .then((ads) => { if (!cancelled) setAllAds(ads); })
-      .catch((err) => { if (!cancelled) setListError(err instanceof Error ? err.message : "İlanlar yüklenemedi."); })
-      .finally(() => { if (!cancelled) setLoading(false); });
-    return () => { cancelled = true; };
-  }, []);
 
   /* ── Dinamik filtre seçenekleri ────────────────────────────── */
   const filterGroups = useMemo((): FilterGroup[] => {
@@ -171,6 +162,8 @@ export default function ListingsPage() {
 
     const deliveries = allAds.map((a) => a.delivery).filter(Boolean) as string[];
     const uniqueDeliveries = [...new Set(deliveries)].sort();
+
+    const cities = [...new Set(allAds.map((a) => a.city).filter(Boolean))].sort();
 
     return [
       {
@@ -213,7 +206,12 @@ export default function ListingsPage() {
         defaultCollapsed: true,
         options: uniqueDeliveries.map((d) => ({ label: d, count: count(deliveries, d) })),
       }] : []),
-      CITY_GROUP,
+      ...(cities.length > 0 ? [{
+        id: "sehir",
+        label: "Şehir",
+        defaultCollapsed: true,
+        options: cities.map((c) => ({ label: c, count: count(allAds.map((a) => a.city), c) })),
+      }] : []),
     ];
   }, [allAds]);
 
@@ -253,9 +251,9 @@ export default function ListingsPage() {
   };
 
   const handleClear = () => {
-    setPendingGroups(emptyGroups);
+    setPendingGroups(EMPTY_GROUPS);
     setPendingPriceRange(null);
-    setAppliedGroups(emptyGroups);
+    setAppliedGroups(EMPTY_GROUPS);
     setAppliedPriceRange(null);
     setSearch("");
   };
@@ -285,12 +283,14 @@ export default function ListingsPage() {
       );
     }
 
-    // Checkbox filtreleri (sadece Filtrele'ye basınca güncellenir)
+    // Checkbox filtreleri (Firestore'da olmayanlar + çakışan marka)
     const { marka, durum, eksen, kategori, kimden, takas, teslimat } = appliedGroups;
-    if (marka.length)    result = result.filter((a) => a.brand && marka.includes(a.brand));
+    const categoryUsesIn = (kategori?.length ?? 0) > 1;
+    if (marka.length && categoryUsesIn) {
+      result = result.filter((a) => a.brand && marka.includes(a.brand));
+    }
     if (durum.length)    result = result.filter((a) => a.condition && durum.includes(a.condition));
     if (eksen.length)    result = result.filter((a) => a.axisCount && eksen.includes(a.axisCount));
-    if (kategori.length) result = result.filter((a) => kategori.includes(a.category));
     if (kimden.length)   result = result.filter((a) => a.sellerType && kimden.includes(a.sellerType));
     if (takas.length)    result = result.filter((a) => a.trade && takas.includes(a.trade));
     if (teslimat.length) result = result.filter((a) => a.delivery && teslimat.includes(a.delivery));
@@ -530,7 +530,9 @@ export default function ListingsPage() {
             {/* İlan sayısı */}
             {!loading && (
               <p className="mt-2 text-xs text-[#7A8CA5]">
-                {displayed.length} ilan{appliedCount > 0 ? ` (${allAds.length} içinden)` : ""}
+                {displayed.length} ilan gösteriliyor
+                {displayed.length !== allAds.length ? ` (${allAds.length} yüklü kayıt içinden)` : ""}
+                {hasMore ? " · daha fazlası var" : ""}
               </p>
             )}
           </div>
@@ -571,6 +573,22 @@ export default function ListingsPage() {
               {displayed.map((ad) => (
                 <ListingCard key={ad.id} ad={ad} viewMode={viewMode} />
               ))}
+            </div>
+          )}
+
+          {!loading && hasMore && (
+            <div className="mt-8 flex flex-col items-center gap-2">
+              <button
+                type="button"
+                onClick={() => void loadMore()}
+                disabled={loadingMore}
+                className="rounded-xl border border-[#0F2A4A] bg-white px-6 py-3 text-sm font-bold text-[#0F2A4A] transition hover:bg-[#0F2A4A] hover:text-white disabled:opacity-60"
+              >
+                {loadingMore ? "Yükleniyor..." : "Daha fazla ilan göster"}
+              </button>
+              <p className="text-xs text-[#7A8CA5]">
+                {allAds.length} ilan yüklendi · sayfa başına 24 kayıt
+              </p>
             </div>
           )}
         </div>

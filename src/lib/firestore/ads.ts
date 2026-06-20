@@ -18,6 +18,8 @@ import { db } from "@/lib/firebase";
 import type { Ad } from "@/types/ad";
 import { mapAdSnapshotToAd } from "@/lib/firestore/mapAdDoc";
 
+import type { AdBrowseParams } from "@/types/adBrowse";
+
 export type AdCreateInput = Omit<Ad, "id" | "createdAt">;
 
 export function mapDocToAd(id: string, data: Record<string, unknown>): Ad {
@@ -26,12 +28,7 @@ export function mapDocToAd(id: string, data: Record<string, unknown>): Ad {
 
 export type AdCursor = QueryDocumentSnapshot<DocumentData> | null;
 
-type AdFilters = {
-  city?: string;
-  category?: string;
-  pageSize?: number;
-  lastDoc?: AdCursor;
-};
+type AdFilters = AdBrowseParams;
 
 export type AdPageResult = {
   ads: Ad[];
@@ -84,19 +81,43 @@ export async function getAdDocs(filters: AdFilters = {}): Promise<AdPageResult> 
   const pageSize = filters.pageSize ?? 20;
   const constraints: QueryConstraint[] = [where("status", "==", "published")];
 
+  let usedIn = false;
+
   if (filters.city) {
     constraints.push(where("city", "==", filters.city));
+  } else if (filters.cities?.length === 1) {
+    constraints.push(where("city", "==", filters.cities[0]));
+  } else if (filters.cities && filters.cities.length > 1) {
+    constraints.push(where("city", "in", filters.cities.slice(0, 30)));
+    usedIn = true;
   }
 
   if (filters.category) {
     constraints.push(where("category", "==", filters.category));
+  } else if (filters.categories?.length === 1) {
+    constraints.push(where("category", "==", filters.categories[0]));
+  } else if (filters.categories && filters.categories.length > 1 && !usedIn) {
+    constraints.push(where("category", "in", filters.categories.slice(0, 30)));
+    usedIn = true;
   }
 
-  constraints.push(orderBy("createdAt", "desc"), limit(pageSize));
+  if (!usedIn) {
+    if (filters.brand) {
+      constraints.push(where("brand", "==", filters.brand));
+    } else if (filters.brands?.length === 1) {
+      constraints.push(where("brand", "==", filters.brands[0]));
+    } else if (filters.brands && filters.brands.length > 1) {
+      constraints.push(where("brand", "in", filters.brands.slice(0, 30)));
+    }
+  }
+
+  constraints.push(orderBy("createdAt", "desc"));
 
   if (filters.lastDoc) {
     constraints.push(startAfter(filters.lastDoc));
   }
+
+  constraints.push(limit(pageSize));
 
   const q = query(collection(db, "ads"), ...constraints);
   const snapshot = await getDocs(q);
