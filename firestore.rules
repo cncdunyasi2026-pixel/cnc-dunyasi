@@ -1,0 +1,256 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function uid() {
+      return request.auth.uid;
+    }
+
+    function isAdmin() {
+      return signedIn()
+        && (
+          request.auth.token.get('admin', false) == true
+          || (exists(/databases/$(database)/documents/users/$(uid()))
+            && get(/databases/$(database)/documents/users/$(uid())).data.roles.admin == true)
+          || exists(/databases/$(database)/documents/admins/$(uid()))
+        );
+    }
+
+    function isModerator() {
+      return signedIn() && request.auth.token.get('moderator', false) == true;
+    }
+
+    function isStaff() {
+      return isAdmin() || isModerator();
+    }
+
+    /** Eski dokumanlar: status yoksa liste/detayda published gibi davranir (tek seferlik migrasyon onerilir). */
+    function listingLooksPublished(resource) {
+      return !('status' in resource.data) || resource.data.status == 'published';
+    }
+
+    /** Yeni sahip alanı ownerId; eski kayıtlar için userId ile uyumluluk. */
+    function listingOwnerId(data) {
+      return ('ownerId' in data && data.ownerId != null)
+        ? data.ownerId
+        : data.userId;
+    }
+
+    function isOwner(resource) {
+      return signedIn() && listingOwnerId(resource.data) == uid();
+    }
+
+    function listingReadOk(resource) {
+      return isStaff() || isOwner(resource) || listingLooksPublished(resource);
+    }
+
+    function validInitialStatus() {
+      return request.resource.data.status in ['pending', 'draft', 'update_pending'];
+    }
+
+    function createListingOk() {
+      return signedIn()
+        && request.resource.data.ownerId == uid()
+        && request.resource.data.keys().hasAll(['ownerId', 'status', 'createdAt'])
+        && validInitialStatus()
+        && !request.resource.data.keys().hasAny(['isFeatured', 'weeklyDeal']);
+    }
+
+    /** Sahip: ownerId sabit; status yalnizca belirli gecislere izin verir. */
+    function ownerStatusOk() {
+      return request.resource.data.status == resource.data.status
+        || (resource.data.status == 'needs_revision'
+            && request.resource.data.status in ['pending', 'revision_resubmitted'])
+        || (resource.data.status == 'revision_resubmitted'
+            && request.resource.data.status == 'revision_resubmitted')
+        || (resource.data.status == 'update_pending'
+            && request.resource.data.status == 'update_pending')
+        || (resource.data.status == 'draft' && request.resource.data.status == 'pending')
+        || request.resource.data.status == 'archived';
+    }
+
+    function ownerArchiveFieldsOk() {
+      return request.resource.data.status != 'archived'
+        || request.resource.data.keys().hasAll(['deletedAt']);
+    }
+
+    /** Sahip vitrin bayraklarini ekleyemez veya degistiremez (yalniz staff). */
+    function adSpotlightFieldsImmutableForOwner() {
+      return (!(resource.data.keys().hasAny(['isFeatured']))
+          ? !request.resource.data.keys().hasAny(['isFeatured'])
+          : request.resource.data.isFeatured == resource.data.isFeatured)
+        && (!(resource.data.keys().hasAny(['weeklyDeal']))
+          ? !request.resource.data.keys().hasAny(['weeklyDeal'])
+          : request.resource.data.weeklyDeal == resource.data.weeklyDeal);
+    }
+
+    function ownerUpdateOk() {
+      return isOwner(resource)
+        && listingOwnerId(request.resource.data) == uid()
+        && listingOwnerId(request.resource.data) == listingOwnerId(resource.data)
+        && ownerStatusOk()
+        && ownerArchiveFieldsOk()
+        && adSpotlightFieldsImmutableForOwner();
+    }
+
+    match /users/{userId} {
+      allow read: if signedIn() && (uid() == userId || isStaff());
+      allow create, update: if signedIn() && uid() == userId;
+      allow delete: if false;
+    }
+
+    /* ── Marka & Model kataloğu ──────────────────────────────── */
+    match /machine_brands/{brandId} {
+      allow read: if true;
+      allow write: if isAdmin();
+
+      match /models/{modelId} {
+        allow read: if true;
+        allow write: if isAdmin();
+      }
+    }
+
+    /* ── Kategori kataloğu ───────────────────────────────────── */
+    match /machine_categories/{catId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    /* ── Site Verileri (admin yönetimli açılır listeler) ─────── */
+    match /career_positions/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /service_types/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /spare_part_categories/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+    match /spare_part_brands/{id} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /ads/{adId} {
+      allow read: if listingReadOk(resource);
+      allow create: if createListingOk();
+      allow update: if isStaff() || ownerUpdateOk();
+      allow delete: if isStaff()
+        || (signedIn()
+          && listingOwnerId(resource.data) == uid()
+          && resource.data.keys().hasAll(['status'])
+          && resource.data.status in ['draft', 'pending']);
+    }
+
+    match /technical_service_listings/{listingId} {
+      allow read: if listingReadOk(resource);
+      allow create: if createListingOk();
+      allow update: if isStaff() || ownerUpdateOk();
+      allow delete: if isStaff()
+        || (signedIn()
+          && listingOwnerId(resource.data) == uid()
+          && resource.data.keys().hasAll(['status'])
+          && resource.data.status in ['draft', 'pending']);
+    }
+
+    match /spare_part_listings/{listingId} {
+      allow read: if listingReadOk(resource);
+      allow create: if createListingOk();
+      allow update: if isStaff() || ownerUpdateOk();
+      allow delete: if isStaff()
+        || (signedIn()
+          && listingOwnerId(resource.data) == uid()
+          && resource.data.keys().hasAll(['status'])
+          && resource.data.status in ['draft', 'pending']);
+    }
+
+    match /job_listings/{jobId} {
+      allow read: if listingReadOk(resource);
+      allow create: if createListingOk();
+      allow update: if isStaff() || ownerUpdateOk();
+      allow delete: if isStaff()
+        || (signedIn()
+          && listingOwnerId(resource.data) == uid()
+          && resource.data.keys().hasAll(['status'])
+          && resource.data.status in ['draft', 'pending']);
+    }
+
+    match /favorites/{userId}/items/{listingKey} {
+      allow read: if signedIn() && uid() == userId;
+      allow create, update, delete: if signedIn() && uid() == userId;
+    }
+
+    match /reports/{reportId} {
+      allow read: if isStaff();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasAll(['listingType', 'listingId', 'reason', 'reporterId', 'status', 'createdAt'])
+        && request.resource.data.reporterId == uid()
+        && request.resource.data.status == 'open';
+      allow update: if isStaff();
+      allow delete: if false;
+    }
+
+    match /audit_logs/{logId} {
+      allow read: if isStaff();
+      allow create: if isStaff();
+      allow update, delete: if false;
+    }
+
+    // Eski olay belgelerini yalnizca okuma (yeni yazma yok — analytics_daily kullanilir).
+    match /listing_click_events/{eventId} {
+      allow read: if isStaff();
+      allow create, update, delete: if false;
+    }
+
+    /**
+     * Günlük trafik aggregate'i.
+     * Belge ID'si YYYY-MM-DD; içinde sadece `clicks` alanı.
+     * Herkes artırabilir (click tracking), sadece staff okuyabilir.
+     * Her yazma tam olarak 1 artırım yapmalı — kötüye kullanım önlenir.
+     */
+    match /analytics_daily/{dateDoc} {
+      allow read: if isStaff();
+      allow create: if request.resource.data.keys().hasOnly(['clicks'])
+        && request.resource.data.clicks == 1;
+      allow update: if request.resource.data.keys().hasOnly(['clicks'])
+        && request.resource.data.clicks == resource.data.clicks + 1;
+    }
+
+    /* ── Mesajlaşma ───────────────────────────────────────── */
+
+    match /conversations/{convId} {
+      /* get: tek belge okuma — katılımcı kontrolü */
+      allow get: if signedIn() && uid() in resource.data.participants;
+
+      /* list: sorgu — "participants array-contains uid" sorgusu ile tutarlı */
+      allow list: if signedIn() && uid() in resource.data.participants;
+
+      allow update: if signedIn() && uid() in resource.data.participants;
+
+      allow create: if signedIn()
+        && uid() in request.resource.data.participants
+        && request.resource.data.participants.size() == 2;
+
+      match /messages/{msgId} {
+        allow read: if signedIn()
+          && uid() in get(/databases/$(database)/documents/conversations/$(convId)).data.participants;
+
+        allow create: if signedIn()
+          && uid() == request.resource.data.senderId
+          && uid() in get(/databases/$(database)/documents/conversations/$(convId)).data.participants;
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if isAdmin();
+    }
+  }
+}

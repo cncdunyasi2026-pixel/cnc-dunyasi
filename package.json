@@ -1,0 +1,44 @@
+{
+  "name": "galeri-dunyasi",
+  "version": "0.1.0",
+  "private": true,
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "dev:admin": "npm --prefix admin run dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "firebase:enable-webframeworks": "firebase experiments:enable webframeworks",
+    "predeploy:clean": "rm -rf .next/dev .firebase/cnc-dunyam/functions/.next/dev",
+    "deploy": "npm run predeploy:clean && firebase experiments:enable webframeworks && firebase deploy --only hosting",
+    "deploy:hosting": "npm run deploy",
+    "firebase:deploy:rules": "firebase deploy --only firestore:rules,firestore:indexes,storage",
+    "firebase:deploy:functions": "firebase deploy --only functions",
+    "ops:migrate-ownerid": "node scripts/migrate-ownerid.mjs",
+    "ops:grant-admin": "node scripts/grant-admin-claims.mjs"
+  },
+  "dependencies": {
+    "next": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "firebase": "latest",
+    "firebase-admin": "latest"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.2",
+    "firebase-tools": "latest",
+    "typescript": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "@tailwindcss/postcss": "latest",
+    "tailwindcss": "latest",
+    "postcss": "latest",
+    "autoprefixer": "latest"
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "storage": {
+    "rules": "storage.rules"
+  },
+  "functions": {
+    "source": "functions"
+  },
+  "hosting": {
+    "source": ".",
+    "ignore": [
+      "firebase.json",
+      "**/node_modules/**",
+      ".git/**",
+      ".next/dev/**",
+      ".next/cache/**",
+      "admin/**",
+      "functions/**",
+      "scripts/**",
+      ".firebase/**",
+      ".cursor/**",
+      "**/.DS_Store",
+      "**/*.md",
+      "firestore-debug.log",
+      "firebase-debug.log"
+    ],
+    "frameworksBackend": {
+      "region": "europe-west1"
+    }
+  }
+}

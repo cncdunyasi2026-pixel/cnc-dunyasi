@@ -1,0 +1,54 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function ownUid(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function imageWriteOk() {
+      return request.resource != null
+        && request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
+    match /ad-images/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if ownUid(userId) && imageWriteOk();
+      allow delete: if ownUid(userId);
+    }
+
+    match /technical-service-images/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if ownUid(userId) && imageWriteOk();
+      allow delete: if ownUid(userId);
+    }
+
+    match /spare-part-images/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if ownUid(userId) && imageWriteOk();
+      allow delete: if ownUid(userId);
+    }
+
+    match /job-listing-images/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if ownUid(userId) && imageWriteOk();
+      allow delete: if ownUid(userId);
+    }
+
+    match /avatars/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow create, update: if ownUid(userId) && imageWriteOk();
+      allow delete: if ownUid(userId);
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

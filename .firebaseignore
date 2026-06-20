@@ -1,0 +1,11 @@
+.next/dev
+.next/cache
+admin
+functions
+scripts
+.git
+.cursor
+**/.DS_Store
+firebase-debug.log
+firestore-debug.log
+*.md
