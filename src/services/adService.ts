@@ -63,6 +63,25 @@ export async function getAds(params: Omit<GetAdsParams, "lastDoc"> = {}): Promis
   return ads;
 }
 
+export async function getRelatedAds(adId: string, category: string, limit = 4): Promise<Ad[]> {
+  const normalizedCategory = category.trim();
+
+  const { ads } = await getAdsPage({
+    category: normalizedCategory || undefined,
+    pageSize: limit + 8,
+  });
+
+  const sameCategory = ads.filter((item) => item.id !== adId);
+  if (sameCategory.length > 0) {
+    return sameCategory.slice(0, limit);
+  }
+
+  if (!normalizedCategory) return [];
+
+  const { ads: allAds } = await getAdsPage({ pageSize: limit + 8 });
+  return allAds.filter((item) => item.id !== adId).slice(0, limit);
+}
+
 export async function getAdById(id: string) {
   if (!isFirebaseClientConfigured) {
     return mockAds.find((item) => item.id === id) ?? null;

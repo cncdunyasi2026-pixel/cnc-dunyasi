@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import AdDetailContent from "@/components/ad/AdDetailContent";
+import RelatedAdsSection from "@/components/ad/RelatedAdsSection";
 import { getAdById } from "@/services/adService";
 import { trackAdClick } from "@/services/listingAnalyticsService";
 import { isAdPublishedPublic } from "@/lib/firestore/listingVisibility";
@@ -62,5 +63,10 @@ export default function AdDetailLoader({ slug, publishedAd, legacyAd }: Props) {
     );
   }
 
-  return <AdDetailContent ad={ad} />;
+  return (
+    <>
+      <AdDetailContent ad={ad} />
+      <RelatedAdsSection adId={ad.id} category={ad.category} />
+    </>
+  );
 }

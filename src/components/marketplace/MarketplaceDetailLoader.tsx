@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import MarketplaceDetailContent from "@/components/marketplace/MarketplaceDetailContent";
+import RelatedMarketplaceSection from "@/components/marketplace/RelatedMarketplaceSection";
 import {
   getSparePartListingBySlugClient,
   getTechnicalListingBySlugClient,
@@ -68,5 +69,15 @@ export default function MarketplaceDetailLoader({
     );
   }
 
-  return <MarketplaceDetailContent item={item} listPath={listPath} />;
+  return (
+    <>
+      <MarketplaceDetailContent item={item} listPath={listPath} />
+      <RelatedMarketplaceSection
+        variant={variant}
+        itemId={item.id}
+        category={item.category}
+        listPath={listPath}
+      />
+    </>
+  );
 }
