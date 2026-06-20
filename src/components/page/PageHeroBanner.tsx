@@ -83,7 +83,7 @@ export default function PageHeroBanner({
           {showCta && definition.ctaLabel && definition.ctaHref ? (
             <Link
               href={definition.ctaHref}
-              className="mt-4 inline-flex rounded-[8px] bg-[#F26A1B] px-5 py-2 text-xs font-bold text-white sm:text-sm"
+              className="mt-4 inline-flex rounded-[8px] bg-[#F26A1B] px-5 py-2 text-xs font-bold !text-white visited:!text-white hover:!text-white sm:text-sm"
             >
               {definition.ctaLabel}
             </Link>

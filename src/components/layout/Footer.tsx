@@ -1,5 +1,6 @@
 import Link from "next/link";
 import SiteLogo from "@/components/layout/SiteLogo";
+import { BRAND_NAME } from "@/lib/constants/brand";
 
 export default function Footer() {
   return (
@@ -28,7 +29,7 @@ export default function Footer() {
 
       <div className="border-t border-white/10 bg-[#0c223c]">
         <div className="mx-auto flex w-full max-w-7xl flex-col gap-1 px-4 py-3 text-xs text-white/70 sm:flex-row sm:items-center sm:justify-between">
-          <span>© {new Date().getFullYear()} Cncdunyam</span>
+          <span>© {new Date().getFullYear()} {BRAND_NAME}</span>
           <span>Tüm hakları saklıdır.</span>
         </div>
       </div>

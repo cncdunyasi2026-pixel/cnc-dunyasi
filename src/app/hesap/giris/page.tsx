@@ -86,7 +86,7 @@ function LoginForm() {
       <div className="mx-auto w-full max-w-md px-4">
         <div className="overflow-hidden rounded-2xl border border-[#dbe2ea] bg-white shadow-[0_12px_40px_rgba(15,42,74,0.1)]">
           <div className="bg-gradient-to-r from-[#0F2A4A] to-[#1A4A7A] px-6 py-8 text-center text-white">
-            <p className="text-[11px] font-semibold tracking-[0.18em] text-[#7A8CA5]">CNC DÜNYASI</p>
+            <p className="text-[11px] font-semibold tracking-[0.18em] text-[#7A8CA5]">CNC DÜNYAM</p>
             <h1 className="mt-2 text-2xl font-extrabold">Giriş yap</h1>
             <p className="mt-2 text-sm text-white/80">Hesabına giriş yap, ilanları ve mesajları yönet.</p>
           </div>

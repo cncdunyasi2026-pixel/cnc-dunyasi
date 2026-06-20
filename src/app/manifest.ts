@@ -1,9 +1,10 @@
 import type { MetadataRoute } from "next";
+import { BRAND_NAME } from "@/lib/constants/brand";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Cncdunyam",
-    short_name: "Cncdunyam",
+    name: BRAND_NAME,
+    short_name: BRAND_NAME,
     description: "İkinci el CNC, teknik servis, yedek parça ve kariyer platformu",
     start_url: "/",
     display: "standalone",

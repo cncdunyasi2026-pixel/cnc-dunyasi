@@ -1,2 +1,2 @@
 export const DEFAULT_AD_DESCRIPTION =
-  "Bu ilan CNCdunyam ekspertiz surecinden gecmis, makina durumu dogrulanmis ve yayina uygun bulunmustur. Ayrintili teknik rapor, servis kayitlari ve satin alma sureci hakkinda bilgi almak icin satici ile iletisime gecebilirsiniz.";
+  "Bu ilan CNC Dünyam ekspertiz sürecinden geçmiş, makina durumu doğrulanmış ve yayına uygun bulunmuştur. Ayrıntılı teknik rapor, servis kayıtları ve satın alma süreci hakkında bilgi almak için satıcı ile iletişime geçebilirsiniz.";

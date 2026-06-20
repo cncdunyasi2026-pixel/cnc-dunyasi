@@ -1,3 +1,4 @@
+import { BRAND_NAME, BRAND_NAME_UPPER } from "@/lib/constants/brand";
 import type { PageHeroDefinition, PageHeroId } from "@/types/pageHero";
 
 export const PAGE_HERO_DEFINITIONS: PageHeroDefinition[] = [
@@ -7,7 +8,7 @@ export const PAGE_HERO_DEFINITIONS: PageHeroDefinition[] = [
     description: "Üst hero alanı — sol hizalı başlıklar",
     variant: "home",
     image: "/banner_1.jpg",
-    imageAlt: "Cncdunyam Hero",
+    imageAlt: `${BRAND_NAME} hero`,
     imageClassName: "h-[280px] w-full object-cover sm:h-[360px] lg:h-[460px]",
     defaults: {
       eyebrow: "TÜRKİYE'NİN",
@@ -27,7 +28,7 @@ export const PAGE_HERO_DEFINITIONS: PageHeroDefinition[] = [
     imageAlt: "CNC platform tanıtım görseli",
     imageClassName: "h-[230px] w-full object-cover sm:h-[280px]",
     defaults: {
-      eyebrow: "CNC DÜNYASI İLAN PLATFORMU",
+      eyebrow: `${BRAND_NAME_UPPER} İLAN PLATFORMU`,
       title: "Tezgahını Doğru Alıcıyla Buluştur",
       description: "Dakikalar içinde ilanını yayınla, binlerce profesyonel alıcıya hemen ulaş.",
       eyebrowColor: "#7A8CA5",
@@ -46,7 +47,7 @@ export const PAGE_HERO_DEFINITIONS: PageHeroDefinition[] = [
     imageAlt: "Teknik servis banner",
     imageClassName: "h-[230px] w-full object-cover sm:h-[280px]",
     defaults: {
-      eyebrow: "CNC DÜNYASI SERVİS AĞI",
+      eyebrow: `${BRAND_NAME_UPPER} SERVİS AĞI`,
       title: "Uzmana Hemen Ulaş, Üretimi Durdurma",
       description: "Teknik servis ilanlarını incele, bölgendeki uzman ekiplerle hızlı iletişime geç.",
       eyebrowColor: "#7A8CA5",
@@ -65,7 +66,7 @@ export const PAGE_HERO_DEFINITIONS: PageHeroDefinition[] = [
     imageAlt: "Yedek parça banner",
     imageClassName: "h-[230px] w-full object-cover sm:h-[280px]",
     defaults: {
-      eyebrow: "CNC DÜNYASI TEDARİK AĞI",
+      eyebrow: `${BRAND_NAME_UPPER} TEDARİK AĞI`,
       title: "Doğru Yedek Parçaya Tek Noktadan Ulaş",
       description: "Tedarikçi firmaları karşılaştır, stok ve uzmanlık bilgilerine hızla eriş.",
       eyebrowColor: "#7A8CA5",
@@ -84,7 +85,7 @@ export const PAGE_HERO_DEFINITIONS: PageHeroDefinition[] = [
     imageAlt: "Kariyer banner",
     imageClassName: "h-[230px] w-full object-cover sm:h-[280px]",
     defaults: {
-      eyebrow: "CNC DÜNYASI KARİYER",
+      eyebrow: `${BRAND_NAME_UPPER} KARİYER`,
       title: "Doğru Pozisyonla Kariyerinde İleri Geç",
       description: "İş ilanlarını incele, uzmanlığını değerlendirecek firmalarla hızlı bağlantı kur.",
       eyebrowColor: "#7A8CA5",

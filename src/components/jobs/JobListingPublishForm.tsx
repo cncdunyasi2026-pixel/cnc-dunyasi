@@ -284,7 +284,7 @@ export default function JobListingPublishForm() {
     <ListingPublishShell
       eyebrow="KARİYER"
       title="İş ilanı ver"
-      subtitle="Aradığınız pozisyonu tanımlayın; adaylar CNC Dünyası üzerinden ilanınıza ulaşsın."
+      subtitle="Aradığınız pozisyonu tanımlayın; adaylar CNC Dünyam üzerinden ilanınıza ulaşsın."
       footer={{
         href: "/kariyer",
         authenticatedLabel: "← Kariyer vitrinine dön",
