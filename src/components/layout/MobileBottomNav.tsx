@@ -53,12 +53,12 @@ const navItems = [
     ),
   },
   {
-    href: "/hesap/profil",
-    label: "Profil",
+    href: "/kategori/teknik-servis",
+    label: "Teknik Servis",
     icon: (
       <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
         <path
-          d="M12 12a4.125 4.125 0 1 0 0-8.25 4.125 4.125 0 0 0 0 8.25Zm0 2.25c-4.142 0-7.5 2.518-7.5 5.625 0 .207.168.375.375.375h14.25a.375.375 0 0 0 .375-.375c0-3.107-3.358-5.625-7.5-5.625Z"
+          d="M14.25 3.75a2.25 2.25 0 0 1 2.25 2.25v.75h.75a2.25 2.25 0 0 1 0 4.5h-.75v6.75a2.25 2.25 0 0 1-2.25 2.25h-4.5a2.25 2.25 0 0 1-2.25-2.25V11.25h-.75a2.25 2.25 0 0 1 0-4.5h.75V6a2.25 2.25 0 0 1 2.25-2.25h4.5Zm-3 6.75v6.75h1.5v-6.75h-1.5Zm-3-3h7.5V6h-7.5v1.5Z"
           fill="currentColor"
         />
       </svg>
@@ -76,9 +76,6 @@ function isNavItemActive(href: string, pathname: string): boolean {
       pathname.startsWith("/ilan/") ||
       pathname.startsWith("/ilan-ver")
     );
-  }
-  if (href === "/hesap/profil") {
-    return pathname.startsWith("/hesap");
   }
   return pathname === href || pathname.startsWith(`${href}/`);
 }

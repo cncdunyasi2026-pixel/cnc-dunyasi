@@ -277,20 +277,32 @@ export default function Header() {
               )}
             </div>
 
-            {/* Orta: logo — hamburger ile İLAN VER arasında ortalanır */}
-            <div className="pointer-events-none absolute inset-y-0 left-9 right-[4.75rem] flex items-center justify-center">
+            {/* Orta: logo — hamburger ile sağ ikonlar arasında ortalanır */}
+            <div className="pointer-events-none absolute inset-y-0 left-9 right-[5.25rem] flex items-center justify-center">
               <div className="pointer-events-auto translate-x-1">
                 <SiteLogo size="sm" priority />
               </div>
             </div>
 
-            {/* Sağ: İlan ver */}
-            <div className="relative z-10 flex">
+            {/* Sağ: bildirim + profil */}
+            <div className="relative z-10 flex items-center gap-0.5">
               <Link
-                href="/ilan-ver"
-                className="whitespace-nowrap rounded-full bg-[#F26A1B] px-3 py-1.5 text-[10px] font-bold tracking-wide !text-white visited:!text-white hover:!text-white shadow-[0_4px_12px_rgba(242,106,27,0.28)] transition hover:bg-[#dd5f15]"
+                href={user ? "/hesap/bildirimler" : "/hesap/giris?redirect=%2Fhesap%2Fbildirimler"}
+                aria-label="Bildirimler"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-[#0F2A4A] transition hover:bg-[#f0f3f8]"
               >
-                İLAN VER
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+              </Link>
+              <Link
+                href={user ? "/hesap/profil" : "/hesap/giris?redirect=%2Fhesap%2Fprofil"}
+                aria-label="Profil"
+                className="flex h-9 w-9 items-center justify-center rounded-xl text-[#0F2A4A] transition hover:bg-[#f0f3f8]"
+              >
+                <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
               </Link>
             </div>
           </div>
