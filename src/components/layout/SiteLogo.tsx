@@ -17,19 +17,19 @@ const ICON = {
 
 const SIZE = {
   sm: {
-    icon: "h-11 w-11",
-    text: "text-xl leading-none",
-    gap: "gap-2",
+    icon: "h-9 w-9",
+    text: "text-lg leading-none",
+    gap: "gap-1.5",
   },
   md: {
-    icon: "h-12 w-12",
-    text: "text-lg",
-    gap: "gap-3",
+    icon: "h-10 w-10",
+    text: "text-base",
+    gap: "gap-2",
   },
   lg: {
-    icon: "h-14 w-14 sm:h-16 sm:w-16",
-    text: "text-2xl sm:text-3xl",
-    gap: "gap-3 sm:gap-3.5",
+    icon: "h-11 w-11 sm:h-12 sm:w-12",
+    text: "text-xl sm:text-2xl",
+    gap: "gap-2.5 sm:gap-3",
   },
 } as const;
 
