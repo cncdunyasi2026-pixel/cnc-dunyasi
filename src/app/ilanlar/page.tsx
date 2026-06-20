@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { matchesAnySearch } from "@/lib/utils/searchText";
 import { useEffect, useMemo, useState } from "react";
 import { useListingViewMode } from "@/hooks/useListingViewMode";
 import { useAdBrowse } from "@/hooks/useAdBrowse";
+import { useAdSearch } from "@/hooks/useAdSearch";
 import { buildAdServerFilters } from "@/types/adBrowse";
 import type { Ad } from "@/types/ad";
 import { formatPrice } from "@/lib/utils/format";
@@ -112,6 +112,7 @@ const EMPTY_GROUPS = {
 export default function ListingsPage() {
   const { viewMode, setViewMode } = useListingViewMode();
   const [search, setSearch] = useState("");
+  const [activeSearch, setActiveSearch] = useState("");
 
   /* ── Filtre state: pending (kullanıcı seçiyor) vs applied (listeye yansıyan) ── */
   const [pendingGroups, setPendingGroups] = useState<Record<string, string[]>>(EMPTY_GROUPS);
@@ -127,8 +128,19 @@ export default function ListingsPage() {
     loadingMore,
     hasMore,
     loadMore,
-    error: listError,
+    error: browseError,
   } = useAdBrowse(serverFilters);
+
+  const {
+    results: searchResults,
+    loading: searchLoading,
+    error: searchError,
+    isActive: isSearchMode,
+  } = useAdSearch(activeSearch, serverFilters);
+
+  const listSource = isSearchMode ? searchResults : allAds;
+  const listLoading = isSearchMode ? searchLoading : loading;
+  const listError = isSearchMode ? searchError : browseError;
 
   const [sortKey, setSortKey] = useState<SortKey>("date_desc");
   const [sortOpen, setSortOpen] = useState(false);
@@ -257,6 +269,11 @@ export default function ListingsPage() {
     setAppliedGroups(EMPTY_GROUPS);
     setAppliedPriceRange(null);
     setSearch("");
+    setActiveSearch("");
+  };
+
+  const handleSearch = () => {
+    setActiveSearch(search.trim());
   };
 
   /* Uygulanmış filtreyi tek tek kaldır */
@@ -271,19 +288,7 @@ export default function ListingsPage() {
 
   /* ── Filtrelenmiş + sıralanmış liste (applied state kullanır) ─ */
   const displayed = useMemo(() => {
-    let result = [...allAds];
-
-    // Metin arama — yalnızca yüklenen ilanlar üzerinde (başlık, marka, model, şehir, açıklama)
-    if (search.trim()) {
-      result = result.filter((a) =>
-        matchesAnySearch(
-          [a.title, a.brand, a.model, a.city, a.district, a.neighborhood, a.description],
-          search,
-        ),
-      );
-    }
-
-    // Checkbox filtreleri (Firestore'da olmayanlar + çakışan marka)
+    let result = [...listSource];
     const { marka, durum, eksen, kategori, kimden, takas, teslimat } = appliedGroups;
     const categoryUsesIn = (kategori?.length ?? 0) > 1;
     if (marka.length && categoryUsesIn) {
@@ -313,7 +318,7 @@ export default function ListingsPage() {
     });
 
     return result;
-  }, [allAds, search, appliedGroups, appliedPriceRange, sortKey]);
+  }, [listSource, appliedGroups, appliedPriceRange, sortKey]);
 
   const currentSort = SORT_OPTIONS.find((o) => o.value === sortKey)!
 
@@ -395,12 +400,23 @@ export default function ListingsPage() {
                 <input
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleSearch();
+                    }
+                  }}
                   placeholder="Marka, model veya ilanda ara..."
                   className="h-11 w-full rounded-xl border border-[#d3dcea] bg-white pl-10 pr-3 text-sm text-[#0F2A4A] outline-none transition focus:border-[#0F2A4A] focus:ring-2 focus:ring-[#0F2A4A]/15"
                 />
               </div>
-              <button className="h-11 rounded-xl bg-[#0F2A4A] px-5 text-sm font-semibold text-white transition hover:bg-[#12335c]">
-                Ara
+              <button
+                type="button"
+                onClick={handleSearch}
+                disabled={searchLoading}
+                className="h-11 rounded-xl bg-[#0F2A4A] px-5 text-sm font-semibold text-white transition hover:bg-[#12335c] disabled:opacity-60"
+              >
+                {searchLoading ? "Aranıyor..." : "Ara"}
               </button>
             </div>
 
@@ -528,11 +544,15 @@ export default function ListingsPage() {
             )}
 
             {/* İlan sayısı */}
-            {!loading && (
+            {!listLoading && (
               <p className="mt-2 text-xs text-[#7A8CA5]">
                 {displayed.length} ilan gösteriliyor
-                {displayed.length !== allAds.length ? ` (${allAds.length} yüklü kayıt içinden)` : ""}
-                {hasMore ? " · daha fazlası var" : ""}
+                {isSearchMode
+                  ? ` · «${activeSearch}» için tüm veritabanında arama`
+                  : displayed.length !== allAds.length
+                    ? ` (${allAds.length} yüklü kayıt içinden)`
+                    : ""}
+                {!isSearchMode && hasMore ? " · daha fazlası var" : ""}
               </p>
             )}
           </div>
@@ -541,7 +561,7 @@ export default function ListingsPage() {
           {listError && (
             <p className="rounded-[10px] border border-red-200 bg-red-50 p-4 text-sm text-red-900">{listError}</p>
           )}
-          {loading && (
+          {listLoading && (
             <div className="grid grid-cols-2 gap-2 lg:grid-cols-3">
               {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="h-64 animate-pulse rounded-[10px] bg-[#edf1f6]" />
@@ -549,9 +569,13 @@ export default function ListingsPage() {
             </div>
           )}
 
-          {!loading && !listError && displayed.length === 0 && (
+          {!listLoading && !listError && displayed.length === 0 && (
             <div className="rounded-[10px] border border-dashed border-[#d3dcea] bg-white px-6 py-16 text-center">
-              <p className="text-sm font-semibold text-[#7A8CA5]">Filtre kriterlerine uygun ilan bulunamadı.</p>
+              <p className="text-sm font-semibold text-[#7A8CA5]">
+                {isSearchMode
+                  ? "Aramanızla eşleşen ilan bulunamadı."
+                  : "Filtre kriterlerine uygun ilan bulunamadı."}
+              </p>
               <button
                 type="button"
                 onClick={handleClear}
@@ -562,7 +586,7 @@ export default function ListingsPage() {
             </div>
           )}
 
-          {!loading && displayed.length > 0 && (
+          {!listLoading && displayed.length > 0 && (
             <div
               className={
                 viewMode === "card"
@@ -576,7 +600,7 @@ export default function ListingsPage() {
             </div>
           )}
 
-          {!loading && hasMore && (
+          {!listLoading && !isSearchMode && hasMore && (
             <div className="mt-8 flex flex-col items-center gap-2">
               <button
                 type="button"

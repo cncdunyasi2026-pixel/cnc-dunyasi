@@ -19,6 +19,7 @@ import type { Ad } from "@/types/ad";
 import { mapAdSnapshotToAd } from "@/lib/firestore/mapAdDoc";
 
 import type { AdBrowseParams } from "@/types/adBrowse";
+import { buildAdSearchTokens } from "@/lib/utils/adSearch";
 
 export type AdCreateInput = Omit<Ad, "id" | "createdAt">;
 
@@ -43,8 +44,10 @@ function stripUndefined(obj: Record<string, unknown>): Record<string, unknown> {
 }
 
 export async function createAdDoc(data: AdCreateInput) {
+  const searchTokens = buildAdSearchTokens(data);
   return addDoc(collection(db, "ads"), stripUndefined({
     ...data,
+    searchTokens,
     createdAt: serverTimestamp(),
     updatedAt: serverTimestamp(),
   } as Record<string, unknown>));

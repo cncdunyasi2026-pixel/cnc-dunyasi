@@ -5,6 +5,8 @@ export type Currency = "TRY" | "USD" | "EUR" | "GBP";
 export type Ad = {
   id: string;
   title: string;
+  /** Tam metin arama için normalize edilmiş token listesi (Firestore). */
+  searchTokens?: string[];
   brand?: string;
   model?: string;
   price: number;

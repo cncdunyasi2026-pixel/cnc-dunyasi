@@ -20,7 +20,8 @@
     "firebase:deploy:firestore-rules": "firebase deploy --only firestore:rules",
     "firebase:deploy:functions": "firebase deploy --only functions",
     "ops:migrate-ownerid": "node scripts/migrate-ownerid.mjs",
-    "ops:grant-admin": "node scripts/grant-admin-claims.mjs"
+    "ops:grant-admin": "node scripts/grant-admin-claims.mjs",
+    "ops:backfill-ad-search-tokens": "node scripts/backfill-ad-search-tokens.mjs"
   },
   "dependencies": {
     "next": "latest",

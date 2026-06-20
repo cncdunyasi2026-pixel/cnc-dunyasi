@@ -19,6 +19,7 @@ import { db, isFirebaseClientConfigured } from "@/lib/firebase";
 import { mockAds } from "@/lib/mocks/ads";
 
 import type { AdBrowseParams } from "@/types/adBrowse";
+import { buildAdSearchTokens } from "@/lib/utils/adSearch";
 
 export type GetAdsParams = AdBrowseParams & {
   /** Mock modda sayfalama için (Firebase cursor yerine). */
@@ -128,6 +129,13 @@ function computeChangedFields(
     .map(([key]) => key);
 }
 
+function withSearchTokens(source: Partial<Ad>, patch: Record<string, unknown>): Record<string, unknown> {
+  return {
+    ...patch,
+    searchTokens: buildAdSearchTokens({ ...source, ...patch } as Partial<Ad>),
+  };
+}
+
 export async function submitAdUpdateForReview(
   sourceAdId: string,
   patch: Pick<
@@ -170,7 +178,7 @@ export async function submitAdUpdateForReview(
   if (source.status === "pending" || source.status === "draft") {
     const selfRef = doc(db, "ads", sourceAdId);
     await updateDoc(selfRef, {
-      ...patch,
+      ...withSearchTokens(source, patch as Record<string, unknown>),
       status: source.status, // pending / draft statüsünü koru
       updatedAt: serverTimestamp(),
     });
@@ -184,7 +192,7 @@ export async function submitAdUpdateForReview(
     const newStatus = source.status === "needs_revision" ? "revision_resubmitted" : source.status;
     const changed = computeChangedFields(source as unknown as Record<string, unknown>, patch as Record<string, unknown>);
     await updateDoc(selfRef, {
-      ...patch,
+      ...withSearchTokens(source, patch as Record<string, unknown>),
       status: newStatus,
       updatedAt: serverTimestamp(),
       revisionNote: "",
@@ -217,9 +225,10 @@ export async function submitAdUpdateForReview(
     const existingStatus = existingPending.data().status as string;
     const newStatus = existingStatus === "needs_revision" ? "revision_resubmitted" : "update_pending";
     const changed = computeChangedFields(carry as Record<string, unknown>, patch as Record<string, unknown>);
+    const merged = { ...carry, ...patch };
     await updateDoc(existingPending.ref, {
-      ...carry,
-      ...patch,
+      ...merged,
+      searchTokens: buildAdSearchTokens(merged as Partial<Ad>),
       status: newStatus,
       sourceListingId: sourceAdId,
       updatedAt: serverTimestamp(),
