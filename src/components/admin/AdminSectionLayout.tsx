@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useAuth } from "@/hooks/useAuth";
+import { useEffect, useState } from "react";
 
 type Props = {
   adminCode: string;
@@ -17,7 +18,23 @@ type Props = {
 export default function AdminSectionLayout({ adminCode, title, subtitle, children }: Props) {
   const pathname = usePathname();
   const { user } = useAuth();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
   const base = `/${adminCode}/admin`;
+
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!sidebarOpen) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = previousOverflow;
+    };
+  }, [sidebarOpen]);
+
+  const closeSidebar = () => setSidebarOpen(false);
 
   const navItems = [
     { href: `${base}/dashboard`, label: "Dashboard", icon: <GridIcon /> },
@@ -31,12 +48,35 @@ export default function AdminSectionLayout({ adminCode, title, subtitle, childre
 
   return (
     <div className="flex min-h-screen bg-[#060f1e] text-white">
+      {/* Mobil backdrop */}
+      <div
+        className={`fixed inset-0 z-40 bg-black/50 transition-opacity duration-300 md:hidden ${
+          sidebarOpen ? "opacity-100" : "pointer-events-none opacity-0"
+        }`}
+        onClick={closeSidebar}
+        aria-hidden={!sidebarOpen}
+      />
+
       {/* ─── Sidebar ─────────────────────────────────────────── */}
-      <aside className="flex w-60 flex-shrink-0 flex-col border-r border-white/[0.06] bg-gradient-to-b from-[#0b1729] to-[#09152270]">
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-72 max-w-[85vw] flex-shrink-0 flex-col overflow-y-auto border-r border-white/[0.06] bg-gradient-to-b from-[#0b1729] to-[#09152270] transition-transform duration-300 ease-in-out md:static md:z-auto md:w-60 md:max-w-none md:translate-x-0 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+        }`}
+      >
         {/* Brand */}
-        <div className="border-b border-white/[0.06] px-5 py-5">
-          <SiteLogo variant="white" href="" size="sm" />
-          <p className="mt-2 text-[11px] font-semibold text-white/45">Admin Panel</p>
+        <div className="flex items-start justify-between border-b border-white/[0.06] px-5 py-5">
+          <div className="min-w-0">
+            <SiteLogo variant="white" href="" size="sm" />
+            <p className="mt-2 text-[11px] font-semibold text-white/45">Admin Panel</p>
+          </div>
+          <button
+            type="button"
+            onClick={closeSidebar}
+            className="flex h-9 w-9 flex-shrink-0 items-center justify-center rounded-xl text-white/60 transition hover:bg-white/[0.08] hover:text-white md:hidden"
+            aria-label="Menüyü kapat"
+          >
+            <CloseIcon />
+          </button>
         </div>
 
         {/* Nav */}
@@ -50,6 +90,7 @@ export default function AdminSectionLayout({ adminCode, title, subtitle, childre
               <Link
                 key={item.href}
                 href={item.href}
+                onClick={closeSidebar}
                 className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-semibold transition-all duration-150 ${
                   isActive
                     ? "bg-blue-600 text-white shadow-[0_2px_16px_rgba(37,99,235,0.4)]"
@@ -74,6 +115,7 @@ export default function AdminSectionLayout({ adminCode, title, subtitle, childre
           <Link
             href="/"
             target="_blank"
+            onClick={closeSidebar}
             className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-semibold text-[#6a94bc] transition hover:bg-white/[0.05] hover:text-white"
           >
             <ExternalLinkIcon />
@@ -93,7 +135,10 @@ export default function AdminSectionLayout({ adminCode, title, subtitle, childre
           )}
           <button
             type="button"
-            onClick={() => void signOut(auth)}
+            onClick={() => {
+              closeSidebar();
+              void signOut(auth);
+            }}
             className="flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-[13px] font-semibold text-rose-400/80 transition hover:bg-rose-900/20 hover:text-rose-300"
           >
             <LogoutIcon />
@@ -104,16 +149,40 @@ export default function AdminSectionLayout({ adminCode, title, subtitle, childre
 
       {/* ─── Main Content ─────────────────────────────────────── */}
       <main className="flex min-w-0 flex-1 flex-col overflow-auto">
-        {/* Page header */}
+        {/* Mobil üst bar */}
+        <div className="sticky top-0 z-30 flex items-center gap-3 border-b border-white/[0.06] bg-[#0a1729]/95 px-4 py-3 backdrop-blur-sm md:hidden">
+          <button
+            type="button"
+            onClick={() => setSidebarOpen(true)}
+            className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-xl text-white/80 transition hover:bg-white/[0.08] hover:text-white"
+            aria-label="Menüyü aç"
+          >
+            <MenuIcon />
+          </button>
+          <div className="min-w-0 flex-1">
+            {title ? (
+              <>
+                <h1 className="truncate text-base font-extrabold text-white">{title}</h1>
+                {subtitle && (
+                  <p className="truncate text-xs text-[#6a94bc]">{subtitle}</p>
+                )}
+              </>
+            ) : (
+              <p className="text-sm font-semibold text-white/70">Admin Panel</p>
+            )}
+          </div>
+        </div>
+
+        {/* Page header — masaüstü */}
         {title && (
-          <div className="border-b border-white/[0.06] bg-[#0a1729]/60 px-6 py-5 backdrop-blur-sm">
+          <div className="hidden border-b border-white/[0.06] bg-[#0a1729]/60 px-6 py-5 backdrop-blur-sm md:block">
             <h1 className="text-xl font-extrabold text-white">{title}</h1>
             {subtitle && (
               <p className="mt-0.5 text-sm text-[#6a94bc]">{subtitle}</p>
             )}
           </div>
         )}
-        <div className="flex-1 p-6">{children}</div>
+        <div className="flex-1 p-4 md:p-6">{children}</div>
       </main>
     </div>
   );
@@ -206,6 +275,22 @@ function ExternalLinkIcon() {
       <path strokeLinecap="round" strokeLinejoin="round" d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
       <polyline strokeLinecap="round" strokeLinejoin="round" points="15 3 21 3 21 9" />
       <line strokeLinecap="round" x1="10" y1="14" x2="21" y2="3" />
+    </svg>
+  );
+}
+
+function MenuIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
     </svg>
   );
 }
