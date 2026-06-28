@@ -15,15 +15,20 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { fetchCachedList } from "@/lib/cache/cachedListFetch";
+import { removeBrowserCache } from "@/lib/cache/browserCache";
 
 export type SiteDataItem = { id: string; name: string; order?: number };
 
 /* ── Genel CRUD fabrikası ────────────────────────────────────── */
 
 function makeService(colName: string) {
+  const cacheKey = `site:${colName}`;
+
+  const invalidate = () => removeBrowserCache(cacheKey);
+
   return {
     async getAll(): Promise<SiteDataItem[]> {
-      return fetchCachedList(`site:${colName}`, async () => {
+      return fetchCachedList(cacheKey, async () => {
         const snap = await getDocs(query(collection(db, colName), orderBy("order", "asc")));
         return snap.docs.map((d) => ({
           id: d.id,
@@ -39,15 +44,18 @@ function makeService(colName: string) {
         order: Date.now(),
         createdAt: serverTimestamp(),
       });
+      invalidate();
       return ref.id;
     },
 
     async rename(id: string, name: string): Promise<void> {
       await updateDoc(doc(db, colName, id), { name: name.trim() });
+      invalidate();
     },
 
     async remove(id: string): Promise<void> {
       await deleteDoc(doc(db, colName, id));
+      invalidate();
     },
   };
 }

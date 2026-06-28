@@ -11,6 +11,13 @@ import {
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import { fetchCachedList } from "@/lib/cache/cachedListFetch";
+import { removeBrowserCache } from "@/lib/cache/browserCache";
+
+const BRANDS_CACHE_KEY = "site:machine-brands";
+
+function invalidateBrandsCache(): void {
+  removeBrowserCache(BRANDS_CACHE_KEY);
+}
 
 export type Brand = { id: string; name: string };
 export type BrandModel = { id: string; name: string };
@@ -19,7 +26,7 @@ export type BrandWithModels = Brand & { models: BrandModel[] };
 /* ── Markalar ─────────────────────────────────────────────── */
 
 export async function getBrands(): Promise<Brand[]> {
-  return fetchCachedList("site:machine-brands", async () => {
+  return fetchCachedList(BRANDS_CACHE_KEY, async () => {
     const snap = await getDocs(
       query(collection(db, "machine_brands"), orderBy("name", "asc")),
     );
@@ -32,6 +39,7 @@ export async function addBrand(name: string): Promise<string> {
     name: name.trim(),
     createdAt: serverTimestamp(),
   });
+  invalidateBrandsCache();
   return ref.id;
 }
 
@@ -42,6 +50,7 @@ export async function deleteBrand(brandId: string): Promise<void> {
   modSnap.docs.forEach((d) => batch.delete(d.ref));
   batch.delete(doc(db, "machine_brands", brandId));
   await batch.commit();
+  invalidateBrandsCache();
 }
 
 /* ── Modeller ─────────────────────────────────────────────── */
