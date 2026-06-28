@@ -10,3 +10,14 @@ export function isListingPublishedPublic(data: Record<string, unknown>): boolean
 export function isAdPublishedPublic(status: string | undefined): boolean {
   return !status || status === "published";
 }
+
+/** İlanlarım kartından tıklanınca: yayında → vitrin, değilse → düzenleme (arşiv → önizleme). */
+export function ownerAdListingHref(ad: { id: string; status?: string }): string {
+  if (isAdPublishedPublic(ad.status)) {
+    return `/ilan/${ad.id}`;
+  }
+  if (ad.status === "archived") {
+    return `/hesap/ilanlarim/${ad.id}`;
+  }
+  return `/hesap/ilanlarim/duzenle/${ad.id}`;
+}

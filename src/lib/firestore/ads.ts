@@ -43,6 +43,8 @@ function stripUndefined(obj: Record<string, unknown>): Record<string, unknown> {
   );
 }
 
+export { stripUndefined };
+
 export async function createAdDoc(data: AdCreateInput) {
   const searchTokens = buildAdSearchTokens(data);
   return addDoc(collection(db, "ads"), stripUndefined({

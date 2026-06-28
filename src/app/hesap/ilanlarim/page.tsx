@@ -8,6 +8,7 @@ import { fetchMyListings, type MyListingsBundle } from "@/services/myListingsSer
 import type { ListingLifecycleStatus } from "@/types/listingStatus";
 import { formatPrice } from "@/lib/utils/format";
 import { archiveListingDoc } from "@/lib/firestore/listingLifecycle";
+import { ownerAdListingHref } from "@/lib/firestore/listingVisibility";
 import { revisionFieldLabel } from "@/lib/moderation/revisionFieldLabels";
 import type { Ad } from "@/types/ad";
 import type { MyJobListingRow, MyMarketplaceListingRow } from "@/types/myListings";
@@ -226,7 +227,7 @@ export default function IlanlarimPage() {
                   <AdRow
                     key={ad.id}
                     ad={ad}
-                    onOpen={() => router.push(`/ilan/${ad.id}`)}
+                    onOpen={() => router.push(ownerAdListingHref(ad))}
                     onEdit={() => router.push(`/hesap/ilanlarim/duzenle/${ad.id}`)}
                     onArchive={() => {
                       setArchiveReason("Ürün bu platformdan satıldı");
@@ -413,6 +414,7 @@ function AdRow({
   const status = ad.status;
   const isArchived = status === "archived";
   const cover = ad.images[0] ?? "/banner_1.jpg";
+  const listingHref = ownerAdListingHref(ad);
   return (
     <li
       className={`cursor-pointer overflow-hidden rounded-xl border border-[#dbe2ea] bg-white ${isArchived ? "grayscale opacity-55" : ""}`}
@@ -421,7 +423,7 @@ function AdRow({
       <div className="flex">
         <img src={cover} alt={ad.title} className="h-24 w-28 object-cover" />
         <div className="min-w-0 flex-1 px-3 py-2">
-          <Link href={`/ilan/${ad.id}`} className="font-semibold text-[#0F2A4A] hover:text-[#F26A1B] hover:underline">
+          <Link href={listingHref} className="font-semibold text-[#0F2A4A] hover:text-[#F26A1B] hover:underline">
             {ad.title}
           </Link>
           <p className="mt-1 text-xs text-[#5f6f86]">{ad.city} / {ad.district} · {formatPrice(ad.price, ad.currency)}</p>

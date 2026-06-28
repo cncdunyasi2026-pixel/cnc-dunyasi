@@ -12,6 +12,7 @@ import {
   createAdDoc,
   getAdDocById,
   getAdDocs,
+  stripUndefined,
   type AdCursor,
   type AdPageResult,
 } from "@/lib/firestore/ads";
@@ -130,10 +131,11 @@ function computeChangedFields(
 }
 
 function withSearchTokens(source: Partial<Ad>, patch: Record<string, unknown>): Record<string, unknown> {
-  return {
-    ...patch,
-    searchTokens: buildAdSearchTokens({ ...source, ...patch } as Partial<Ad>),
-  };
+  const cleanPatch = stripUndefined(patch);
+  return stripUndefined({
+    ...cleanPatch,
+    searchTokens: buildAdSearchTokens({ ...source, ...cleanPatch } as Partial<Ad>),
+  });
 }
 
 export async function submitAdUpdateForReview(
@@ -180,11 +182,11 @@ export async function submitAdUpdateForReview(
   // Yayına girmeden admin incelemesi sırasında yapılan düzenleme sadece aynı dokümanı günceller.
   if (source.status === "pending" || source.status === "draft") {
     const selfRef = doc(db, "ads", sourceAdId);
-    await updateDoc(selfRef, {
+    await updateDoc(selfRef, stripUndefined({
       ...withSearchTokens(source, patch as Record<string, unknown>),
       status: source.status, // pending / draft statüsünü koru
       updatedAt: serverTimestamp(),
-    });
+    }));
     return selfRef;
   }
 
@@ -194,14 +196,14 @@ export async function submitAdUpdateForReview(
     const selfRef = doc(db, "ads", sourceAdId);
     const newStatus = source.status === "needs_revision" ? "revision_resubmitted" : source.status;
     const changed = computeChangedFields(source as unknown as Record<string, unknown>, patch as Record<string, unknown>);
-    await updateDoc(selfRef, {
+    await updateDoc(selfRef, stripUndefined({
       ...withSearchTokens(source, patch as Record<string, unknown>),
       status: newStatus,
       updatedAt: serverTimestamp(),
       revisionNote: "",
       revisionFields: {},
       changedFields: changed,
-    });
+    }));
     return selfRef;
   }
 
@@ -228,8 +230,8 @@ export async function submitAdUpdateForReview(
     const existingStatus = existingPending.data().status as string;
     const newStatus = existingStatus === "needs_revision" ? "revision_resubmitted" : "update_pending";
     const changed = computeChangedFields(carry as Record<string, unknown>, patch as Record<string, unknown>);
-    const merged = { ...carry, ...patch };
-    await updateDoc(existingPending.ref, {
+    const merged = stripUndefined({ ...carry, ...patch } as Record<string, unknown>);
+    await updateDoc(existingPending.ref, stripUndefined({
       ...merged,
       searchTokens: buildAdSearchTokens(merged as Partial<Ad>),
       status: newStatus,
@@ -238,7 +240,7 @@ export async function submitAdUpdateForReview(
       revisionNote: "",
       revisionFields: {},
       changedFields: changed,
-    });
+    }));
     return existingPending.ref;
   }
 
