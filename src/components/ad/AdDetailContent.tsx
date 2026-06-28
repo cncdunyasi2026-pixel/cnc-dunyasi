@@ -16,6 +16,7 @@ import {
   getOrCreateConversation,
   sendMessage,
 } from "@/services/messagingService";
+import { buildPublicUrl } from "@/lib/utils/publicUrl";
 
 type Props = {
   ad: Ad;
@@ -51,10 +52,11 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
     if (!ad.ownerId) return;
     setMsgLoading(true);
     try {
+      const listingPath = `/ilan/${ad.id}`;
       const listing = {
         id: ad.id,
         title: ad.title,
-        url: `${window.location.origin}/ilan/${ad.id}`,
+        url: buildPublicUrl(listingPath),
         imageUrl: ad.images[0],
       };
       const { conversationId, isNew } = await getOrCreateConversation(
@@ -66,7 +68,7 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
         await sendMessage(
           conversationId,
           { uid: user.uid, displayName: user.displayName ?? user.email ?? "Kullanıcı" },
-          `${window.location.origin}/ilan/${ad.id}`,
+          buildPublicUrl(listingPath),
           "listing",
         );
       }

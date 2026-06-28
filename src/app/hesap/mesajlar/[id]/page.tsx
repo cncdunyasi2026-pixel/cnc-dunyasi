@@ -13,6 +13,7 @@ import {
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/lib/firebase";
 import type { Conversation } from "@/services/messagingService";
+import { listingUrlToPath } from "@/lib/utils/publicUrl";
 
 /* ── Tarih ayırıcı ──────────────────────────────────────────── */
 
@@ -63,10 +64,8 @@ function Bubble({
         {/* Avatar placeholder */}
         <div className="w-7 shrink-0" />
 
-        <a
-          href={msg.text}
-          target="_blank"
-          rel="noopener noreferrer"
+        <Link
+          href={listingUrlToPath(msg.text)}
           className={`group flex max-w-[70%] items-center gap-3 overflow-hidden rounded-2xl border p-3 shadow-sm transition hover:shadow-md ${
             isMine
               ? "rounded-br-sm border-[#0a2240] bg-[#0F2A4A] text-white"
@@ -85,7 +84,7 @@ function Bubble({
             </p>
             <p className={`mt-0.5 text-[10px] ${isMine ? "text-white/40" : "text-[#b0bcc9]"}`}>{time}</p>
           </div>
-        </a>
+        </Link>
       </div>
     );
   }
@@ -279,7 +278,7 @@ export default function ChatPage() {
           <p className="truncate text-[15px] font-bold text-[#0F2A4A]">{otherName}</p>
           {conv?.listingTitle && (
             <Link
-              href={conv.listingUrl ?? "#"}
+              href={listingUrlToPath(conv.listingUrl)}
               className="flex items-center gap-1 truncate"
             >
               <svg className="h-3 w-3 shrink-0 text-[#F26A1B]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

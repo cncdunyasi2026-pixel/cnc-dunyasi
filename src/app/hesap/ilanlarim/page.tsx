@@ -8,6 +8,7 @@ import { fetchMyListings, type MyListingsBundle } from "@/services/myListingsSer
 import type { ListingLifecycleStatus } from "@/types/listingStatus";
 import { formatPrice } from "@/lib/utils/format";
 import { archiveListingDoc } from "@/lib/firestore/listingLifecycle";
+import { revisionFieldLabel } from "@/lib/moderation/revisionFieldLabels";
 import type { Ad } from "@/types/ad";
 import type { MyJobListingRow, MyMarketplaceListingRow } from "@/types/myListings";
 
@@ -64,21 +65,6 @@ function formatRowDate(ms: number) {
     month: "short",
     year: "numeric",
   });
-}
-
-function revisionFieldLabel(key: string): string {
-  const map: Record<string, string> = {
-    title: "Baslik",
-    price: "Fiyat",
-    category: "Kategori",
-    city: "Il",
-    district: "Ilce",
-    description: "Aciklama",
-    name: "Ad/Firma",
-    expertise: "Uzmanlik",
-    company: "Sirket",
-  };
-  return map[key] ?? key;
 }
 
 function RevisionFieldsNote({ fields }: { fields?: Record<string, string> }) {
