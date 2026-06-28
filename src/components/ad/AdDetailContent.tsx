@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Ad } from "@/types/ad";
@@ -17,6 +17,8 @@ import {
   sendMessage,
 } from "@/services/messagingService";
 import { buildPublicUrl } from "@/lib/utils/publicUrl";
+import PhoneContactRow from "@/components/ui/PhoneContactRow";
+import { getUserDoc } from "@/lib/firestore/users";
 
 type Props = {
   ad: Ad;
@@ -43,6 +45,37 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
   const router = useRouter();
   const isOwnerView = user?.uid === ad.ownerId;
   const [msgLoading, setMsgLoading] = useState(false);
+  const [contactPhone, setContactPhone] = useState(ad.phone?.trim() ?? "");
+
+  useEffect(() => {
+    const direct = ad.phone?.trim();
+    if (direct) {
+      setContactPhone(direct);
+      return;
+    }
+
+    let cancelled = false;
+
+    const applyPhone = (phone: string | null | undefined) => {
+      if (!cancelled && phone?.trim()) setContactPhone(phone.trim());
+    };
+
+    if (isOwnerView && ad.ownerId) {
+      void getUserDoc(ad.ownerId).then((profile) => applyPhone(profile?.phone));
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    void fetch(`/api/ads/${encodeURIComponent(ad.id)}/seller-phone`)
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data: { phone?: string | null } | null) => applyPhone(data?.phone ?? null))
+      .catch(() => {});
+
+    return () => {
+      cancelled = true;
+    };
+  }, [ad.id, ad.phone, ad.ownerId, isOwnerView]);
 
   const handleMessageSeller = async () => {
     if (!user) {
@@ -333,10 +366,14 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
             <p className="mt-1 text-lg font-bold text-[#0F2A4A]">{ad.userName}</p>
             <p className="mt-1 text-xs text-[#7A8CA5]">Hesap Acilis: {formatDate(ad.createdAt)}</p>
 
-            <div className="mt-3 rounded-lg border border-[#e4eaf2] bg-[#f8fafd] p-3 text-center">
-              <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">ILETISIM</p>
-              <p className="mt-1 text-lg font-extrabold text-[#0F2A4A]">0 (5XX) XXX XX XX</p>
-            </div>
+            {contactPhone ? (
+              <div className="mt-3 rounded-lg border border-[#e4eaf2] bg-[#f8fafd] p-3 text-center">
+                <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">ILETISIM</p>
+                <div className="mt-2">
+                  <PhoneContactRow phone={contactPhone} />
+                </div>
+              </div>
+            ) : null}
 
             <div className="mt-3 space-y-2">
               {!isOwnerView && (

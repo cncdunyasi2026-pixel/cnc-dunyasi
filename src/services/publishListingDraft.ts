@@ -2,6 +2,7 @@ import { createAd } from "@/services/adService";
 import { uploadUserImagesWithPaths, uploadUserVideoWithPath } from "@/services/storageUpload";
 import type { AdListingDraft } from "@/lib/listing/listingDraftStore";
 import { clearAdListingDraft } from "@/lib/listing/listingDraftStore";
+import { getUserDoc } from "@/lib/firestore/users";
 
 export async function publishAdListingDraft(draft: AdListingDraft): Promise<string> {
   const parsedPower = draft.powerKw.trim() ? Number(draft.powerKw) : NaN;
@@ -14,6 +15,9 @@ export async function publishAdListingDraft(draft: AdListingDraft): Promise<stri
   const uploadedVideo = draft.videoFile
     ? await uploadUserVideoWithPath(draft.videoFile, `ad-videos/${draft.userId}`)
     : null;
+
+  const profile = await getUserDoc(draft.userId);
+  const sellerPhone = profile?.phone?.trim();
 
   const now = Date.now();
   const ref = await createAd({
@@ -43,6 +47,7 @@ export async function publishAdListingDraft(draft: AdListingDraft): Promise<stri
     ...(draft.labelMissing ? { machineLabelMissing: true } : {}),
     ownerId: draft.userId,
     userName: draft.userName,
+    ...(sellerPhone ? { phone: sellerPhone } : {}),
     status: "pending",
     isPaid: true,
     listingFee: 2500,

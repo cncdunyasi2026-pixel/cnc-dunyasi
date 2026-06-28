@@ -40,6 +40,8 @@ export type Ad = {
   videoPath?: string;
   ownerId: string;
   userName: string;
+  /** Satıcı iletişim telefonu (profilden ilan oluşturulurken kopyalanır). */
+  phone?: string;
   createdAt: number;
   status?: ListingLifecycleStatus;
   /** Anasayfa «Öne çıkan ilanlar» (Console / moderasyon `isFeatured: true`). */

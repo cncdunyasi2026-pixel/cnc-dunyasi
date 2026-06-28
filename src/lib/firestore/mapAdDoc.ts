@@ -77,6 +77,7 @@ export function mapAdSnapshotToAd(id: string, data: Record<string, unknown>): Ad
     ...(typeof data.tableLengthMm === "number" ? { tableLengthMm: data.tableLengthMm } : {}),
     ...(typeof data.axisCount === "string" && data.axisCount ? { axisCount: data.axisCount } : {}),
     ...(typeof data.sellerType === "string" && data.sellerType ? { sellerType: data.sellerType } : {}),
+    ...(typeof data.phone === "string" && data.phone.trim() ? { phone: data.phone.trim() } : {}),
     ...(typeof data.trade    === "string" && data.trade    ? { trade:    data.trade }    : {}),
     ...(typeof data.delivery === "string" && data.delivery ? { delivery: data.delivery } : {}),
     ...(typeof data.clickCount === "number" ? { clickCount: data.clickCount } : {}),

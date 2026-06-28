@@ -10,6 +10,7 @@ import WatermarkedImage from "@/components/ui/WatermarkedImage";
 import type { FavoriteKind } from "@/services/favoritesService";
 import { useAuth } from "@/hooks/useAuth";
 import { openListingConversation } from "@/lib/messaging/openListingConversation";
+import PhoneContactRow from "@/components/ui/PhoneContactRow";
 
 type Props = {
   item: MarketplaceProfile;
@@ -67,7 +68,7 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
       : []),
     { key: "yearLabel", label: "Deneyim", value: item.yearLabel },
     ...(!isTechnical && item.phone
-      ? [{ key: "phone", label: "Telefon", value: item.phone, editValue: item.phone }]
+      ? [{ key: "phone", label: "Telefon", value: item.phone, editValue: item.phone, isPhone: true as const }]
       : []),
   ];
 
@@ -171,7 +172,11 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
               <div key={spec.label} className="grid grid-cols-[1fr_auto] gap-3 py-2.5 text-sm">
                 <dt className="font-semibold text-[#61748f]">{spec.label}</dt>
                 <dd className="flex items-center justify-end gap-2 text-right font-semibold text-[#0F2A4A]">
-                  <span>{spec.value}</span>
+                  {"isPhone" in spec && spec.isPhone ? (
+                    <PhoneContactRow phone={String(spec.value)} align="end" numberClassName="text-sm font-semibold text-[#0F2A4A]" />
+                  ) : (
+                    <span>{spec.value}</span>
+                  )}
                   <ActionButtons
                     fieldKey={spec.key}
                     label={spec.label}
@@ -194,7 +199,9 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
             {!isTechnical && item.phone ? (
               <div className="mt-3 rounded-lg border border-[#e4eaf2] bg-[#f8fafd] p-3 text-center">
                 <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">ILETISIM</p>
-                <p className="mt-1 text-lg font-extrabold text-[#0F2A4A]">{item.phone}</p>
+                <div className="mt-2">
+                  <PhoneContactRow phone={item.phone} />
+                </div>
               </div>
             ) : null}
             <div className="mt-3 space-y-2">
