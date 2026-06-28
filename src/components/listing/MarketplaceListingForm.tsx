@@ -136,7 +136,7 @@ export default function MarketplaceListingForm({
         imagePaths: uploaded.map((item) => item.path),
         ownerId: user.uid,
         userName: user.displayName ?? user.email?.split("@")[0] ?? "Kullanıcı",
-        status: "pending",
+        status: "draft",
         ...(category === "Teknik Servis" && serviceType    ? { serviceType }    : {}),
         ...(category === "Teknik Servis" && expertiseBrand ? { expertiseBrand } : {}),
         ...(category === "Yedek Parca" ? {
@@ -153,7 +153,6 @@ export default function MarketplaceListingForm({
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "Kayıt başarısız.");
-    } finally {
       setLoading(false);
     }
   };
@@ -323,7 +322,7 @@ export default function MarketplaceListingForm({
         disabled={loading}
         className="w-full rounded-xl bg-[#F26A1B] px-4 py-3 text-sm font-bold text-white shadow-[0_8px_20px_rgba(242,106,27,0.28)] transition hover:bg-[#dd5f15] disabled:opacity-60"
       >
-        {loading ? "Gönderiliyor..." : "İlanı gönder"}
+        {loading ? "Yükleniyor..." : "Ödemeye devam et"}
       </button>
     </form>
   );

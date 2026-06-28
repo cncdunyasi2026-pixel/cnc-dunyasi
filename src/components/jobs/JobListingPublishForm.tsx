@@ -111,7 +111,7 @@ function JobFormInner() {
         imagePaths: uploaded.map((item) => item.path),
         ownerId: user.uid,
         userName: user.displayName ?? user.email?.split("@")[0] ?? "Kullanıcı",
-        status: "pending",
+        status: "draft",
       });
       router.push(
         `/odeme?listingId=${encodeURIComponent(ref.id)}&kind=job&slug=${encodeURIComponent(slug)}`,
@@ -119,7 +119,6 @@ function JobFormInner() {
       router.refresh();
     } catch (err) {
       setError(err instanceof Error ? err.message : "İlan kaydedilemedi.");
-    } finally {
       setLoading(false);
     }
   };
@@ -269,11 +268,11 @@ function JobFormInner() {
         disabled={loading}
         className="w-full rounded-xl bg-gradient-to-r from-[#0F2A4A] to-[#1A4A7A] px-4 py-3 text-sm font-bold text-white shadow-[0_8px_20px_rgba(15,42,74,0.25)] transition hover:translate-y-[-1px] disabled:opacity-60"
       >
-        {loading ? "Kaydediliyor..." : "İş ilanını yayınla"}
+        {loading ? "Yükleniyor..." : "Ödemeye devam et"}
       </button>
 
       <p className="text-center text-xs text-[#7A8CA5]">
-        İlanını güncellemek veya kapatmak için daha sonra profil üzerinden seçenekler eklenebilir.
+        İlanınız ödeme onayından sonra incelemeye gönderilir.
       </p>
     </form>
   );

@@ -7,9 +7,7 @@ import VideoFilePicker from "@/components/listing/VideoFilePicker";
 import ListingPublishShell from "@/components/listing/ListingPublishShell";
 import { CNC_MACHINE_CATEGORIES, PRODUCTION_YEARS } from "@/lib/constants/listingOptions";
 import { useAuth } from "@/hooks/useAuth";
-import { createAd } from "@/services/adService";
-import { uploadUserImagesWithPaths, uploadUserVideoWithPath } from "@/services/storageUpload";
-import { DEFAULT_AD_DESCRIPTION } from "@/lib/constants/adDescription";
+import { setAdListingDraft } from "@/lib/listing/listingDraftStore";
 import type { Currency } from "@/types/ad";
 import { getBrandsWithModels, type BrandWithModels } from "@/services/brandModelService";
 import { getCategories } from "@/services/categoryService";
@@ -53,7 +51,6 @@ function IkinciElForm() {
   const [videoFile, setVideoFile] = useState<File | null>(null);
   const [labelMissing, setLabelMissing] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(false);
 
   const [brandsData, setBrandsData] = useState<BrandWithModels[]>([]);
   const [brandSelect, setBrandSelect] = useState(""); // dropdown seçimi
@@ -73,7 +70,7 @@ function IkinciElForm() {
     });
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
 
@@ -134,56 +131,36 @@ function IkinciElForm() {
       return;
     }
 
-    setLoading(true);
-    try {
-      const now = Date.now();
-      const uploaded = await uploadUserImagesWithPaths(files, `ad-images/${user.uid}`);
-      const uploadedVideo = videoFile
-        ? await uploadUserVideoWithPath(videoFile, `ad-videos/${user.uid}`)
-        : null;
-      const ref = await createAd({
-        title: title.trim(),
-        brand: brand.trim(),
-        model: model.trim(),
-        price: Math.round(priceNum),
-        currency,
+    setAdListingDraft({
+      userId: user.uid,
+      userName: user.displayName ?? user.email?.split("@")[0] ?? "Kullanıcı",
+      title: title.trim(),
+      brand: brand.trim(),
+      model: model.trim(),
+      price: Math.round(priceNum),
+      currency,
+      location: {
         city: location.city.trim(),
         district: location.district.trim(),
         neighborhood: location.neighborhood.trim(),
-        category: category.trim(),
-        condition,
-        ...(year ? { year: Number(year) } : {}),
-        ...(powerKw.trim() && Number.isFinite(parsedPower) ? { powerKw: Math.round(parsedPower) } : {}),
-        ...(hasTableWidth && hasTableLength
-          ? { tableWidthMm: Math.round(parsedWidth), tableLengthMm: Math.round(parsedLength) }
-          : {}),
-        axisCount: axisCount || undefined,
-        sellerType,
-        trade,
-        delivery,
-        description: description.trim(),
-        images: uploaded.map((item) => item.url),
-        imagePaths: uploaded.map((item) => item.path),
-        ...(uploadedVideo
-          ? { video: uploadedVideo.url, videoPath: uploadedVideo.path }
-          : {}),
-        ...(labelMissing ? { machineLabelMissing: true } : {}),
-        ownerId: user.uid,
-        userName: user.displayName ?? user.email?.split("@")[0] ?? "Kullanıcı",
-        status: "pending",
-        isPaid: true,
-        listingFee: 2500,
-        discountedFee: 0,
-        paymentStartedAt: now,
-        paymentDueAt: now + 24 * 60 * 60 * 1000,
-      });
-      router.push(`/odeme?listingId=${encodeURIComponent(ref.id)}`);
-      router.refresh();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "İlan kaydedilemedi.");
-    } finally {
-      setLoading(false);
-    }
+      },
+      category: category.trim(),
+      condition,
+      year,
+      powerKw,
+      tableWidthMm,
+      tableLengthMm,
+      axisCount,
+      sellerType,
+      trade,
+      delivery,
+      description: description.trim(),
+      files,
+      videoFile,
+      labelMissing,
+    });
+
+    router.push("/odeme?kind=ads&mode=draft");
   };
 
   return (
@@ -480,13 +457,14 @@ function IkinciElForm() {
 
       <button
         type="submit"
-        disabled={loading}
-        className="w-full rounded-xl bg-gradient-to-r from-[#0F2A4A] to-[#1A4A7A] px-4 py-3 text-sm font-bold text-white shadow-[0_8px_20px_rgba(15,42,74,0.25)] transition hover:translate-y-[-1px] disabled:opacity-60"
+        className="w-full rounded-xl bg-gradient-to-r from-[#0F2A4A] to-[#1A4A7A] px-4 py-3 text-sm font-bold text-white shadow-[0_8px_20px_rgba(15,42,74,0.25)] transition hover:translate-y-[-1px]"
       >
-        {loading ? "Yükleniyor..." : "İlanı yayınla"}
+        Ödemeye devam et
       </button>
 
-      <p className="text-center text-xs text-[#7A8CA5]">Yalnızca doğru ve güncel bilgi paylaştığınızdan emin olun.</p>
+      <p className="text-center text-xs text-[#7A8CA5]">
+        İlanınız ödeme onayından sonra incelemeye gönderilir.
+      </p>
     </form>
   );
 }
