@@ -8,8 +8,6 @@ import type {
 import { formatNeighborhoodLabel } from "@/lib/locations/formatNeighborhoodLabel";
 import ilExport from "@/data/locations/il.json";
 import ilceExport from "@/data/locations/ilce.json";
-import koyExport from "@/data/locations/koy.json";
-import mahalleExport from "@/data/locations/mahalle.json";
 
 type RawProvince = { id: string; name: string };
 type RawDistrict = { id: string; il_id: string; name: string };
@@ -18,27 +16,27 @@ type RawNeighborhood = { id: string; koy_id: string; name: string };
 
 type PhpMyAdminExport<T> = Array<{ data?: T[] }>;
 
-type LocationIndexes = {
+type BaseLocationIndexes = {
   provinces: Province[];
   districtsByProvinceId: Map<string, District[]>;
+};
+
+type NeighborhoodIndexes = {
   villagesByDistrictId: Map<string, Village[]>;
   neighborhoodsByVillageId: Map<string, Neighborhood[]>;
 };
 
-let indexesCache: LocationIndexes | null = null;
+let baseIndexesCache: BaseLocationIndexes | null = null;
+let neighborhoodIndexesCache: Promise<NeighborhoodIndexes> | null = null;
 
 function extractExportData<T>(parsed: PhpMyAdminExport<T>): T[] {
   const table = parsed.find((entry) => Array.isArray(entry.data));
   return table?.data ?? [];
 }
 
-function buildIndexes(): LocationIndexes {
+function buildBaseIndexes(): BaseLocationIndexes {
   const rawProvinces = extractExportData<RawProvince>(ilExport as PhpMyAdminExport<RawProvince>);
   const rawDistricts = extractExportData<RawDistrict>(ilceExport as PhpMyAdminExport<RawDistrict>);
-  const rawVillages = extractExportData<RawVillage>(koyExport as PhpMyAdminExport<RawVillage>);
-  const rawNeighborhoods = extractExportData<RawNeighborhood>(
-    mahalleExport as PhpMyAdminExport<RawNeighborhood>,
-  );
 
   const provinces = rawProvinces
     .map((item) => ({ id: item.id, name: item.name }))
@@ -54,6 +52,20 @@ function buildIndexes(): LocationIndexes {
   for (const list of districtsByProvinceId.values()) {
     list.sort((a, b) => a.name.localeCompare(b.name, "tr"));
   }
+
+  return { provinces, districtsByProvinceId };
+}
+
+async function loadNeighborhoodIndexes(): Promise<NeighborhoodIndexes> {
+  const [{ default: koyExport }, { default: mahalleExport }] = await Promise.all([
+    import("@/data/locations/koy.json"),
+    import("@/data/locations/mahalle.json"),
+  ]);
+
+  const rawVillages = extractExportData<RawVillage>(koyExport as PhpMyAdminExport<RawVillage>);
+  const rawNeighborhoods = extractExportData<RawNeighborhood>(
+    mahalleExport as PhpMyAdminExport<RawNeighborhood>,
+  );
 
   const villagesByDistrictId = new Map<string, Village[]>();
   for (const item of rawVillages) {
@@ -77,33 +89,35 @@ function buildIndexes(): LocationIndexes {
     list.sort((a, b) => a.name.localeCompare(b.name, "tr"));
   }
 
-  return {
-    provinces,
-    districtsByProvinceId,
-    villagesByDistrictId,
-    neighborhoodsByVillageId,
-  };
+  return { villagesByDistrictId, neighborhoodsByVillageId };
 }
 
-function getIndexes(): LocationIndexes {
-  if (!indexesCache) {
-    indexesCache = buildIndexes();
+function getBaseIndexes(): BaseLocationIndexes {
+  if (!baseIndexesCache) {
+    baseIndexesCache = buildBaseIndexes();
   }
-  return indexesCache;
+  return baseIndexesCache;
+}
+
+function getNeighborhoodIndexes(): Promise<NeighborhoodIndexes> {
+  if (!neighborhoodIndexesCache) {
+    neighborhoodIndexesCache = loadNeighborhoodIndexes();
+  }
+  return neighborhoodIndexesCache;
 }
 
 export async function getProvinces(): Promise<Province[]> {
-  return getIndexes().provinces;
+  return getBaseIndexes().provinces;
 }
 
 export async function getDistrictsByProvinceId(provinceId: string): Promise<District[]> {
-  return getIndexes().districtsByProvinceId.get(provinceId) ?? [];
+  return getBaseIndexes().districtsByProvinceId.get(provinceId) ?? [];
 }
 
 export async function getNeighborhoodOptionsByDistrictId(
   districtId: string,
 ): Promise<NeighborhoodOption[]> {
-  const { villagesByDistrictId, neighborhoodsByVillageId } = getIndexes();
+  const { villagesByDistrictId, neighborhoodsByVillageId } = await getNeighborhoodIndexes();
   const villages = villagesByDistrictId.get(districtId) ?? [];
   const options: NeighborhoodOption[] = [];
 

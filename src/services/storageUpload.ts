@@ -127,7 +127,10 @@ export async function uploadUserImagesWithPaths(
     const safe = optimized.name.replace(/[^\w.\-]/g, "_");
     const objectName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${safe}`;
     const storageRef = ref(storage, `${folderPath}/${objectName}`);
-    const uploadResult = await uploadBytes(storageRef, optimized);
+    const uploadResult = await uploadBytes(storageRef, optimized, {
+      contentType: optimized.type,
+      cacheControl: "public, max-age=31536000, immutable",
+    });
     uploaded.push({
       url: await getDownloadURL(storageRef),
       path: uploadResult.metadata.fullPath,
@@ -155,7 +158,10 @@ export async function uploadUserVideoWithPath(
   const safe = file.name.replace(/[^\w.\-]/g, "_");
   const objectName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${safe}`;
   const storageRef = ref(storage, `${folderPath}/${objectName}`);
-  const uploadResult = await uploadBytes(storageRef, file);
+  const uploadResult = await uploadBytes(storageRef, file, {
+    contentType: file.type || "video/mp4",
+    cacheControl: "public, max-age=31536000, immutable",
+  });
 
   return {
     url: await getDownloadURL(storageRef),

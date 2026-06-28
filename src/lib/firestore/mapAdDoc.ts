@@ -49,6 +49,7 @@ export function mapAdSnapshotToAd(id: string, data: Record<string, unknown>): Ad
     >),
     id,
     ownerId,
+    price: typeof data.price === "number" ? data.price : Number(data.price) || 0,
     createdAt: coerceFirestoreMillis(data.createdAt),
     publishedAt:
       data.publishedAt != null ? coerceFirestoreMillis(data.publishedAt) : undefined,

@@ -43,7 +43,7 @@ export const PAGE_HERO_DEFINITIONS: PageHeroDefinition[] = [
     label: "Teknik Servis",
     description: "/kategori/teknik-servis banner metinleri",
     variant: "centered",
-    image: "/teknik_servis.png",
+    image: "/teknik_servis.jpg",
     imageAlt: "Teknik servis banner",
     imageClassName: "h-[230px] w-full object-cover sm:h-[280px]",
     defaults: {
@@ -62,7 +62,7 @@ export const PAGE_HERO_DEFINITIONS: PageHeroDefinition[] = [
     label: "Yedek Parça",
     description: "/kategori/yedek-parca banner metinleri",
     variant: "centered",
-    image: "/yedek_parca.png",
+    image: "/yedek_parca.jpg",
     imageAlt: "Yedek parça banner",
     imageClassName: "h-[230px] w-full object-cover sm:h-[280px]",
     defaults: {
@@ -81,7 +81,7 @@ export const PAGE_HERO_DEFINITIONS: PageHeroDefinition[] = [
     label: "Kariyer",
     description: "/kariyer sayfası banner metinleri",
     variant: "centered",
-    image: "/kariyer.png",
+    image: "/kariyer.jpg",
     imageAlt: "Kariyer banner",
     imageClassName: "h-[230px] w-full object-cover sm:h-[280px]",
     defaults: {

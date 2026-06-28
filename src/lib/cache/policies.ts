@@ -29,4 +29,10 @@ export const CACHE_POLICIES = {
     staleMs: 60 * 60 * 1000,
     storage: "session",
   },
+  /** Anasayfa ilan listesi */
+  homeSections: {
+    ttlMs: 10 * 60 * 1000,
+    staleMs: 5 * 60 * 1000,
+    storage: "session",
+  },
 } satisfies Record<string, CachePolicy>;

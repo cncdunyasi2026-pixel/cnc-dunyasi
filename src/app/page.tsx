@@ -5,12 +5,9 @@ import PageContentProvider from "@/components/page/PageContentProvider";
 
 export default function HomePage() {
   return (
-    <PageContentProvider pageId="home">
     <div className="relative overflow-x-hidden bg-[#f3f5f8] pb-12">
-      {/* ── Hero ─────────────────────────────────────────── */}
       <PageHeroBanner pageId="home" />
 
-      {/* Mobile CTA kartı */}
       <div className="mx-auto mt-3 w-full max-w-7xl px-4 md:hidden">
         <div className="rounded-2xl bg-white p-5 shadow-lg">
           <p className="text-[10px] font-semibold tracking-[0.18em] text-[#7A8CA5]">HIZLI BAŞLA</p>
@@ -38,10 +35,10 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* ── Dynamic sections (client-side Firebase) ─────── */}
-      <HomepageSections />
+      <PageContentProvider pageId="home">
+        <HomepageSections />
+      </PageContentProvider>
 
-      {/* ── Promo CTA ────────────────────────────────────── */}
       <section className="mx-auto mt-6 w-full max-w-7xl px-4">
         <div className="overflow-hidden rounded-2xl border border-[#1b4a78] bg-gradient-to-r from-[#0F2A4A] via-[#11345b] to-[#0F2A4A] text-white shadow-[0_12px_30px_rgba(15,42,74,0.22)]">
           <div className="grid grid-cols-1 gap-5 p-5 md:grid-cols-[1.2fr_1.8fr] md:p-6">
@@ -87,6 +84,5 @@ export default function HomePage() {
         </div>
       </section>
     </div>
-    </PageContentProvider>
   );
 }

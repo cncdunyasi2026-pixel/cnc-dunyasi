@@ -32,10 +32,11 @@ export function formatPriceInput(raw: string, currency: Currency): string {
   return num.toLocaleString("en-US");
 }
 
-export function formatPrice(value: number, currency?: Currency | string): string {
+export function formatPrice(value: number | null | undefined, currency?: Currency | string): string {
+  const amount = typeof value === "number" && !Number.isNaN(value) ? value : 0;
   const cur = (currency as Currency) ?? "TRY";
   const meta = CURRENCY_META[cur] ?? CURRENCY_META.TRY;
-  const formatted = value.toLocaleString(meta.locale);
+  const formatted = amount.toLocaleString(meta.locale);
   return cur === "TRY"
     ? `${formatted} ₺`
     : `${meta.symbol}${formatted}`;

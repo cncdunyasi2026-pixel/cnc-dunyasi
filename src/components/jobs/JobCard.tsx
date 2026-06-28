@@ -1,12 +1,16 @@
 import Link from "next/link";
+import { imageLoadHints } from "@/lib/utils/imageLoading";
 import type { JobListing } from "@/types/job";
 
 type Props = {
   item: JobListing;
   viewMode: "card" | "list";
+  imageIndex?: number;
 };
 
-export default function JobCard({ item, viewMode }: Props) {
+export default function JobCard({ item, viewMode, imageIndex = 99 }: Props) {
+  const mainHints = imageLoadHints(imageIndex);
+
   return (
     <Link
       href={`/kariyer/${item.slug}`}
@@ -19,6 +23,7 @@ export default function JobCard({ item, viewMode }: Props) {
           src={item.images[0]}
           alt={item.title}
           className={`w-full rounded-[8px] bg-[#f4f6f9] ${viewMode === "list" ? "h-20 object-cover sm:h-24 md:h-32" : "h-28 object-cover sm:h-36 md:h-44"}`}
+          {...mainHints}
         />
       </div>
 

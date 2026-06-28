@@ -30,6 +30,8 @@ export default function PageHeroBanner({
             src={definition.image}
             alt={definition.imageAlt}
             className={definition.imageClassName}
+            fetchPriority="high"
+            decoding="async"
           />
           <div className="absolute inset-0 bg-[#0F2A4A]/55" />
 

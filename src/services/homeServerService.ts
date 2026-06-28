@@ -35,6 +35,14 @@ export type HomePageData = {
   featuredJobs: JobListing[];
 };
 
+export type HomeSectionsData = {
+  weeklyDeals: Ad[];
+  featuredAds: Ad[];
+  featuredServices: MarketplaceProfile[];
+  featuredParts: MarketplaceProfile[];
+  featuredJobs: JobListing[];
+};
+
 const FALLBACK_WEEKLY: HomeWeeklyDeal[] = [
   {
     id: "deal-1",
@@ -270,5 +278,32 @@ export async function getHomePageData(): Promise<HomePageData> {
     };
   } catch {
     return mockHomeData();
+  }
+}
+
+/** Anasayfa bölümleri — tam Ad nesneleri (fiyat dahil). Admin yoksa null döner. */
+export async function getHomeSectionsData(): Promise<HomeSectionsData | null> {
+  if (!isFirebaseAdminConfigured || !adminDb) {
+    return null;
+  }
+
+  try {
+    const [weeklyDeals, featuredAds, featuredServices, featuredParts, featuredJobs] = await Promise.all([
+      fetchWeeklyDealAds(4),
+      fetchFeaturedAds(4),
+      fetchPublishedTechnical(4),
+      fetchPublishedSpare(4),
+      fetchPublishedJobs(4),
+    ]);
+
+    return {
+      weeklyDeals,
+      featuredAds,
+      featuredServices,
+      featuredParts,
+      featuredJobs,
+    };
+  } catch {
+    return null;
   }
 }

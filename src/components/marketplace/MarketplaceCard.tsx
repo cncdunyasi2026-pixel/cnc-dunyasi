@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { imageLoadHints } from "@/lib/utils/imageLoading";
 import type { MarketplaceProfile } from "@/types/marketplace";
 
 type Props = {
@@ -6,9 +7,18 @@ type Props = {
   basePath: string;
   viewMode?: "card" | "list";
   singleImage?: boolean;
+  /** Liste içindeki sıra — üst kartlar önce yüklenir */
+  imageIndex?: number;
 };
 
-export default function MarketplaceCard({ item, basePath, viewMode = "card", singleImage = false }: Props) {
+export default function MarketplaceCard({
+  item,
+  basePath,
+  viewMode = "card",
+  singleImage = false,
+  imageIndex = 99,
+}: Props) {
+  const mainHints = imageLoadHints(imageIndex);
   return (
     <Link
       href={`${basePath}/${item.slug}`}
@@ -21,6 +31,7 @@ export default function MarketplaceCard({ item, basePath, viewMode = "card", sin
           src={item.images[0]}
           alt={item.name}
           className={`w-full rounded-[8px] bg-[#f4f6f9] ${viewMode === "list" ? "h-20 object-cover sm:h-24 md:h-32" : "h-28 object-cover sm:h-36 md:h-44"}`}
+          {...mainHints}
         />
         {viewMode === "card" && !singleImage ? (
           <div className="mt-2 grid grid-cols-2 gap-2">
@@ -28,11 +39,15 @@ export default function MarketplaceCard({ item, basePath, viewMode = "card", sin
               src={item.images[1] ?? item.images[0]}
               alt={`${item.name} detay 1`}
               className="aspect-[4/3] w-full rounded-[6px] object-cover"
+              loading="lazy"
+              decoding="async"
             />
             <img
               src={item.images[2] ?? item.images[0]}
               alt={`${item.name} detay 2`}
               className="aspect-[4/3] w-full rounded-[6px] object-cover"
+              loading="lazy"
+              decoding="async"
             />
           </div>
         ) : null}

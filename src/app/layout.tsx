@@ -25,6 +25,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="tr" className="overflow-x-hidden">
+      <head>
+        <link rel="preconnect" href="https://firebasestorage.googleapis.com" />
+        <link rel="preconnect" href="https://firestore.googleapis.com" />
+        <link rel="dns-prefetch" href="https://firebasestorage.googleapis.com" />
+      </head>
       <body className="min-h-screen w-full overflow-x-hidden bg-white text-black">
         <FirebaseAnalytics />
         <AppChrome>{children}</AppChrome>

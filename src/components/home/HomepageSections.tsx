@@ -15,6 +15,9 @@ import { mapAdSnapshotToAd } from "@/lib/firestore/mapAdDoc";
 import { mapMarketplaceDocToProfile } from "@/lib/firestore/mapMarketplaceDoc";
 import { mapJobListingFromFirestore } from "@/lib/firestore/mapJobDoc";
 import { formatPrice } from "@/lib/utils/format";
+import { imageLoadHints, prefetchListingImages } from "@/lib/utils/imageLoading";
+import { fetchWithBrowserCache, readBrowserCache } from "@/lib/cache/browserCache";
+import { CACHE_POLICIES } from "@/lib/cache/policies";
 import MarketplaceCard from "@/components/marketplace/MarketplaceCard";
 import JobCard from "@/components/jobs/JobCard";
 import PageContentSlot from "@/components/page/PageContentSlot";
@@ -34,9 +37,8 @@ type HomeData = {
 /* ── Firestore helpers ──────────────────────────────────────── */
 
 async function fetchAds(flagField: "weeklyDeal" | "isFeatured", n: number): Promise<Ad[]> {
-  // Try featured first
   try {
-    const snap = await getDocs(
+    const flagged = await getDocs(
       query(
         collection(db, "ads"),
         where("status", "==", "published"),
@@ -45,13 +47,13 @@ async function fetchAds(flagField: "weeklyDeal" | "isFeatured", n: number): Prom
         limit(n),
       ),
     );
-    if (!snap.empty) {
-      return snap.docs.map((d) => mapAdSnapshotToAd(d.id, d.data() as Record<string, unknown>));
+    if (!flagged.empty) {
+      return flagged.docs.map((d) => mapAdSnapshotToAd(d.id, d.data() as Record<string, unknown>));
     }
   } catch {
-    // index missing → fallback
+    // index yok veya sorgu hatası — aşağıdaki genel listeye düş
   }
-  // Fallback: recent published
+
   const snap = await getDocs(
     query(
       collection(db, "ads"),
@@ -121,6 +123,26 @@ async function fetchJobs(n: number): Promise<JobListing[]> {
 
 /* ── Component ──────────────────────────────────────────────── */
 
+const HOME_SECTIONS_CACHE_KEY = "site:home-sections";
+
+async function loadFromClientFirestore(): Promise<HomeData> {
+  const [weeklyDeals, featuredAds, featuredServices, featuredParts, featuredJobs] =
+    await Promise.all([
+      fetchAds("weeklyDeal", 4),
+      fetchAds("isFeatured", 4),
+      fetchMarketplace("technical_service_listings", 4),
+      fetchMarketplace("spare_part_listings", 4),
+      fetchJobs(4),
+    ]);
+  return { weeklyDeals, featuredAds, featuredServices, featuredParts, featuredJobs };
+}
+
+function readCachedHomeSections(): HomeData | null {
+  if (typeof window === "undefined") return null;
+  const cached = readBrowserCache<HomeData>(HOME_SECTIONS_CACHE_KEY, CACHE_POLICIES.homeSections);
+  return cached?.data ?? null;
+}
+
 export default function HomepageSections() {
   const [data, setData] = useState<HomeData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -131,35 +153,40 @@ export default function HomepageSections() {
       return;
     }
 
+    const cached = readCachedHomeSections();
+    if (cached) {
+      setData(cached);
+      setLoading(false);
+    }
+
     let cancelled = false;
-    const load = async () => {
-      try {
-        const [weeklyDeals, featuredAds, featuredServices, featuredParts, featuredJobs] =
-          await Promise.all([
-            fetchAds("weeklyDeal", 4),
-            fetchAds("isFeatured", 4),
-            fetchMarketplace("technical_service_listings", 4),
-            fetchMarketplace("spare_part_listings", 4),
-            fetchJobs(4),
-          ]);
-
-        if (!cancelled) {
-          setData({ weeklyDeals, featuredAds, featuredServices, featuredParts, featuredJobs });
+    void fetchWithBrowserCache(HOME_SECTIONS_CACHE_KEY, CACHE_POLICIES.homeSections, loadFromClientFirestore)
+      .then(({ data: fresh, fromCache }) => {
+        if (cancelled) return;
+        setData(fresh);
+        if (!fromCache) {
+          prefetchListingImages(
+            [
+              ...fresh.weeklyDeals.map((ad) => ad.images[0]),
+              ...fresh.featuredAds.map((ad) => ad.images[0]),
+            ].filter((url): url is string => Boolean(url)),
+            2,
+          );
         }
-      } catch (e) {
+      })
+      .catch((e) => {
         console.error("[HomepageSections] fetch error:", e);
-      } finally {
+      })
+      .finally(() => {
         if (!cancelled) setLoading(false);
-      }
-    };
+      });
 
-    void load();
     return () => {
       cancelled = true;
     };
   }, []);
 
-  if (loading) {
+  if (loading && !data) {
     return <HomepageSkeleton />;
   }
 
@@ -168,6 +195,8 @@ export default function HomepageSections() {
   }
 
   const { weeklyDeals, featuredAds, featuredServices, featuredParts, featuredJobs } = data;
+
+  let imageCounter = 0;
 
   return (
     <>
@@ -180,7 +209,9 @@ export default function HomepageSections() {
             HAFTANIN FIRSATLARI
           </h3>
           <div className="flex flex-wrap justify-center gap-4">
-            {weeklyDeals.map((ad) => (
+            {weeklyDeals.map((ad) => {
+              const hints = imageLoadHints(imageCounter++);
+              return (
               <Link
                 key={ad.id}
                 href={`/ilan/${ad.id}`}
@@ -191,6 +222,7 @@ export default function HomepageSections() {
                     src={ad.images[0] ?? "/banner_1.jpg"}
                     alt={ad.title}
                     className="h-44 w-full bg-white object-contain p-2"
+                    {...hints}
                   />
                   <div className="p-2.5">
                     <p className="mb-1 text-sm font-semibold text-white">{ad.title}</p>
@@ -203,7 +235,8 @@ export default function HomepageSections() {
                   </div>
                 </article>
               </Link>
-            ))}
+            );
+            })}
           </div>
         </section>
       )}
@@ -222,7 +255,9 @@ export default function HomepageSections() {
               </div>
               <div className="rounded-xl border border-[#1a446f] bg-[#0F2A4A] p-3">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                  {featuredAds.map((ad) => (
+                  {featuredAds.map((ad) => {
+                    const hints = imageLoadHints(imageCounter++);
+                    return (
                     <Link
                       key={ad.id}
                       href={`/ilan/${ad.id}`}
@@ -232,19 +267,8 @@ export default function HomepageSections() {
                         src={ad.images[0] ?? "/banner_1.jpg"}
                         alt={ad.title}
                         className="h-28 w-full rounded-[8px] bg-[#f4f6f9] object-cover sm:h-36 md:h-44"
+                        {...hints}
                       />
-                      <div className="mt-2 grid grid-cols-2 gap-2">
-                        <img
-                          src={ad.images[1] ?? ad.images[0] ?? "/banner_1.jpg"}
-                          alt={`${ad.title} 2`}
-                          className="aspect-[4/3] w-full rounded-[6px] object-cover"
-                        />
-                        <img
-                          src={ad.images[2] ?? ad.images[0] ?? "/banner_1.jpg"}
-                          alt={`${ad.title} 3`}
-                          className="aspect-[4/3] w-full rounded-[6px] object-cover"
-                        />
-                      </div>
                       <div className="pt-2">
                         <h5 className="line-clamp-2 text-base font-black leading-tight text-[#0F2A4A]">
                           {ad.title}
@@ -259,7 +283,8 @@ export default function HomepageSections() {
                         </div>
                       </div>
                     </Link>
-                  ))}
+                  );
+                  })}
                 </div>
               </div>
             </div>
@@ -282,6 +307,7 @@ export default function HomepageSections() {
                     basePath="/kategori/teknik-servis"
                     viewMode="card"
                     singleImage
+                    imageIndex={imageCounter++}
                   />
                 ))}
               </div>
@@ -303,6 +329,8 @@ export default function HomepageSections() {
                       item={item}
                       basePath="/kategori/yedek-parca"
                       viewMode="card"
+                      singleImage
+                      imageIndex={imageCounter++}
                     />
                   ))}
                 </div>
@@ -319,7 +347,7 @@ export default function HomepageSections() {
               </div>
               <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
                 {featuredJobs.map((item) => (
-                  <JobCard key={item.id} item={item} viewMode="card" />
+                  <JobCard key={item.id} item={item} viewMode="card" imageIndex={imageCounter++} />
                 ))}
               </div>
             </div>
