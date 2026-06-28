@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/hooks/useAuth";
+import { useAccountBadges } from "@/hooks/useAccountBadges";
 import { signOut } from "firebase/auth";
 import { auth } from "@/lib/firebase";
 import { useRouter } from "next/navigation";
@@ -82,17 +83,22 @@ function MenuCard({ href, icon, iconBg, title, description, badge }: MenuCardPro
       href={href}
       className="group flex items-center gap-4 rounded-2xl border border-[#dbe2ea] bg-white p-5 shadow-sm transition hover:border-[#0F2A4A]/30 hover:shadow-md"
     >
-      <div className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
+      <div className={`relative flex h-12 w-12 shrink-0 items-center justify-center rounded-xl ${iconBg}`}>
         {icon}
+        {typeof badge === "number" && badge > 0 ? (
+          <span className="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#F26A1B] px-1 text-[10px] font-bold text-white ring-2 ring-white">
+            {badge > 9 ? "9+" : badge}
+          </span>
+        ) : null}
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="text-sm font-bold text-[#0F2A4A]">{title}</span>
-          {badge != null && (
+          {typeof badge === "string" && badge ? (
             <span className="rounded-full bg-[#F26A1B] px-1.5 py-0.5 text-[10px] font-bold text-white">
               {badge}
             </span>
-          )}
+          ) : null}
         </div>
         <p className="mt-0.5 text-xs text-[#7A8CA5]">{description}</p>
       </div>
@@ -106,6 +112,7 @@ function MenuCard({ href, icon, iconBg, title, description, badge }: MenuCardPro
 export default function ProfilePage() {
   const { user, loading } = useAuth();
   const router = useRouter();
+  const badges = useAccountBadges(user?.uid);
 
   const handleSignOut = async () => {
     try {
@@ -206,6 +213,7 @@ export default function ProfilePage() {
           iconBg="bg-[#eef2f8] text-[#0F2A4A]"
           title="İlanlarım"
           description="Tüm kategorilerdeki aktif, onay bekleyen ve arşiv ilanların"
+          badge={badges.listingActions}
         />
 
         <MenuCard
@@ -222,6 +230,7 @@ export default function ProfilePage() {
           iconBg="bg-blue-50 text-blue-500"
           title="Mesajlaşmalar"
           description="İlan sahipleri ve alıcılarla yaptığın konuşmalar"
+          badge={badges.unreadMessages}
         />
 
         <MenuCard
@@ -230,6 +239,7 @@ export default function ProfilePage() {
           iconBg="bg-amber-50 text-amber-500"
           title="Bildirimlerim"
           description="Moderasyon sonuçları, mesajlar ve sistem bildirimleri"
+          badge={badges.unreadNotifications}
         />
 
         <MenuCard

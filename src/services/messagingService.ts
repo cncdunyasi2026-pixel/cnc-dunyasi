@@ -13,6 +13,7 @@ import {
   increment,
 } from "firebase/firestore";
 import { db } from "@/lib/firebase";
+import { createNotificationForUser } from "@/services/notificationService";
 
 /* ── Tipler ─────────────────────────────────────────────────── */
 
@@ -138,6 +139,27 @@ export async function sendMessage(
   if (otherUid) patch[`unread.${otherUid}`] = increment(1);
 
   await updateDoc(doc(db, "conversations", conversationId), patch);
+
+  if (otherUid) {
+    const preview =
+      type === "listing"
+        ? "📎 İlan paylaşıldı"
+        : text.trim().slice(0, 140) || "Yeni mesaj";
+    try {
+      await createNotificationForUser(otherUid, {
+        type: "message",
+        action: "new_message",
+        title: `${sender.displayName} size mesaj gönderdi`,
+        body: preview,
+        href: `/hesap/mesajlar/${conversationId}`,
+        actorId: sender.uid,
+        conversationId,
+        eventKey: `message:${conversationId}:${Date.now()}`,
+      });
+    } catch (e) {
+      console.error("[messaging] Bildirim oluşturulamadı:", e);
+    }
+  }
 }
 
 /* ── Okundu işaretle ────────────────────────────────────────── */

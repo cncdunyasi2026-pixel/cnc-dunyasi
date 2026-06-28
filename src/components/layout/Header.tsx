@@ -8,6 +8,8 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAdminAccess } from "@/hooks/useAdminAccess";
 import { auth, isFirebaseClientConfigured } from "@/lib/firebase";
 import { getAdminPathCode } from "@/lib/admin/adminAccess";
+import { useAccountBadges } from "@/hooks/useAccountBadges";
+import IconBadge from "@/components/ui/IconBadge";
 import { useState, useEffect } from "react";
 
 /* ── Drawer menü öğeleri ───────────────────────────────────── */
@@ -75,9 +77,11 @@ const MENU_ITEMS = [
 function HamburgerDrawer({
   open,
   onClose,
+  badges,
 }: {
   open: boolean;
   onClose: () => void;
+  badges: { listingActions: number; unreadMessages: number; unreadNotifications: number };
 }) {
   const { user } = useAuth();
   const router = useRouter();
@@ -90,6 +94,12 @@ function HamburgerDrawer({
     onClose();
     if (!isFirebaseClientConfigured) return;
     void signOut(auth).then(() => router.refresh());
+  };
+
+  const drawerBadgeByHref: Record<string, number> = {
+    "/hesap/ilanlarim": badges.listingActions,
+    "/hesap/mesajlar": badges.unreadMessages,
+    "/hesap/bildirimler": badges.unreadNotifications,
   };
 
   return (
@@ -155,8 +165,9 @@ function HamburgerDrawer({
                 onClick={onClose}
                 className="flex items-center gap-3 px-5 py-3.5 text-sm font-semibold text-[#0F2A4A] transition hover:bg-[#f4f7fb]"
               >
-                <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#eef2f8] text-[#0F2A4A]">
+                <span className="relative flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-[#eef2f8] text-[#0F2A4A]">
                   {item.icon}
+                  <IconBadge count={drawerBadgeByHref[item.href] ?? 0} />
                 </span>
                 {item.label}
               </Link>
@@ -210,6 +221,7 @@ export default function Header() {
   const { user, loading: authLoading } = useAuth();
   const { isAdmin } = useAdminAccess();
   const adminPathCode = getAdminPathCode();
+  const badges = useAccountBadges(user?.uid);
   const adminHref =
     user && adminPathCode && isAdmin
       ? `/${adminPathCode}/admin/dashboard`
@@ -235,7 +247,7 @@ export default function Header() {
 
   return (
     <>
-      <HamburgerDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
+      <HamburgerDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} badges={badges} />
 
       <header className="border-b border-[#d7dce3] bg-white/95 backdrop-blur">
         <div className="mx-auto w-full max-w-7xl px-4 py-2 md:py-5">
@@ -288,20 +300,24 @@ export default function Header() {
               <Link
                 href={user ? "/hesap/bildirimler" : "/hesap/giris?redirect=%2Fhesap%2Fbildirimler"}
                 aria-label="Bildirimler"
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-[#0F2A4A] transition hover:bg-[#f0f3f8]"
+                className="relative flex h-9 w-9 items-center justify-center rounded-xl text-[#0F2A4A] transition hover:bg-[#f0f3f8]"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                 </svg>
+                {user ? <IconBadge count={badges.unreadNotifications} /> : null}
               </Link>
               <Link
                 href={user ? "/hesap/profil" : "/hesap/giris?redirect=%2Fhesap%2Fprofil"}
                 aria-label="Profil"
-                className="flex h-9 w-9 items-center justify-center rounded-xl text-[#0F2A4A] transition hover:bg-[#f0f3f8]"
+                className="relative flex h-9 w-9 items-center justify-center rounded-xl text-[#0F2A4A] transition hover:bg-[#f0f3f8]"
               >
                 <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                 </svg>
+                {user && badges.listingActions > 0 ? (
+                  <IconBadge count={badges.listingActions} />
+                ) : null}
               </Link>
             </div>
           </div>
@@ -318,7 +334,22 @@ export default function Header() {
                 <span className="inline-flex min-w-[10rem] justify-end text-xs font-semibold text-[#7A8CA5]">…</span>
               ) : user ? (
                 <>
-                  <Link href="/hesap/ilanlarim" className="transition hover:text-[#F26A1B]">İLANLARIM</Link>
+                  <Link href="/hesap/ilanlarim" className="relative transition hover:text-[#F26A1B]">
+                    İLANLARIM
+                    {badges.listingActions > 0 ? (
+                      <span className="absolute -right-3 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#F26A1B] px-1 text-[9px] font-bold text-white">
+                        {badges.listingActions > 9 ? "9+" : badges.listingActions}
+                      </span>
+                    ) : null}
+                  </Link>
+                  <Link href="/hesap/mesajlar" className="relative transition hover:text-[#F26A1B]">
+                    MESAJLAR
+                    {badges.unreadMessages > 0 ? (
+                      <span className="absolute -right-3 -top-2 flex h-4 min-w-4 items-center justify-center rounded-full bg-[#F26A1B] px-1 text-[9px] font-bold text-white">
+                        {badges.unreadMessages > 9 ? "9+" : badges.unreadMessages}
+                      </span>
+                    ) : null}
+                  </Link>
                   <Link href="/hesap/favoriler" className="transition hover:text-[#F26A1B]">FAVORİLERİM</Link>
                   <Link href="/hesap/profil" className="transition hover:text-[#F26A1B]">PROFİL</Link>
                   <button

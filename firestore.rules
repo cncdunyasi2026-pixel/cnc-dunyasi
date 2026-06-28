@@ -205,7 +205,17 @@ service cloud.firestore {
       allow update: if signedIn()
         && uid() == userId
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
-      allow create: if isStaff();
+      allow create: if isStaff() || (
+        signedIn()
+        && userId != uid()
+        && request.resource.data.type == 'message'
+        && request.resource.data.read == false
+        && request.resource.data.actorId == uid()
+        && request.resource.data.title is string
+        && request.resource.data.body is string
+        && request.resource.data.href is string
+        && request.resource.data.href.matches('^/hesap/mesajlar/.+')
+      );
       allow delete: if signedIn() && uid() == userId;
     }
 

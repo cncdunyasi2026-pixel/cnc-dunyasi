@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { useNotificationFeed } from "@/hooks/useNotificationFeed";
+import { isVirtualNotificationId } from "@/lib/notifications/listingNotifications";
+import { dismissNotificationIds } from "@/lib/notifications/notificationDismissal";
 import {
-  fetchNotifications,
   markAllNotificationsRead,
   markNotificationRead,
   type NotificationItem,
@@ -45,64 +47,59 @@ function formatTime(ms: number): string {
 export default function BildirimlerPage() {
   const router = useRouter();
   const { user, loading: authLoading } = useAuth();
-  const [items, setItems] = useState<NotificationItem[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { items, loading, error: feedError, refreshDismissed } = useNotificationFeed(user?.uid);
   const [error, setError] = useState<string | null>(null);
-  const [markingId, setMarkingId] = useState<string | null>(null);
 
   useEffect(() => {
     if (authLoading) return;
     if (!user) {
       router.replace("/hesap/giris?redirect=%2Fhesap%2Fbildirimler");
-      return;
     }
-
-    let cancelled = false;
-    setLoading(true);
-    setError(null);
-
-    fetchNotifications(user.uid)
-      .then((data) => {
-        if (!cancelled) setItems(data);
-      })
-      .catch((e) => {
-        if (!cancelled) {
-          setError(e instanceof Error ? e.message : "Bildirimler yüklenemedi.");
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setLoading(false);
-      });
-
-    return () => {
-      cancelled = true;
-    };
   }, [user, authLoading, router]);
 
   const handleOpen = async (item: NotificationItem) => {
     if (!user || item.read) return;
-    setMarkingId(item.id);
+
+    if (isVirtualNotificationId(item.id)) {
+      dismissNotificationIds(user.uid, [item.id]);
+      refreshDismissed();
+      return;
+    }
+
     try {
       await markNotificationRead(user.uid, item.id);
-      setItems((prev) => prev.map((n) => (n.id === item.id ? { ...n, read: true } : n)));
-    } finally {
-      setMarkingId(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Bildirim güncellenemedi.");
     }
   };
 
   const handleMarkAllRead = async () => {
     if (!user) return;
-    const unreadIds = items.filter((item) => !item.read).map((item) => item.id);
-    if (unreadIds.length === 0) return;
+
+    const unreadStored = items.filter((item) => !item.read && !isVirtualNotificationId(item.id));
+    const unreadVirtual = items
+      .filter((item) => !item.read && isVirtualNotificationId(item.id))
+      .map((item) => item.id);
+
+    if (unreadStored.length === 0 && unreadVirtual.length === 0) return;
 
     try {
-      await markAllNotificationsRead(user.uid, unreadIds);
-      setItems((prev) => prev.map((item) => ({ ...item, read: true })));
+      if (unreadStored.length > 0) {
+        await markAllNotificationsRead(
+          user.uid,
+          unreadStored.map((item) => item.id),
+        );
+      }
+      if (unreadVirtual.length > 0) {
+        dismissNotificationIds(user.uid, unreadVirtual);
+      }
+      refreshDismissed();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Bildirimler güncellenemedi.");
     }
   };
 
+  const displayError = error ?? feedError;
   const unreadCount = items.filter((item) => !item.read).length;
 
   if (authLoading || (!user && loading)) {
@@ -135,9 +132,9 @@ export default function BildirimlerPage() {
         ) : null}
       </div>
 
-      {error ? (
+      {displayError ? (
         <div className="mb-4 rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
-          {error}
+          {displayError}
         </div>
       ) : null}
 
@@ -194,7 +191,7 @@ export default function BildirimlerPage() {
 
             const className = `block px-4 py-4 transition hover:bg-[#f8fafc] ${
               index > 0 ? "border-t border-[#eef2f6]" : ""
-            } ${!item.read ? "bg-[#fdfeff]" : ""} ${markingId === item.id ? "opacity-70" : ""}`;
+            } ${!item.read ? "bg-[#fdfeff]" : ""}`;
 
             if (item.href) {
               return (

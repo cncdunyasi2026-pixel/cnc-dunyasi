@@ -14,6 +14,13 @@ import { mapJobListingFromFirestore } from "@/lib/firestore/mapJobDoc";
 import { mapMarketplaceDocToProfile } from "@/lib/firestore/mapMarketplaceDoc";
 import { parseTableSizeInput } from "@/lib/constants/listingOptions";
 import { uploadUserImagesWithPaths } from "@/services/storageUpload";
+import { createNotificationForUser } from "@/services/notificationService";
+import {
+  listingDetailHref,
+  listingEditHref,
+  listingLabel,
+  listingTitleFromData,
+} from "@/lib/notifications/listingNotify";
 
 type ListingCollection = "ads" | "technical_service_listings" | "spare_part_listings" | "job_listings";
 
@@ -132,6 +139,18 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
     });
   };
 
+  const notifyOwner = async (
+    input: Parameters<typeof createNotificationForUser>[1],
+  ) => {
+    const ownerId = typeof data?.ownerId === "string" ? data.ownerId : "";
+    if (!ownerId) return;
+    try {
+      await createNotificationForUser(ownerId, input);
+    } catch (e) {
+      console.error("[moderation] Bildirim oluşturulamadı:", e);
+    }
+  };
+
   const approve = async () => {
     setSaving(true);
     try {
@@ -162,6 +181,18 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
       }
 
       await writeAudit("approve_listing", "Alan bazli red notu olmadan yayina alindi");
+
+      const title = listingTitleFromData(data ?? {});
+      await notifyOwner({
+        type: "moderation",
+        action: "listing_approved",
+        title: "İlanınız onaylandı",
+        body: `${listingLabel(collectionName)} "${title}" yayına alındı.`,
+        href: listingDetailHref(collectionName, listingId),
+        eventKey: `moderation:${collectionName}:${listingId}:approved`,
+        listingId,
+      });
+
       router.push(`/${adminCode}/admin/moderasyon`);
     } finally {
       setSaving(false);
@@ -189,6 +220,18 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
         updatedAt: serverTimestamp(),
       });
       await writeAudit("needs_revision", summary);
+
+      const title = listingTitleFromData(data ?? {});
+      await notifyOwner({
+        type: "moderation",
+        action: "listing_needs_revision",
+        title: "İlanınız revizyona gönderildi",
+        body: `${listingLabel(collectionName)} "${title}" için düzenleme istendi.`,
+        href: listingEditHref(collectionName, listingId),
+        eventKey: `moderation:${collectionName}:${listingId}:needs_revision`,
+        listingId,
+      });
+
       router.push(`/${adminCode}/admin/moderasyon`);
     } finally {
       setSaving(false);
