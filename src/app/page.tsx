@@ -2,10 +2,19 @@ import Link from "next/link";
 import HomepageSections from "@/components/home/HomepageSections";
 import PageHeroBanner from "@/components/page/PageHeroBanner";
 import PageContentProvider from "@/components/page/PageContentProvider";
+import { BRAND_NAME } from "@/lib/constants/brand";
+import { createPageMetadata } from "@/lib/seo/metadata";
+
+export const metadata = createPageMetadata({
+  title: BRAND_NAME,
+  absoluteTitle: true,
+  path: "/",
+});
 
 export default function HomePage() {
   return (
     <div className="relative overflow-x-hidden bg-[#f3f5f8] pb-12">
+      <h1 className="sr-only">{BRAND_NAME}</h1>
       <PageHeroBanner pageId="home" />
 
       <div className="mx-auto mt-3 w-full max-w-7xl px-4 md:hidden">

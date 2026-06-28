@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import MarketplaceDetailContent from "@/components/marketplace/MarketplaceDetailContent";
 import RelatedMarketplaceSection from "@/components/marketplace/RelatedMarketplaceSection";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import {
   getSparePartListingBySlugClient,
   getTechnicalListingBySlugClient,
@@ -49,6 +50,8 @@ export default function MarketplaceDetailLoader({
     publishedItem ??
     legacyItem ??
     (clientItem === undefined ? undefined : clientItem);
+
+  useDocumentTitle(item?.title);
 
   if (item === undefined) {
     return (

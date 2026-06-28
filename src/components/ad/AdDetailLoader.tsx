@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import AdDetailContent from "@/components/ad/AdDetailContent";
 import RelatedAdsSection from "@/components/ad/RelatedAdsSection";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { getAdById } from "@/services/adService";
 import { trackAdClick } from "@/services/listingAnalyticsService";
 import { isAdPublishedPublic } from "@/lib/firestore/listingVisibility";
@@ -43,6 +44,8 @@ export default function AdDetailLoader({ slug, publishedAd, legacyAd }: Props) {
 
   const ad =
     publishedAd ?? legacyAd ?? (clientAd === undefined ? undefined : clientAd);
+
+  useDocumentTitle(ad?.title);
 
   if (ad === undefined) {
     return (

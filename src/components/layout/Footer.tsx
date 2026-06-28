@@ -4,7 +4,7 @@ import { BRAND_NAME } from "@/lib/constants/brand";
 
 export default function Footer() {
   return (
-    <footer className="mt-8 border-t border-[#163c64] bg-[#0F2A4A]">
+    <footer data-nosnippet className="mt-8 border-t border-[#163c64] bg-[#0F2A4A]">
       <div className="mx-auto grid w-full max-w-7xl grid-cols-1 gap-5 px-4 py-6 text-sm text-white/80 md:grid-cols-[1fr_auto] md:items-center">
         <div>
           <SiteLogo variant="white" size="md" />

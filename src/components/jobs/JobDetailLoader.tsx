@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import JobDetailContent from "@/components/jobs/JobDetailContent";
 import RelatedJobsSection from "@/components/jobs/RelatedJobsSection";
+import { useDocumentTitle } from "@/hooks/useDocumentTitle";
 import { getJobListingBySlugClient } from "@/lib/firestore/jobListings";
 import type { JobListing } from "@/types/job";
 
@@ -33,6 +34,8 @@ export default function JobDetailLoader({ slug, publishedJob, legacyJob }: Props
 
   const job =
     publishedJob ?? legacyJob ?? (clientJob === undefined ? undefined : clientJob);
+
+  useDocumentTitle(job?.title);
 
   if (job === undefined) {
     return (
