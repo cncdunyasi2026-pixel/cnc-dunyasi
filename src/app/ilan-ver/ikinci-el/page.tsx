@@ -15,6 +15,7 @@ import { getBrandsWithModels, type BrandWithModels } from "@/services/brandModel
 import { getCategories } from "@/services/categoryService";
 import { CURRENCY_OPTIONS, formatPriceInput } from "@/lib/utils/format";
 import LocationSelectFields from "@/components/ui/LocationSelectFields";
+import CategorySelectFields from "@/components/ui/CategorySelectFields";
 import type { LocationSelection } from "@/lib/locations/types";
 
 const inputClass =
@@ -97,6 +98,11 @@ function IkinciElForm() {
       return;
     }
 
+    if (!category.trim()) {
+      setError("Kategori seçin veya yazın.");
+      return;
+    }
+
     if (!location.city.trim() || !location.district.trim() || !location.neighborhood.trim()) {
       setError("İl, ilçe ve mahalle/köy seçin.");
       return;
@@ -144,7 +150,7 @@ function IkinciElForm() {
         city: location.city.trim(),
         district: location.district.trim(),
         neighborhood: location.neighborhood.trim(),
-        category,
+        category: category.trim(),
         condition,
         ...(year ? { year: Number(year) } : {}),
         ...(powerKw.trim() && Number.isFinite(parsedPower) ? { powerKw: Math.round(parsedPower) } : {}),
@@ -303,23 +309,13 @@ function IkinciElForm() {
             />
           </div>
         </div>
-        <div>
-          <label htmlFor="ad-category" className={labelClass}>
-            Kategori
-          </label>
-          <select
-            id="ad-category"
-            className={inputClass}
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-          >
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </div>
+        <CategorySelectFields
+          categories={categories}
+          value={category}
+          onChange={setCategory}
+          inputClass={inputClass}
+          labelClass={labelClass}
+        />
       </div>
 
       {/* ── Durum · Üretim Yılı ── */}

@@ -5,8 +5,11 @@ import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import AdDetailContent from "@/components/ad/AdDetailContent";
 import LocationSelectFields from "@/components/ui/LocationSelectFields";
+import CategorySelectFields from "@/components/ui/CategorySelectFields";
 import { useAuth } from "@/hooks/useAuth";
 import type { LocationSelection } from "@/lib/locations/types";
+import { CNC_MACHINE_CATEGORIES } from "@/lib/constants/listingOptions";
+import { getCategories } from "@/services/categoryService";
 import { getAdById, submitAdUpdateForReview } from "@/services/adService";
 import { getPendingCopyForAd } from "@/lib/firestore/ads";
 import { uploadUserImagesWithPaths } from "@/services/storageUpload";
@@ -76,6 +79,7 @@ export default function EditListingPage({ params }: Props) {
   });
   const [pendingDeleteImageIndex, setPendingDeleteImageIndex] = useState<number | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [categories, setCategories] = useState<string[]>([...CNC_MACHINE_CATEGORIES]);
 
   const [form, setForm] = useState({
     title: "",
@@ -104,6 +108,14 @@ export default function EditListingPage({ params }: Props) {
     () => (newFiles.length > 0 ? newFiles.map((f) => URL.createObjectURL(f)) : []),
     [newFiles],
   );
+
+  useEffect(() => {
+    void getCategories().then((cats) => {
+      if (cats.length > 0) {
+        setCategories(cats.map((c) => c.name));
+      }
+    });
+  }, []);
 
   useEffect(() => {
     void params.then((p) => setId(p.id));
@@ -319,6 +331,10 @@ export default function EditListingPage({ params }: Props) {
       setError("Tezgah boyutunu 2500x6000 formatında girin.");
       return;
     }
+    if (editModal.key === "category" && !editDraft.trim()) {
+      setError("Kategori seçin veya yazın.");
+      return;
+    }
     if (editModal.key === "powerKw" && editDraft.trim() && (!Number.isFinite(Number(editDraft)) || Number(editDraft) < 0)) {
       setError("Geçerli bir güç değeri girin (kW).");
       return;
@@ -393,6 +409,11 @@ export default function EditListingPage({ params }: Props) {
 
     if (form.tableSize.trim() && !parseTableSizeInput(form.tableSize)) {
       setError("Tezgah boyutunu 2500x6000 formatında girin.");
+      return;
+    }
+
+    if (!form.category.trim()) {
+      setError("Kategori seçin veya yazın.");
       return;
     }
 
@@ -664,6 +685,17 @@ export default function EditListingPage({ params }: Props) {
                 <option>Satıcıdan</option>
                 <option>Mağazadan</option>
               </select>
+            ) : editModal.key === "category" ? (
+              <div className="mt-3">
+                <CategorySelectFields
+                  categories={categories}
+                  value={editDraft}
+                  onChange={setEditDraft}
+                  inputClass="h-10 w-full rounded-lg border border-[#d3dcea] bg-white px-3 text-sm text-[#0F2A4A] outline-none transition focus:border-[#0F2A4A] focus:ring-2 focus:ring-[#0F2A4A]/15"
+                  labelClass="mb-1 block text-xs font-semibold text-[#61748f]"
+                  id="edit-ad-category"
+                />
+              </div>
             ) : editModal.key === "powerKw" ? (
               <input
                 type="number"
