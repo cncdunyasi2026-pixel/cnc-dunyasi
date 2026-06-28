@@ -2,11 +2,14 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { MarketplaceProfile } from "@/types/marketplace";
 import FavoriteButton from "@/components/ui/FavoriteButton";
 import ImageLightbox from "@/components/ui/ImageLightbox";
 import WatermarkedImage from "@/components/ui/WatermarkedImage";
 import type { FavoriteKind } from "@/services/favoritesService";
+import { useAuth } from "@/hooks/useAuth";
+import { openListingConversation } from "@/lib/messaging/openListingConversation";
 
 type Props = {
   item: MarketplaceProfile;
@@ -19,6 +22,12 @@ type Props = {
 };
 
 export default function MarketplaceDetailContent({ item, listPath, moderation }: Props) {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [msgLoading, setMsgLoading] = useState(false);
+  const isTechnical = item.category === "Teknik Servis";
+  const isOwnerView = Boolean(user?.uid && item.ownerId && user.uid === item.ownerId);
+  const listingPath = `${listPath}/${item.slug}`;
   const gallery = useMemo(() => item.images, [item.images]);
   const [selectedImage, setSelectedImage] = useState(gallery[0]);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -26,6 +35,27 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
   const favKind: FavoriteKind = listPath.includes("teknik-servis")
     ? "technical_service_listings"
     : "spare_part_listings";
+
+  const handleMessage = async () => {
+    setMsgLoading(true);
+    try {
+      await openListingConversation(
+        {
+          user,
+          ownerId: item.ownerId,
+          ownerName: item.userName ?? item.name,
+          listingId: item.id,
+          listingTitle: item.title || item.name,
+          listingPath,
+          listingImageUrl: item.images[0],
+          loginRedirectPath: listingPath,
+        },
+        (path) => router.push(path),
+      );
+    } finally {
+      setMsgLoading(false);
+    }
+  };
 
   const specs = [
     { key: "category", label: "Kategori", value: item.category, editValue: item.category },
@@ -36,7 +66,9 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
       ? [{ key: "neighborhood", label: "Mahalle / Koy", value: item.neighborhood, editValue: item.neighborhood }]
       : []),
     { key: "yearLabel", label: "Deneyim", value: item.yearLabel },
-    { key: "phone", label: "Telefon", value: item.phone, editValue: item.phone },
+    ...(!isTechnical && item.phone
+      ? [{ key: "phone", label: "Telefon", value: item.phone, editValue: item.phone }]
+      : []),
   ];
 
   const openLightbox = (index: number) => {
@@ -159,17 +191,23 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
             </p>
             <p className="mt-1 text-lg font-bold text-[#0F2A4A]">{item.name}</p>
             <p className="mt-1 text-xs text-[#7A8CA5]">{item.yearLabel}</p>
-            <div className="mt-3 rounded-lg border border-[#e4eaf2] bg-[#f8fafd] p-3 text-center">
-              <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">ILETISIM</p>
-              <p className="mt-1 text-lg font-extrabold text-[#0F2A4A]">{item.phone}</p>
-            </div>
+            {!isTechnical && item.phone ? (
+              <div className="mt-3 rounded-lg border border-[#e4eaf2] bg-[#f8fafd] p-3 text-center">
+                <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">ILETISIM</p>
+                <p className="mt-1 text-lg font-extrabold text-[#0F2A4A]">{item.phone}</p>
+              </div>
+            ) : null}
             <div className="mt-3 space-y-2">
-              <button
-                type="button"
-                className="w-full rounded-lg bg-[#F26A1B] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#d95b14]"
-              >
-                Mesaj Gonder
-              </button>
+              {!isOwnerView ? (
+                <button
+                  type="button"
+                  onClick={() => void handleMessage()}
+                  disabled={msgLoading || !item.ownerId}
+                  className="w-full rounded-lg bg-[#F26A1B] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#d95b14] disabled:opacity-60"
+                >
+                  {msgLoading ? "Açılıyor..." : "Mesaj Gönder"}
+                </button>
+              ) : null}
               <FavoriteButton
                 kind={favKind}
                 id={item.id}

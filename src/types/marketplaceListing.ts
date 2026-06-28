@@ -8,7 +8,7 @@ export type MarketplaceListingRecord = {
   district: string;
   neighborhood?: string;
   category: string;
-  phone: string;
+  phone?: string;
   yearLabel: string;
   expertise: string;
   description: string;

@@ -33,5 +33,7 @@ export function mapJobListingFromFirestore(id: string, data: Record<string, unkn
     images: images.length > 0 ? images : ["/banner_1.jpg"],
     ...(data.position        ? { position:        String(data.position) }        : {}),
     ...(data.experienceLevel ? { experienceLevel: String(data.experienceLevel) } : {}),
+    ...(typeof data.ownerId === "string" && data.ownerId ? { ownerId: data.ownerId } : {}),
+    ...(typeof data.userName === "string" && data.userName ? { userName: data.userName } : {}),
   };
 }

@@ -18,4 +18,6 @@ export type JobListing = {
   requirements: string[];
   images: string[];
   imagePaths?: string[];
+  ownerId?: string;
+  userName?: string;
 };

@@ -11,7 +11,7 @@ export function mapMarketplaceDocToProfile(id: string, data: Record<string, unkn
     district: String(data.district ?? ""),
     ...(data.neighborhood ? { neighborhood: String(data.neighborhood) } : {}),
     category: String(data.category ?? ""),
-    phone: String(data.phone ?? ""),
+    ...(data.phone ? { phone: String(data.phone) } : {}),
     yearLabel: String(data.yearLabel ?? ""),
     expertise: String(data.expertise ?? ""),
     description: String(data.description ?? ""),
@@ -21,5 +21,7 @@ export function mapMarketplaceDocToProfile(id: string, data: Record<string, unkn
     ...(data.partCategory ? { partCategory: String(data.partCategory) } : {}),
     ...(data.brandCompat  ? { brandCompat:  String(data.brandCompat) }  : {}),
     ...(data.stockStatus  ? { stockStatus:  data.stockStatus as "Stokta Var" | "Sipariş Üzerine" } : {}),
+    ...(typeof data.ownerId === "string" && data.ownerId ? { ownerId: data.ownerId } : {}),
+    ...(typeof data.userName === "string" && data.userName ? { userName: data.userName } : {}),
   };
 }

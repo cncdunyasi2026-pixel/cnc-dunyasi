@@ -99,7 +99,7 @@ export default function MarketplaceListingForm({
       setError("İl, ilçe ve mahalle/köy seçin.");
       return;
     }
-    if (!phone.trim()) {
+    if (category !== "Teknik Servis" && !phone.trim()) {
       setError("Telefon girin.");
       return;
     }
@@ -128,7 +128,7 @@ export default function MarketplaceListingForm({
         district: location.district.trim(),
         neighborhood: location.neighborhood.trim(),
         category,
-        phone: phone.trim(),
+        ...(category !== "Teknik Servis" && phone.trim() ? { phone: phone.trim() } : {}),
         yearLabel: yearLabel.trim(),
         expertise: expertise.trim(),
         description: description.trim(),
@@ -186,20 +186,22 @@ export default function MarketplaceListingForm({
         />
       </div>
       <LocationSelectFields value={location} onChange={setLocation} inputClass={inputClass} labelClass={labelClass} />
-      <div>
-        <label htmlFor="ml-phone" className={labelClass}>
-          Telefon
-        </label>
-        <input
-          id="ml-phone"
-          className={inputClass}
-          type="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="0 (5xx) xxx xx xx"
-          required
-        />
-      </div>
+      {category !== "Teknik Servis" ? (
+        <div>
+          <label htmlFor="ml-phone" className={labelClass}>
+            Telefon
+          </label>
+          <input
+            id="ml-phone"
+            className={inputClass}
+            type="tel"
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            placeholder="0 (5xx) xxx xx xx"
+            required
+          />
+        </div>
+      ) : null}
       <div>
         <label htmlFor="ml-year" className={labelClass}>
           Deneyim / öne çıkan etiket

@@ -2,10 +2,13 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { JobListing } from "@/types/job";
 import FavoriteButton from "@/components/ui/FavoriteButton";
 import ImageLightbox from "@/components/ui/ImageLightbox";
 import WatermarkedImage from "@/components/ui/WatermarkedImage";
+import { useAuth } from "@/hooks/useAuth";
+import { openListingConversation } from "@/lib/messaging/openListingConversation";
 
 type Props = {
   job: JobListing;
@@ -19,6 +22,33 @@ type Props = {
 const JOB_HERO_FALLBACK = "https://placehold.co/1200x800/0F2A4A/ffffff?text=Is+Ilanı";
 
 export default function JobDetailContent({ job, moderation }: Props) {
+  const { user } = useAuth();
+  const router = useRouter();
+  const [msgLoading, setMsgLoading] = useState(false);
+  const isOwnerView = Boolean(user?.uid && job.ownerId && user.uid === job.ownerId);
+  const listingPath = `/kariyer/${job.slug}`;
+
+  const handleMessage = async () => {
+    setMsgLoading(true);
+    try {
+      await openListingConversation(
+        {
+          user,
+          ownerId: job.ownerId,
+          ownerName: job.userName ?? job.company,
+          listingId: job.id,
+          listingTitle: job.title,
+          listingPath,
+          listingImageUrl: job.images[0],
+          loginRedirectPath: listingPath,
+        },
+        (path) => router.push(path),
+      );
+    } finally {
+      setMsgLoading(false);
+    }
+  };
+
   const gallery = useMemo(() => {
     if (job.images.length > 0) {
       return job.images;
@@ -150,12 +180,16 @@ export default function JobDetailContent({ job, moderation }: Props) {
             <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">BASVURU</p>
             <p className="mt-1 text-lg font-bold text-[#0F2A4A]">{job.company}</p>
             <div className="mt-3 space-y-2">
-              <button
-                type="button"
-                className="w-full rounded-lg bg-[#F26A1B] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#d95b14]"
-              >
-                Hemen Basvur
-              </button>
+              {!isOwnerView ? (
+                <button
+                  type="button"
+                  onClick={() => void handleMessage()}
+                  disabled={msgLoading || !job.ownerId}
+                  className="w-full rounded-lg bg-[#F26A1B] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[#d95b14] disabled:opacity-60"
+                >
+                  {msgLoading ? "Açılıyor..." : "Mesaj Gönder"}
+                </button>
+              ) : null}
               <FavoriteButton
                 kind="job_listings"
                 id={job.id}
