@@ -15,13 +15,37 @@ function cacheKey(pageId: PageHeroId): string {
 function normalizeSlot(raw: unknown): PageContentSlotData {
   if (!raw || typeof raw !== "object") return getEmptySlotData();
   const data = raw as Record<string, unknown>;
-  return {
+  const slot: PageContentSlotData = {
     enabled: data.enabled === true,
     imageUrl: typeof data.imageUrl === "string" ? data.imageUrl : "",
     imagePath: typeof data.imagePath === "string" ? data.imagePath : "",
-    imageWidth: typeof data.imageWidth === "number" ? data.imageWidth : undefined,
-    imageHeight: typeof data.imageHeight === "number" ? data.imageHeight : undefined,
   };
+  if (typeof data.imageWidth === "number") slot.imageWidth = data.imageWidth;
+  if (typeof data.imageHeight === "number") slot.imageHeight = data.imageHeight;
+  return slot;
+}
+
+/** Firestore undefined alan kabul etmez — yalnızca tanımlı değerleri yaz. */
+function sanitizeSlotForFirestore(data: PageContentSlotData): Record<string, unknown> {
+  const out: Record<string, unknown> = {
+    enabled: data.enabled === true,
+    imageUrl: typeof data.imageUrl === "string" ? data.imageUrl : "",
+    imagePath: typeof data.imagePath === "string" ? data.imagePath : "",
+  };
+  if (typeof data.imageWidth === "number") out.imageWidth = data.imageWidth;
+  if (typeof data.imageHeight === "number") out.imageHeight = data.imageHeight;
+  return out;
+}
+
+function sanitizeSlotsForFirestore(
+  pageId: PageHeroId,
+  slots: PageContentSlotsMap,
+): Record<string, Record<string, unknown>> {
+  const out: Record<string, Record<string, unknown>> = {};
+  for (const slot of getPageContentConfig(pageId).slots) {
+    out[slot.id] = sanitizeSlotForFirestore(slots[slot.id] ?? getEmptySlotData());
+  }
+  return out;
 }
 
 function mergeSlots(pageId: PageHeroId, raw: Record<string, unknown> | undefined): PageContentSlotsMap {
@@ -107,7 +131,7 @@ export async function savePageContentDraft(
   await setDoc(
     doc(db, COLLECTION, pageId),
     {
-      draftSlots: draft,
+      draftSlots: sanitizeSlotsForFirestore(pageId, draft),
       draftUpdatedAt: serverTimestamp(),
     },
     { merge: true },
@@ -127,7 +151,7 @@ export async function publishPageContent(
   };
 
   for (const slot of getPageContentConfig(pageId).slots) {
-    payload[slot.id] = draft[slot.id] ?? getEmptySlotData();
+    payload[slot.id] = sanitizeSlotForFirestore(draft[slot.id] ?? getEmptySlotData());
   }
 
   await setDoc(doc(db, COLLECTION, pageId), payload, { merge: true });
@@ -143,7 +167,7 @@ export async function savePageContentSlot(
   await setDoc(
     doc(db, COLLECTION, pageId),
     {
-      [slotId]: data,
+      [slotId]: sanitizeSlotForFirestore(data),
       updatedAt: serverTimestamp(),
     },
     { merge: true },
