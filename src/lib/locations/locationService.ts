@@ -1,5 +1,3 @@
-import path from "node:path";
-import { readFile } from "node:fs/promises";
 import type {
   District,
   Neighborhood,
@@ -8,6 +6,10 @@ import type {
   Village,
 } from "@/lib/locations/types";
 import { formatNeighborhoodLabel } from "@/lib/locations/formatNeighborhoodLabel";
+import ilExport from "@/data/locations/il.json";
+import ilceExport from "@/data/locations/ilce.json";
+import koyExport from "@/data/locations/koy.json";
+import mahalleExport from "@/data/locations/mahalle.json";
 
 type RawProvince = { id: string; name: string };
 type RawDistrict = { id: string; il_id: string; name: string };
@@ -23,23 +25,20 @@ type LocationIndexes = {
   neighborhoodsByVillageId: Map<string, Neighborhood[]>;
 };
 
-let indexesPromise: Promise<LocationIndexes> | null = null;
+let indexesCache: LocationIndexes | null = null;
 
-async function readExportData<T>(fileName: string): Promise<T[]> {
-  const filePath = path.join(process.cwd(), "src/data/locations", fileName);
-  const raw = await readFile(filePath, "utf8");
-  const parsed = JSON.parse(raw) as PhpMyAdminExport<T>;
+function extractExportData<T>(parsed: PhpMyAdminExport<T>): T[] {
   const table = parsed.find((entry) => Array.isArray(entry.data));
   return table?.data ?? [];
 }
 
-async function loadIndexes(): Promise<LocationIndexes> {
-  const [rawProvinces, rawDistricts, rawVillages, rawNeighborhoods] = await Promise.all([
-    readExportData<RawProvince>("il.json"),
-    readExportData<RawDistrict>("ilce.json"),
-    readExportData<RawVillage>("koy.json"),
-    readExportData<RawNeighborhood>("mahalle.json"),
-  ]);
+function buildIndexes(): LocationIndexes {
+  const rawProvinces = extractExportData<RawProvince>(ilExport as PhpMyAdminExport<RawProvince>);
+  const rawDistricts = extractExportData<RawDistrict>(ilceExport as PhpMyAdminExport<RawDistrict>);
+  const rawVillages = extractExportData<RawVillage>(koyExport as PhpMyAdminExport<RawVillage>);
+  const rawNeighborhoods = extractExportData<RawNeighborhood>(
+    mahalleExport as PhpMyAdminExport<RawNeighborhood>,
+  );
 
   const provinces = rawProvinces
     .map((item) => ({ id: item.id, name: item.name }))
@@ -86,25 +85,25 @@ async function loadIndexes(): Promise<LocationIndexes> {
   };
 }
 
-async function getIndexes(): Promise<LocationIndexes> {
-  if (!indexesPromise) {
-    indexesPromise = loadIndexes();
+function getIndexes(): LocationIndexes {
+  if (!indexesCache) {
+    indexesCache = buildIndexes();
   }
-  return indexesPromise;
+  return indexesCache;
 }
 
 export async function getProvinces(): Promise<Province[]> {
-  const { provinces } = await getIndexes();
-  return provinces;
+  return getIndexes().provinces;
 }
 
 export async function getDistrictsByProvinceId(provinceId: string): Promise<District[]> {
-  const { districtsByProvinceId } = await getIndexes();
-  return districtsByProvinceId.get(provinceId) ?? [];
+  return getIndexes().districtsByProvinceId.get(provinceId) ?? [];
 }
 
-export async function getNeighborhoodOptionsByDistrictId(districtId: string): Promise<NeighborhoodOption[]> {
-  const { villagesByDistrictId, neighborhoodsByVillageId } = await getIndexes();
+export async function getNeighborhoodOptionsByDistrictId(
+  districtId: string,
+): Promise<NeighborhoodOption[]> {
+  const { villagesByDistrictId, neighborhoodsByVillageId } = getIndexes();
   const villages = villagesByDistrictId.get(districtId) ?? [];
   const options: NeighborhoodOption[] = [];
 
