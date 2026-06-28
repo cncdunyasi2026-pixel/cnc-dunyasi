@@ -8,36 +8,7 @@ export default function HomePage() {
     <PageContentProvider pageId="home">
     <div className="relative overflow-x-hidden bg-[#f3f5f8] pb-12">
       {/* ── Hero ─────────────────────────────────────────── */}
-      <PageHeroBanner
-        pageId="home"
-        homeAside={
-          <div className="hidden w-full max-w-sm rounded-md bg-white p-5 shadow-xl md:block">
-            <h2 className="mb-4 text-sm font-bold tracking-wide text-[#0F2A4A]">
-              TEZGAHINIZIN DEĞERİNİ HESAPLA
-            </h2>
-            <div className="grid grid-cols-2 gap-2">
-              <select className="rounded border border-[#d9dee5] px-3 py-2 text-sm text-[#0F2A4A]">
-                <option>Marka</option>
-              </select>
-              <select className="rounded border border-[#d9dee5] px-3 py-2 text-sm text-[#0F2A4A]">
-                <option>Model</option>
-              </select>
-              <select className="rounded border border-[#d9dee5] px-3 py-2 text-sm text-[#0F2A4A]">
-                <option>Yıl</option>
-              </select>
-              <select className="rounded border border-[#d9dee5] px-3 py-2 text-sm text-[#0F2A4A]">
-                <option>Durum</option>
-              </select>
-            </div>
-            <Link
-              href="/ilan-ver/ikinci-el"
-              className="mt-3 block w-full rounded bg-[#F26A1B] px-4 py-2 text-center text-sm font-bold !text-white visited:!text-white hover:!text-white focus-visible:!text-white"
-            >
-              İLAN OLUŞTUR
-            </Link>
-          </div>
-        }
-      />
+      <PageHeroBanner pageId="home" />
 
       {/* Mobile CTA kartı */}
       <div className="mx-auto mt-3 w-full max-w-7xl px-4 md:hidden">

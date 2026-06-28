@@ -33,8 +33,12 @@ export default function PageHeroBanner({
           />
           <div className="absolute inset-0 bg-[#0F2A4A]/55" />
 
-          <div className="absolute inset-0 mx-auto flex w-full max-w-7xl items-end justify-between px-4 pb-6 sm:items-center sm:px-8 sm:pb-0">
-            <div className="max-w-xl">
+          <div
+            className={`absolute inset-0 mx-auto flex w-full max-w-7xl px-4 pb-6 sm:items-center sm:px-8 sm:pb-0 ${
+              homeAside ? "items-end justify-between" : "items-center justify-center"
+            }`}
+          >
+            <div className={`max-w-xl ${homeAside ? "" : "text-center"}`}>
               <p
                 className="text-xs font-semibold tracking-[0.2em] sm:text-sm"
                 style={{ color: content.eyebrowColor }}
