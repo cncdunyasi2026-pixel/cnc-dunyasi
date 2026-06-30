@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
+// import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import { getSafePostAuthRedirect, withRedirectQuery } from "@/lib/authRedirect";
-import { formatAuthError, registerWithEmail, signInWithGoogle } from "@/services/userService";
+import { formatAuthError, registerWithEmail /* , signInWithGoogle */ } from "@/services/userService";
 
 function RegisterForm() {
   const router = useRouter();
@@ -20,25 +20,25 @@ function RegisterForm() {
   const [passwordAgain, setPasswordAgain] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  // const [googleLoading, setGoogleLoading] = useState(false);
 
-  const busy = loading || googleLoading;
+  const busy = loading;
   const afterAuthPath = getSafePostAuthRedirect(redirectRaw);
   const girisHref = withRedirectQuery("/hesap/giris", redirectRaw);
 
-  const handleGoogle = async () => {
-    setError(null);
-    setGoogleLoading(true);
-    try {
-      await signInWithGoogle();
-      router.push(afterAuthPath);
-      router.refresh();
-    } catch (err) {
-      setError(formatAuthError(err));
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
+  // const handleGoogle = async () => {
+  //   setError(null);
+  //   setGoogleLoading(true);
+  //   try {
+  //     await signInWithGoogle();
+  //     router.push(afterAuthPath);
+  //     router.refresh();
+  //   } catch (err) {
+  //     setError(formatAuthError(err));
+  //   } finally {
+  //     setGoogleLoading(false);
+  //   }
+  // };
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -90,6 +90,7 @@ function RegisterForm() {
               <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">{error}</p>
             ) : null}
 
+            {/* Google ile kayıt — şimdilik kapalı
             <GoogleAuthButton
               label="Google ile kayıt ol"
               loading={googleLoading}
@@ -105,6 +106,7 @@ function RegisterForm() {
                 <span className="bg-white px-3 text-[#7A8CA5]">veya e-posta ile</span>
               </div>
             </div>
+            */}
 
             <form className="space-y-4" onSubmit={onSubmit}>
               {/* Ad / Soyad */}

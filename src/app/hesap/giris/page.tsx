@@ -3,13 +3,13 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState } from "react";
-import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
+// import GoogleAuthButton from "@/components/auth/GoogleAuthButton";
 import { getSafePostAuthRedirect, withRedirectQuery } from "@/lib/authRedirect";
 import {
   formatAuthError,
   sendPasswordReset,
   signInWithEmail,
-  signInWithGoogle,
+  // signInWithGoogle,
 } from "@/services/userService";
 
 function LoginForm() {
@@ -22,10 +22,10 @@ function LoginForm() {
   const [error, setError] = useState<string | null>(null);
   const [resetSent, setResetSent] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
+  // const [googleLoading, setGoogleLoading] = useState(false);
   const [forgotLoading, setForgotLoading] = useState(false);
 
-  const busy = loading || googleLoading || forgotLoading;
+  const busy = loading || forgotLoading;
   const afterAuthPath = getSafePostAuthRedirect(redirectRaw);
   const kayitHref = withRedirectQuery("/hesap/kayit", redirectRaw);
 
@@ -50,20 +50,20 @@ function LoginForm() {
     }
   };
 
-  const handleGoogle = async () => {
-    setError(null);
-    setResetSent(null);
-    setGoogleLoading(true);
-    try {
-      await signInWithGoogle();
-      router.push(afterAuthPath);
-      router.refresh();
-    } catch (err) {
-      setError(formatAuthError(err));
-    } finally {
-      setGoogleLoading(false);
-    }
-  };
+  // const handleGoogle = async () => {
+  //   setError(null);
+  //   setResetSent(null);
+  //   setGoogleLoading(true);
+  //   try {
+  //     await signInWithGoogle();
+  //     router.push(afterAuthPath);
+  //     router.refresh();
+  //   } catch (err) {
+  //     setError(formatAuthError(err));
+  //   } finally {
+  //     setGoogleLoading(false);
+  //   }
+  // };
 
   const onSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -99,6 +99,7 @@ function LoginForm() {
               <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs text-red-800">{error}</p>
             ) : null}
 
+            {/* Google ile giriş — şimdilik kapalı
             <GoogleAuthButton
               label="Google ile giriş yap"
               loading={googleLoading}
@@ -114,6 +115,7 @@ function LoginForm() {
                 <span className="bg-white px-3 text-[#7A8CA5]">veya e-posta ile</span>
               </div>
             </div>
+            */}
 
             <form className="space-y-4" onSubmit={onSubmit}>
               <div>

@@ -1,5 +1,6 @@
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { validateVideoFile } from "@/lib/constants/videoUpload";
+import { optimizeVideo } from "@/lib/utils/optimizeVideo";
 import { isFirebaseClientConfigured, storage } from "@/lib/firebase";
 
 const MAX_BYTES = 5 * 1024 * 1024;
@@ -155,11 +156,12 @@ export async function uploadUserVideoWithPath(
 
   await validateVideoFile(file);
 
-  const safe = file.name.replace(/[^\w.\-]/g, "_");
+  const optimized = await optimizeVideo(file);
+  const safe = optimized.name.replace(/[^\w.\-]/g, "_");
   const objectName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${safe}`;
   const storageRef = ref(storage, `${folderPath}/${objectName}`);
-  const uploadResult = await uploadBytes(storageRef, file, {
-    contentType: file.type || "video/mp4",
+  const uploadResult = await uploadBytes(storageRef, optimized, {
+    contentType: optimized.type || file.type || "video/mp4",
     cacheControl: "public, max-age=31536000, immutable",
   });
 
