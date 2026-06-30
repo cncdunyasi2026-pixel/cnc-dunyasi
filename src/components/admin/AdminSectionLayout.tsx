@@ -40,6 +40,7 @@ export default function AdminSectionLayout({ adminCode, title, subtitle, childre
     { href: `${base}/dashboard`, label: "Dashboard", icon: <GridIcon /> },
     { href: `${base}/anasayfa`, label: "Anasayfa Yönetimi", icon: <HomeIcon /> },
     { href: `${base}/sayfa-yonetimi`, label: "Sayfa Yönetimi", icon: <PageIcon /> },
+    { href: `${base}/alt-alan`, label: "Alt Alan", icon: <FooterIcon /> },
     { href: `${base}/moderasyon`, label: "İlan Moderasyonu", icon: <ShieldIcon /> },
     { href: `${base}/kullanicilar`, label: "Kullanıcılar", icon: <UsersIcon /> },
     { href: `${base}/raporlar`, label: "Raporlar & Analiz", icon: <FlagIcon /> },
@@ -274,6 +275,15 @@ function PageIcon() {
   return (
     <svg className="h-[15px] w-[15px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+    </svg>
+  );
+}
+
+function FooterIcon() {
+  return (
+    <svg className="h-[15px] w-[15px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <rect x="3" y="15" width="18" height="6" rx="1.5" strokeLinejoin="round" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M7 15V9m5 6V5m5 10v-4" />
     </svg>
   );
 }

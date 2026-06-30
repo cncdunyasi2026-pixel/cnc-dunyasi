@@ -151,6 +151,12 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    /* ── Footer / alt alan (admin yönetimli) ───────────────── */
+    match /site_footer/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /ads/{adId} {
       allow read: if listingReadOk(resource);
       allow create: if createListingOk();
