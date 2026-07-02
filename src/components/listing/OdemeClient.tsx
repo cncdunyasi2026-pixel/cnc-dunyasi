@@ -101,7 +101,7 @@ export default function OdemeClient({ listingId, kind, mode, meta }: Props) {
           title="İlanınız yayınlanıyor"
           subtitle={
             draftHasVideo
-              ? "Görseller ve video yükleniyor. Video varsa sıkıştırma bir dakikaya kadar sürebilir; lütfen sayfayı kapatmayın."
+              ? "Görseller ve video yükleniyor. Bağlantı hızınıza göre birkaç dakika sürebilir; lütfen sayfayı kapatmayın."
               : "Görselleriniz yükleniyor ve ilanınız kaydediliyor. Lütfen bu sayfadan ayrılmayın."
           }
         />

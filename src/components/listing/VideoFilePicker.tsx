@@ -51,8 +51,6 @@ export default function VideoFilePicker({ value, onChange }: Props) {
         </span>
         <span className="mt-1 text-center text-xs text-[#7A8CA5]">
           MP4, WebM, MOV · en fazla {MAX_VIDEO_DURATION_SEC} sn · max {MAX_VIDEO_MB} MB
-          <br />
-          12 MB üzeri videolar yüklemede otomatik sıkıştırılır (kalite korunur)
         </span>
         <input
           type="file"

@@ -1,6 +1,5 @@
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { validateVideoFile } from "@/lib/constants/videoUpload";
-import { optimizeVideo } from "@/lib/utils/optimizeVideo";
 import { isFirebaseClientConfigured, storage } from "@/lib/firebase";
 
 const TARGET_BYTES = 1.5 * 1024 * 1024;
@@ -113,26 +112,26 @@ export async function uploadUserImagesWithPaths(
     throw new Error("Firebase tasarım modunda devre dışı. Görsel yüklemek için .env.local tanımlayın.");
   }
 
-  const uploaded: UploadedImage[] = [];
+  const uploaded = await Promise.all(
+    files.map(async (file) => {
+      if (!file.type.startsWith("image/")) {
+        throw new Error("Yalnızca resim dosyaları yüklenebilir.");
+      }
 
-  for (const file of files) {
-    if (!file.type.startsWith("image/")) {
-      throw new Error("Yalnızca resim dosyaları yüklenebilir.");
-    }
-
-    const optimized = await optimizeImage(file);
-    const safe = optimized.name.replace(/[^\w.\-]/g, "_");
-    const objectName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${safe}`;
-    const storageRef = ref(storage, `${folderPath}/${objectName}`);
-    const uploadResult = await uploadBytes(storageRef, optimized, {
-      contentType: optimized.type,
-      cacheControl: "public, max-age=31536000, immutable",
-    });
-    uploaded.push({
-      url: await getDownloadURL(storageRef),
-      path: uploadResult.metadata.fullPath,
-    });
-  }
+      const optimized = await optimizeImage(file);
+      const safe = optimized.name.replace(/[^\w.\-]/g, "_");
+      const objectName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${safe}`;
+      const storageRef = ref(storage, `${folderPath}/${objectName}`);
+      const uploadResult = await uploadBytes(storageRef, optimized, {
+        contentType: optimized.type,
+        cacheControl: "public, max-age=31536000, immutable",
+      });
+      return {
+        url: await getDownloadURL(storageRef),
+        path: uploadResult.metadata.fullPath,
+      };
+    }),
+  );
 
   return uploaded;
 }
@@ -152,17 +151,11 @@ export async function uploadUserVideoWithPath(
 
   await validateVideoFile(file);
 
-  let optimized = file;
-  try {
-    optimized = await optimizeVideo(file);
-  } catch {
-    optimized = file;
-  }
-  const safe = optimized.name.replace(/[^\w.\-]/g, "_");
+  const safe = file.name.replace(/[^\w.\-]/g, "_");
   const objectName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${safe}`;
   const storageRef = ref(storage, `${folderPath}/${objectName}`);
-  const uploadResult = await uploadBytes(storageRef, optimized, {
-    contentType: optimized.type || file.type || "video/mp4",
+  const uploadResult = await uploadBytes(storageRef, file, {
+    contentType: file.type || "video/mp4",
     cacheControl: "public, max-age=31536000, immutable",
   });
 

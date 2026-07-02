@@ -11,10 +11,15 @@ export async function publishAdListingDraft(draft: AdListingDraft): Promise<stri
   const hasTableWidth = draft.tableWidthMm.trim().length > 0;
   const hasTableLength = draft.tableLengthMm.trim().length > 0;
 
-  const uploaded = await uploadUserImagesWithPaths(draft.files, `ad-images/${draft.userId}`);
-  const uploadedVideo = draft.videoFile
-    ? await uploadUserVideoWithPath(draft.videoFile, `ad-videos/${draft.userId}`)
-    : null;
+  const imageFolder = `ad-images/${draft.userId}`;
+  const videoFolder = `ad-videos/${draft.userId}`;
+
+  const [uploaded, uploadedVideo] = await Promise.all([
+    uploadUserImagesWithPaths(draft.files, imageFolder),
+    draft.videoFile
+      ? uploadUserVideoWithPath(draft.videoFile, videoFolder)
+      : Promise.resolve(null),
+  ]);
 
   const profile = await getUserDoc(draft.userId);
   const sellerPhone = profile?.phone?.trim();
