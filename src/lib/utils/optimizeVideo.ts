@@ -1,12 +1,11 @@
 import { MAX_VIDEO_DURATION_SEC } from "@/lib/constants/videoUpload";
 
-/** Görsellerle aynı üst sınır */
 const MAX_DIMENSION = 1920;
-/** Bu boyutun altındaysa ve çözünürlük uygunsa dokunma */
-const SKIP_IF_UNDER_BYTES = 6 * 1024 * 1024;
-/** Sıkıştırma sonrası üst sınır — kaliteyi korumak için agresif küçültme yok */
+/** Bu boyutun altında ve çözünürlük uygunsa sıkıştırma yapma — yükleme hızlı kalır */
+const SKIP_IF_UNDER_BYTES = 12 * 1024 * 1024;
 const MAX_OUTPUT_BYTES = 8 * 1024 * 1024;
 const RECORD_FPS = 30;
+const MAX_TRANSCODE_MS = 90_000;
 
 const MIME_CANDIDATES = [
   "video/webm;codecs=vp9",
@@ -14,9 +13,6 @@ const MIME_CANDIDATES = [
   "video/webm",
   "video/mp4",
 ];
-
-/** Yüksekten düşüğe — ilk uygun sonuç = en iyi kalite */
-const BITRATES = [4_000_000, 3_200_000, 2_500_000] as const;
 
 function pickRecorderMimeType(): string | null {
   if (typeof MediaRecorder === "undefined") return null;
@@ -46,18 +42,52 @@ function waitForVideoMetadata(video: HTMLVideoElement): Promise<void> {
   });
 }
 
+function transcodeTimeoutMs(durationSec: number): number {
+  const playbackMs = Math.ceil(Math.max(durationSec, 1) * 1000) + 15_000;
+  return Math.min(MAX_TRANSCODE_MS, playbackMs);
+}
+
+function waitForVideoEnd(video: HTMLVideoElement, timeoutMs: number): Promise<void> {
+  if (video.ended) return Promise.resolve();
+
+  return new Promise((resolve, reject) => {
+    const timer = window.setTimeout(() => {
+      cleanup();
+      reject(new Error("Video sıkıştırma zaman aşımına uğradı."));
+    }, timeoutMs);
+
+    const onEnd = () => {
+      cleanup();
+      resolve();
+    };
+    const onErr = () => {
+      cleanup();
+      reject(new Error("Video oynatılamadı."));
+    };
+    const cleanup = () => {
+      window.clearTimeout(timer);
+      video.removeEventListener("ended", onEnd);
+      video.removeEventListener("error", onErr);
+    };
+
+    video.addEventListener("ended", onEnd);
+    video.addEventListener("error", onErr);
+  });
+}
+
 async function pumpVideoFrames(
   video: HTMLVideoElement,
   ctx: CanvasRenderingContext2D,
   width: number,
   height: number,
+  timeoutMs: number,
 ): Promise<void> {
-  const draw = () => {
-    ctx.drawImage(video, 0, 0, width, height);
-  };
+  const draw = () => ctx.drawImage(video, 0, 0, width, height);
+
+  const endPromise = waitForVideoEnd(video, timeoutMs);
 
   if ("requestVideoFrameCallback" in HTMLVideoElement.prototype) {
-    await new Promise<void>((resolve) => {
+    const framePromise = new Promise<void>((resolve) => {
       const step = () => {
         if (video.ended) {
           resolve();
@@ -68,10 +98,11 @@ async function pumpVideoFrames(
       };
       step();
     });
+    await Promise.race([framePromise, endPromise]);
     return;
   }
 
-  await new Promise<void>((resolve) => {
+  const framePromise = new Promise<void>((resolve) => {
     const step = () => {
       if (video.ended) {
         resolve();
@@ -82,6 +113,13 @@ async function pumpVideoFrames(
     };
     step();
   });
+  await Promise.race([framePromise, endPromise]);
+}
+
+function pickBitrate(fileBytes: number, durationSec: number): number {
+  const targetBytes = Math.min(MAX_OUTPUT_BYTES, fileBytes * 0.65);
+  const bitsPerSecond = (targetBytes * 8) / Math.max(durationSec, 1);
+  return Math.min(4_000_000, Math.max(2_000_000, Math.round(bitsPerSecond)));
 }
 
 async function transcodeWithBitrate(
@@ -99,10 +137,14 @@ async function transcodeWithBitrate(
   try {
     await waitForVideoMetadata(video);
 
+    if (!Number.isFinite(video.duration) || video.duration <= 0) {
+      throw new Error("Video süresi okunamadı.");
+    }
     if (video.duration > MAX_VIDEO_DURATION_SEC + 0.25) {
       throw new Error("Video en fazla 1 dakika olabilir.");
     }
 
+    const timeoutMs = transcodeTimeoutMs(video.duration);
     const scaled = scaleVideoSize(video.videoWidth, video.videoHeight);
     const needsResize =
       scaled.width !== video.videoWidth || scaled.height !== video.videoHeight;
@@ -136,7 +178,7 @@ async function transcodeWithBitrate(
       recorder.start(250);
       video.currentTime = 0;
       await video.play();
-      await pumpVideoFrames(video, ctx, scaled.width, scaled.height);
+      await pumpVideoFrames(video, ctx, scaled.width, scaled.height, timeoutMs);
       recorder.stop();
       return await blobPromise;
     }
@@ -168,10 +210,7 @@ async function transcodeWithBitrate(
     recorder.start(250);
     video.currentTime = 0;
     await video.play();
-    await new Promise<void>((resolve, reject) => {
-      video.onended = () => resolve();
-      video.onerror = () => reject(new Error("Video oynatılamadı."));
-    });
+    await waitForVideoEnd(video, timeoutMs);
     recorder.stop();
     return await blobPromise;
   } finally {
@@ -203,42 +242,42 @@ async function readVideoMeta(file: File): Promise<{ longestSide: number; duratio
   }
 }
 
-/** Çok küçük çıktı (ör. 300 KB) kaliteyi bozar — orijinale dön */
-function isOutputTooAggressive(originalBytes: number, outputBytes: number, durationSec: number): boolean {
-  const minExpected = Math.min(originalBytes * 0.35, (durationSec / 60) * 2 * 1024 * 1024);
-  return outputBytes < Math.max(1.5 * 1024 * 1024, minExpected);
-}
-
 /**
- * Videoyu makul boyuta indirir; kalite önceliklidir.
- * Desteklenmiyorsa orijinal dosyayı döndürür.
+ * Büyük videoları tek geçişte sıkıştırır; hata veya zaman aşımında orijinal dosyayı döndürür.
  */
 export async function optimizeVideo(file: File): Promise<File> {
-  const mimeType = pickRecorderMimeType();
-  if (!mimeType) {
-    return file;
-  }
+  try {
+    const mimeType = pickRecorderMimeType();
+    if (!mimeType) {
+      return file;
+    }
 
-  const { longestSide, durationSec } = await readVideoMeta(file);
-  const needsCompression = file.size > SKIP_IF_UNDER_BYTES || longestSide > MAX_DIMENSION;
+    const { longestSide, durationSec } = await readVideoMeta(file);
+    if (!Number.isFinite(durationSec) || durationSec <= 0) {
+      return file;
+    }
 
-  if (!needsCompression) {
-    return file;
-  }
+    const needsCompression = file.size > SKIP_IF_UNDER_BYTES || longestSide > MAX_DIMENSION;
+    if (!needsCompression) {
+      return file;
+    }
 
-  for (const bitrate of BITRATES) {
+    const bitrate = pickBitrate(file.size, durationSec);
     const blob = await transcodeWithBitrate(file, mimeType, bitrate);
 
-    if (isOutputTooAggressive(file.size, blob.size, durationSec)) {
-      continue;
+    if (blob.size === 0 || blob.size >= file.size) {
+      return file;
     }
 
-    if (blob.size <= MAX_OUTPUT_BYTES && blob.size < file.size) {
+    if (blob.size <= MAX_OUTPUT_BYTES) {
       return toOutputFile(blob, file.name, mimeType);
     }
-  }
 
-  return file;
+    return file;
+  } catch (err) {
+    console.warn("[optimizeVideo] Orijinal video kullanılıyor:", err);
+    return file;
+  }
 }
 
 export const VIDEO_OPTIMIZE_MAX_MB = MAX_OUTPUT_BYTES / (1024 * 1024);

@@ -3,7 +3,6 @@ import { validateVideoFile } from "@/lib/constants/videoUpload";
 import { optimizeVideo } from "@/lib/utils/optimizeVideo";
 import { isFirebaseClientConfigured, storage } from "@/lib/firebase";
 
-const MAX_BYTES = 5 * 1024 * 1024;
 const TARGET_BYTES = 1.5 * 1024 * 1024;
 const MAX_DIMENSION = 1920;
 
@@ -120,9 +119,6 @@ export async function uploadUserImagesWithPaths(
     if (!file.type.startsWith("image/")) {
       throw new Error("Yalnızca resim dosyaları yüklenebilir.");
     }
-    if (file.size > MAX_BYTES) {
-      throw new Error("Her görsel en fazla 5 MB olabilir.");
-    }
 
     const optimized = await optimizeImage(file);
     const safe = optimized.name.replace(/[^\w.\-]/g, "_");
@@ -156,7 +152,12 @@ export async function uploadUserVideoWithPath(
 
   await validateVideoFile(file);
 
-  const optimized = await optimizeVideo(file);
+  let optimized = file;
+  try {
+    optimized = await optimizeVideo(file);
+  } catch {
+    optimized = file;
+  }
   const safe = optimized.name.replace(/[^\w.\-]/g, "_");
   const objectName = `${Date.now()}-${Math.random().toString(36).slice(2)}-${safe}`;
   const storageRef = ref(storage, `${folderPath}/${objectName}`);

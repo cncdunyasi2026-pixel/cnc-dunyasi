@@ -1,5 +1,5 @@
 export const MAX_VIDEO_DURATION_SEC = 60;
-export const MAX_VIDEO_BYTES = 20 * 1024 * 1024;
+export const MAX_VIDEO_BYTES = 60 * 1024 * 1024;
 export const MAX_VIDEO_MB = MAX_VIDEO_BYTES / (1024 * 1024);
 export const VIDEO_OPTIMIZE_TARGET_MB = 6;
 

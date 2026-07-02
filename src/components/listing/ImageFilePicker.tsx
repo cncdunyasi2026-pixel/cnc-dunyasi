@@ -39,7 +39,7 @@ export default function ImageFilePicker({
       <span className="mb-1 block text-xs font-semibold text-[#61748f]">{label}</span>
       <label className="flex cursor-pointer flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#c8d6e8] bg-[#f8fafc] px-4 py-8 transition hover:border-[#0F2A4A]/40 hover:bg-[#f0f4fa]">
         <span className="text-sm font-semibold text-[#0F2A4A]">Dosya seç veya sürükle</span>
-        <span className="mt-1 text-xs text-[#7A8CA5]">PNG, JPG · en fazla {maxFiles} görsel · dosya başına max 5 MB</span>
+        <span className="mt-1 text-xs text-[#7A8CA5]">PNG, JPG · en fazla {maxFiles} görsel</span>
         <input
           type="file"
           accept="image/*"

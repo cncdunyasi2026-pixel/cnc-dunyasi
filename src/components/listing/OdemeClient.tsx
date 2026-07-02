@@ -91,13 +91,19 @@ export default function OdemeClient({ listingId, kind, mode, meta }: Props) {
   };
 
   const canConfirm = isDraftMode ? hasDraft : Boolean(listingId);
+  const draftHasVideo =
+    isDraftMode && user ? Boolean(peekAdListingDraft(user.uid)?.videoFile) : false;
 
   return (
     <>
       {confirming ? (
         <ListingSubmitOverlay
           title="İlanınız yayınlanıyor"
-          subtitle="Görselleriniz yükleniyor ve ilanınız kaydediliyor. Lütfen bu sayfadan ayrılmayın."
+          subtitle={
+            draftHasVideo
+              ? "Görseller ve video yükleniyor. Video varsa sıkıştırma bir dakikaya kadar sürebilir; lütfen sayfayı kapatmayın."
+              : "Görselleriniz yükleniyor ve ilanınız kaydediliyor. Lütfen bu sayfadan ayrılmayın."
+          }
         />
       ) : (
         <section className="mx-auto w-full max-w-2xl px-4 py-8 sm:py-10">

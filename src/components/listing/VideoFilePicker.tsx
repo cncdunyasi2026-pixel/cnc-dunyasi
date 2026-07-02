@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { MAX_VIDEO_DURATION_SEC, MAX_VIDEO_MB, validateVideoFile, VIDEO_OPTIMIZE_TARGET_MB } from "@/lib/constants/videoUpload";
+import { MAX_VIDEO_DURATION_SEC, MAX_VIDEO_MB, validateVideoFile } from "@/lib/constants/videoUpload";
 
 type Props = {
   value: File | null;
@@ -52,7 +52,7 @@ export default function VideoFilePicker({ value, onChange }: Props) {
         <span className="mt-1 text-center text-xs text-[#7A8CA5]">
           MP4, WebM, MOV · en fazla {MAX_VIDEO_DURATION_SEC} sn · max {MAX_VIDEO_MB} MB
           <br />
-          Yüklemede otomatik sıkıştırılır (kalite korunur, genelde ~{VIDEO_OPTIMIZE_TARGET_MB} MB altı)
+          12 MB üzeri videolar yüklemede otomatik sıkıştırılır (kalite korunur)
         </span>
         <input
           type="file"
