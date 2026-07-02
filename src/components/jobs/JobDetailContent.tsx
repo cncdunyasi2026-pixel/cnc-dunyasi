@@ -64,10 +64,10 @@ export default function JobDetailContent({ job, moderation }: Props) {
     { key: "title", label: "Pozisyon", value: job.title },
     { key: "company", label: "Firma", value: job.company },
     { key: "location", label: "Lokasyon", value: job.location },
-    { key: "workModel", label: "Calisma Modeli", value: job.workModel },
+    { key: "workModel", label: "Çalışma Modeli", value: job.workModel },
     { key: "level", label: "Seviye", value: job.level },
-    { key: "salary", label: "Maas", value: job.salary },
-    { key: "postedAt", label: "Ilan Tarihi", value: job.postedAt },
+    { key: "salary", label: "Maaş", value: job.salary },
+    { key: "postedAt", label: "İlan Tarihi", value: job.postedAt },
   ];
 
   const openLightbox = (index: number) => {
@@ -105,7 +105,7 @@ export default function JobDetailContent({ job, moderation }: Props) {
         <article className="space-y-4">
           <div className="overflow-hidden rounded-xl border border-[#dbe2ea] bg-white shadow-sm">
             <div className="flex items-center justify-end border-b border-[#e8edf3] px-3 py-2">
-              <ActionButtons fieldKey="images" label="Gorseller" editValue={job.images} moderation={moderation} />
+              <ActionButtons fieldKey="images" label="Görseller" editValue={job.images} moderation={moderation} />
             </div>
             <button
               type="button"
@@ -124,7 +124,7 @@ export default function JobDetailContent({ job, moderation }: Props) {
 
           {gallery.length > 1 ? (
             <div className="rounded-xl border border-[#dbe2ea] bg-white p-3 shadow-sm">
-              <p className="mb-2 text-xs font-semibold tracking-wide text-[#7A8CA5]">FOTOGRAF GALERISI</p>
+              <p className="mb-2 text-xs font-semibold tracking-wide text-[#7A8CA5]">FOTOĞRAF GALERİSİ</p>
               <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
                 {gallery.map((image, index) => (
                   <button
@@ -137,7 +137,7 @@ export default function JobDetailContent({ job, moderation }: Props) {
                   >
                     <WatermarkedImage
                       src={image}
-                      alt={`${job.title} gorsel ${index + 1}`}
+                      alt={`${job.title} görsel ${index + 1}`}
                       className="h-14 w-full object-cover sm:h-16"
                       wrapperClassName="h-14 w-full sm:h-16"
                       watermarkSize="sm"
@@ -153,7 +153,7 @@ export default function JobDetailContent({ job, moderation }: Props) {
           <div className="border-b border-[#e8edf3] pb-3">
             <div className="flex items-start justify-between gap-2">
               <h1 className="hidden text-xl font-extrabold leading-tight text-[#0F2A4A] xl:block xl:text-2xl">{job.title}</h1>
-              <ActionButtons fieldKey="title" label="Baslik" editValue={job.title} moderation={moderation} />
+              <ActionButtons fieldKey="title" label="Başlık" editValue={job.title} moderation={moderation} />
             </div>
             <div className="mt-2 flex items-center justify-between gap-2">
               <p className="text-xl font-bold text-[#0F2A4A]">{job.company}</p>
@@ -206,8 +206,8 @@ export default function JobDetailContent({ job, moderation }: Props) {
 
       <div className="mt-4 rounded-xl border border-[#dbe2ea] bg-white p-4 text-sm leading-7 text-[#38506e] shadow-sm">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-base font-bold text-[#0F2A4A] sm:text-lg">Pozisyon Aciklamasi</h2>
-          <ActionButtons fieldKey="description" label="Aciklama" editValue={job.description} moderation={moderation} />
+          <h2 className="text-base font-bold text-[#0F2A4A] sm:text-lg">Pozisyon Açıklaması</h2>
+          <ActionButtons fieldKey="description" label="Açıklama" editValue={job.description} moderation={moderation} />
         </div>
         <p className="mt-2">{job.description}</p>
 
@@ -259,8 +259,8 @@ function ActionButtons({
           type="button"
           onClick={() => moderation.onEditField({ key: fieldKey, label, value: editValue })}
           className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-cyan-300 text-[11px] font-bold text-cyan-700"
-          title={`${label} alanini duzenle`}
-          aria-label={`${label} alanini duzenle`}
+          title={`${label} alanını düzenle`}
+          aria-label={`${label} alanını düzenle`}
         >
           ✎
         </button>
@@ -271,8 +271,8 @@ function ActionButtons({
         className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
           hasNote ? "bg-rose-500 text-white" : "border border-[#c7d2e2] text-[#0F2A4A]"
         }`}
-        title={`${label} alanini reddet`}
-        aria-label={`${label} alanini reddet`}
+        title={`${label} alanını reddet`}
+        aria-label={`${label} alanını reddet`}
       >
         ✕
       </button>

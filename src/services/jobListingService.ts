@@ -41,7 +41,7 @@ export async function loadPublishedJobListings(): Promise<JobListing[]> {
 
 export async function submitJobListing(data: JobListingFirestoreWrite) {
   if (!isFirebaseClientConfigured) {
-    throw new Error("Firebase tasarim modunda devre disi. Is ilani icin .env.local tanimlayin.");
+    throw new Error("Firebase tasarım modunda devre dışı. İş ilanı için .env.local tanımlayın.");
   }
 
   return createJobListingDoc(data);

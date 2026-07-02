@@ -113,7 +113,7 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
   const brandValue = ad.brand?.trim() || ad.title.split(" ").slice(0, 2).join(" ");
   const modelValue = ad.model?.trim() || ad.title.split(" ").slice(2).join(" ") || "-";
   const conditionValue = ad.condition?.trim() || "Ekspertiz Onayli";
-  const tradeValue = ad.trade?.trim() || "Degerlendirilebilir";
+  const tradeValue = ad.trade?.trim() || "Değerlendirilebilir";
   const deliveryValue = ad.delivery?.trim() || "Hazir";
   const mediaItems = useMemo(() => buildAdMediaGallery(ad), [ad.images, ad.video]);
   const [selectedMediaIndex, setSelectedMediaIndex] = useState(0);
@@ -482,8 +482,8 @@ function ActionButtons({
           type="button"
           onClick={() => moderation.onEditField?.({ key: fieldKey, label, value: editValue })}
           className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-cyan-300 text-[11px] font-bold text-cyan-700"
-          title={`${label} alanini duzenle`}
-          aria-label={`${label} alanini duzenle`}
+          title={`${label} alanını düzenle`}
+          aria-label={`${label} alanını düzenle`}
         >
           ✎
         </button>
@@ -495,8 +495,8 @@ function ActionButtons({
           className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
             hasNote ? "bg-rose-500 text-white" : "border border-[#c7d2e2] text-[#0F2A4A]"
           }`}
-          title={`${label} alanini reddet`}
-          aria-label={`${label} alanini reddet`}
+          title={`${label} alanını reddet`}
+          aria-label={`${label} alanını reddet`}
         >
           ✕
         </button>

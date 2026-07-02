@@ -26,7 +26,7 @@ async function loadImage(file: File): Promise<HTMLImageElement> {
     };
     img.onerror = () => {
       URL.revokeObjectURL(url);
-      reject(new Error("Gorsel okunamadi."));
+      reject(new Error("Görsel okunamadı."));
     };
     img.src = url;
   });
@@ -53,7 +53,7 @@ async function canvasToBlob(
     canvas.toBlob(
       (blob) => {
         if (!blob) {
-          reject(new Error("Gorsel sikistirma basarisiz."));
+          reject(new Error("Görsel sıkıştırma başarısız."));
           return;
         }
         resolve(blob);
@@ -110,7 +110,7 @@ export async function uploadUserImagesWithPaths(
   folderPath: string,
 ): Promise<UploadedImage[]> {
   if (!isFirebaseClientConfigured) {
-    throw new Error("Firebase tasarim modunda devre disi. Gorsel yuklemek icin .env.local tanimlayin.");
+    throw new Error("Firebase tasarım modunda devre dışı. Görsel yüklemek için .env.local tanımlayın.");
   }
 
   const uploaded: UploadedImage[] = [];
@@ -147,7 +147,7 @@ export async function uploadUserVideoWithPath(
   folderPath: string,
 ): Promise<UploadedVideo> {
   if (!isFirebaseClientConfigured) {
-    throw new Error("Firebase tasarim modunda devre disi. Video yuklemek icin .env.local tanimlayin.");
+    throw new Error("Firebase tasarım modunda devre dışı. Video yüklemek için .env.local tanımlayın.");
   }
 
   await validateVideoFile(file);

@@ -57,7 +57,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
       .then((snap) => {
         if (cancelled) return;
         if (!snap.exists()) {
-          setError("Ilan bulunamadi.");
+          setError("İlan bulunamadı.");
           setData(null);
           return;
         }
@@ -69,7 +69,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
         }
       })
       .catch((e) => {
-        if (!cancelled) setError(e instanceof Error ? e.message : "Detay yuklenemedi.");
+        if (!cancelled) setError(e instanceof Error ? e.message : "Detay yüklenemedi.");
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
@@ -201,7 +201,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
 
   const requestRevision = async () => {
     if (!hasRejects) {
-      setError("Revizyon icin en az bir alan aciklamasi girmelisin.");
+      setError("Revizyon için en az bir alan açıklaması girmelisin.");
       return;
     }
     setSaving(true);
@@ -283,7 +283,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
         nextValue = nextRaw;
       }
       if (typeof nextValue === "number" && Number.isNaN(nextValue)) {
-        setError("Sayisal alan icin gecerli bir deger gir.");
+        setError("Sayısal alan için geçerli bir değer gir.");
         return;
       }
     }
@@ -309,7 +309,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
       } else if (editModal.key === "tableSize") {
         const parsed = parseTableSizeInput(String(nextValue));
         if (!parsed) {
-          setError("Tezgah boyutunu 2500x6000 formatinda gir.");
+          setError("Tezgah boyutunu 2500x6000 formatında gir.");
           setSaving(false);
           return;
         }
@@ -343,7 +343,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
         } else {
           const num = Number(raw);
           if (!Number.isFinite(num)) {
-            setError("Sayisal alan icin gecerli bir deger gir.");
+            setError("Sayısal alan için geçerli bir değer gir.");
             setSaving(false);
             return;
           }
@@ -388,7 +388,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
       setImageEditUrls((prev) => [...prev, ...uploaded.map((i) => i.url)]);
       setImageEditPaths((prev) => [...prev, ...uploaded.map((i) => i.path)]);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Gorsel yukleme basarisiz.");
+      setError(e instanceof Error ? e.message : "Görsel yükleme başarısız.");
     } finally {
       setSaving(false);
       if (fileInputRef.current) {
@@ -439,7 +439,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
         ) : null}
         {loading ? (
           <div className="mx-auto mt-3 w-full max-w-7xl rounded-xl border border-[#dbe2ea] bg-white px-4 py-3 text-sm text-[#61748f]">
-            Yukleniyor...
+            Yükleniyor...
           </div>
         ) : null}
 
@@ -530,8 +530,8 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
         {rejectModal ? (
           <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-4">
             <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#101d39] p-4">
-              <h4 className="text-sm font-extrabold text-white">{rejectModal.label} alanini reddet</h4>
-              <p className="mt-1 text-xs text-blue-100/70">Reddetme nedenini yaz. Bos birakirsan bu alan icin red notu silinir.</p>
+              <h4 className="text-sm font-extrabold text-white">{rejectModal.label} alanını reddet</h4>
+              <p className="mt-1 text-xs text-blue-100/70">Reddetme nedenini yaz. Boş bırakırsan bu alan için red notu silinir.</p>
               <textarea
                 value={rejectDraft}
                 onChange={(e) => setRejectDraft(e.target.value)}
@@ -561,11 +561,11 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
         {editModal ? (
           <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-4">
             <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#101d39] p-4">
-              <h4 className="text-sm font-extrabold text-white">{editModal.label} alanini duzenle</h4>
+              <h4 className="text-sm font-extrabold text-white">{editModal.label} alanını düzenle</h4>
               {editModal.key === "images" ? (
                 <>
                   <p className="mt-1 text-xs text-blue-100/70">
-                    Gorsele tiklayarak sil. Bilgisayardan yeni gorsel eklemek icin asagidaki butonu kullan.
+                    Görsele tıklayarak sil. Bilgisayardan yeni görsel eklemek için aşağıdaki butonu kullan.
                   </p>
                   <div className="mt-3 grid grid-cols-3 gap-2">
                     {imageEditUrls.map((url, idx) => (
@@ -576,7 +576,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
                         className="group relative overflow-hidden rounded-lg border border-white/15"
                         title="Tiklayarak sil"
                       >
-                        <img src={url} alt={`Gorsel ${idx + 1}`} className="h-20 w-full object-cover" />
+                        <img src={url} alt={`Görsel ${idx + 1}`} className="h-20 w-full object-cover" />
                         <span className="absolute inset-0 hidden items-center justify-center bg-black/55 text-xs font-bold text-white group-hover:flex">
                           Sil
                         </span>
@@ -585,7 +585,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
                   </div>
                   {pendingDeleteImageIndex !== null ? (
                     <div className="mt-2 rounded-lg border border-rose-300/40 bg-rose-500/10 p-2">
-                      <p className="text-[11px] text-rose-100">Bu gorseli silmek istiyor musun?</p>
+                      <p className="text-[11px] text-rose-100">Bu görseli silmek istiyor musun?</p>
                       <div className="mt-2 flex gap-2">
                         <button
                           type="button"
@@ -619,7 +619,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
                       onClick={() => fileInputRef.current?.click()}
                       className="w-full rounded-lg border border-cyan-300 bg-cyan-500/20 px-3 py-2 text-xs font-bold text-cyan-100 disabled:opacity-60"
                     >
-                      Bilgisayardan gorsel ekle
+                      Bilgisayardan görsel ekle
                     </button>
                   </div>
                 </>

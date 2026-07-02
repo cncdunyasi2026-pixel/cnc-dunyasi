@@ -12,11 +12,11 @@ export default function AdList({ city, category }: AdListProps) {
   const { ads, loading, loadingMore, hasMore, loadMore } = useAds({ city, category });
 
   if (loading) {
-    return <p>Ilanlar yukleniyor...</p>;
+    return <p>İlanlar yükleniyor...</p>;
   }
 
   if (ads.length === 0) {
-    return <p>Gosterilecek ilan bulunamadi.</p>;
+    return <p>Gösterilecek ilan bulunamadı.</p>;
   }
 
   return (
@@ -35,7 +35,7 @@ export default function AdList({ city, category }: AdListProps) {
             className="rounded bg-black px-4 py-2 text-sm font-medium text-white disabled:opacity-60"
             type="button"
           >
-            {loadingMore ? "Yukleniyor..." : "Daha Fazla Yukle"}
+            {loadingMore ? "Yükleniyor..." : "Daha fazla yükle"}
           </button>
         </div>
       ) : null}

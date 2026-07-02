@@ -74,7 +74,7 @@ export default function JobBrowsePanel({ items }: Props) {
       </div>
 
       {filteredItems.length === 0 ? (
-        <p className="rounded-[10px] bg-white p-4 text-sm text-[#7A8CA5]">Arama kriterine uygun sonuc bulunamadi.</p>
+        <p className="rounded-[10px] bg-white p-4 text-sm text-[#7A8CA5]">Arama kriterine uygun sonuç bulunamadı.</p>
       ) : (
         <div className={viewMode === "card" ? "grid grid-cols-2 justify-items-center gap-2 lg:grid-cols-4" : "space-y-3"}>
           {filteredItems.map((item) => (

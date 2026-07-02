@@ -65,7 +65,7 @@ export default function ListingMediaLightbox({
             type="button"
             onClick={onPrev}
             className="absolute left-3 top-1/2 z-10 -translate-y-1/2 rounded-full bg-white/15 p-2 text-white"
-            aria-label="Onceki medya"
+            aria-label="Önceki medya"
           >
             ‹
           </button>
@@ -125,7 +125,7 @@ export default function ListingMediaLightbox({
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={item.src}
-                    alt={`${alt} buyuk gorsel ${itemIndex + 1}`}
+                    alt={`${alt} büyük görsel ${itemIndex + 1}`}
                     className="max-h-[calc(100vh-2rem)] max-w-full object-contain"
                     draggable={false}
                   />

@@ -107,7 +107,7 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
         <article className="space-y-4">
           <div className="overflow-hidden rounded-xl border border-[#dbe2ea] bg-white shadow-sm">
             <div className="flex items-center justify-end border-b border-[#e8edf3] px-3 py-2">
-              <ActionButtons fieldKey="images" label="Gorseller" editValue={item.images} moderation={moderation} />
+              <ActionButtons fieldKey="images" label="Görseller" editValue={item.images} moderation={moderation} />
             </div>
             <button
               type="button"
@@ -126,8 +126,8 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
 
           <div className="rounded-xl border border-[#dbe2ea] bg-white p-3 shadow-sm">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">FOTOGRAF GALERISI</p>
-              <ActionButtons fieldKey="images" label="Gorseller" editValue={item.images} moderation={moderation} />
+              <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">FOTOĞRAF GALERİSİ</p>
+              <ActionButtons fieldKey="images" label="Görseller" editValue={item.images} moderation={moderation} />
             </div>
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
               {gallery.map((image, index) => (
@@ -141,7 +141,7 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
                 >
                   <WatermarkedImage
                     src={image}
-                    alt={`${item.name} gorsel ${index + 1}`}
+                    alt={`${item.name} görsel ${index + 1}`}
                     className="h-14 w-full object-cover sm:h-16"
                     wrapperClassName="h-14 w-full sm:h-16"
                     watermarkSize="sm"
@@ -156,11 +156,11 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
           <div className="border-b border-[#e8edf3] pb-3">
             <div className="flex items-start justify-between gap-2">
               <h1 className="hidden text-xl font-extrabold leading-tight text-[#0F2A4A] xl:block xl:text-2xl">{item.name}</h1>
-              <ActionButtons fieldKey="name" label="Firma/Servis adi" editValue={item.name} moderation={moderation} />
+              <ActionButtons fieldKey="name" label="Firma/Servis adı" editValue={item.name} moderation={moderation} />
             </div>
             <div className="mt-2 flex items-center justify-between gap-2">
               <p className="text-xl font-bold text-[#0F2A4A]">{item.title}</p>
-              <ActionButtons fieldKey="title" label="Baslik" editValue={item.title} moderation={moderation} />
+              <ActionButtons fieldKey="title" label="Başlık" editValue={item.title} moderation={moderation} />
             </div>
             <p className="mt-1 text-sm text-[#5f6f86]">
               {[item.city, item.district, item.neighborhood].filter(Boolean).join(" / ")}
@@ -270,8 +270,8 @@ function ActionButtons({
           type="button"
           onClick={() => moderation.onEditField({ key: fieldKey, label, value: editValue })}
           className="inline-flex h-6 w-6 items-center justify-center rounded-full border border-cyan-300 text-[11px] font-bold text-cyan-700"
-          title={`${label} alanini duzenle`}
-          aria-label={`${label} alanini duzenle`}
+          title={`${label} alanını düzenle`}
+          aria-label={`${label} alanını düzenle`}
         >
           ✎
         </button>
@@ -282,8 +282,8 @@ function ActionButtons({
         className={`inline-flex h-6 w-6 items-center justify-center rounded-full text-xs font-bold ${
           hasNote ? "bg-rose-500 text-white" : "border border-[#c7d2e2] text-[#0F2A4A]"
         }`}
-        title={`${label} alanini reddet`}
-        aria-label={`${label} alanini reddet`}
+        title={`${label} alanını reddet`}
+        aria-label={`${label} alanını reddet`}
       >
         ✕
       </button>

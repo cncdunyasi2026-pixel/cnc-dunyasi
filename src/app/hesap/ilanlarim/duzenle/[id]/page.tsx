@@ -166,7 +166,7 @@ export default function EditListingPage({ params }: Props) {
             ad.tableWidthMm && ad.tableLengthMm ? `${ad.tableWidthMm}x${ad.tableLengthMm}` : "",
           axisCount: ad.axisCount ?? "",
           sellerType: ad.sellerType ?? "",
-          trade: ad.trade ?? "Degerlendirilebilir",
+          trade: ad.trade ?? "Değerlendirilebilir",
           delivery: ad.delivery ?? "Hazir",
           userName: ad.userName,
           description: ad.description?.trim() ? ad.description : DEFAULT_AD_DESCRIPTION,
@@ -520,7 +520,7 @@ export default function EditListingPage({ params }: Props) {
               return;
             }
             const map: Record<string, { key: EditModalKey; label: string }> = {
-              title: { key: "title", label: "Baslik" },
+              title: { key: "title", label: "Başlık" },
               brand: { key: "brand", label: "Marka" },
               model: { key: "model", label: "Model" },
               price: { key: "price", label: "Fiyat" },
@@ -533,9 +533,9 @@ export default function EditListingPage({ params }: Props) {
               sellerType: { key: "sellerType", label: "Kimden" },
               trade: { key: "trade", label: "Takas" },
               delivery: { key: "delivery", label: "Teslimat" },
-              userName: { key: "userName", label: "Satici" },
-              description: { key: "description", label: "Aciklama" },
-              images: { key: "images", label: "Gorseller" },
+              userName: { key: "userName", label: "Satıcı" },
+              description: { key: "description", label: "Açıklama" },
+              images: { key: "images", label: "Görseller" },
             };
             const target = map[field.key];
             if (!target) return;
@@ -571,7 +571,7 @@ export default function EditListingPage({ params }: Props) {
             <h3 className="text-lg font-extrabold text-[#0F2A4A]">{editModal.label} düzenle</h3>
             {editModal.key === "images" ? (
               <>
-                <p className="mt-1 text-xs text-[#5f6f86]">Gorsele tikla, silme onayi ciksin. Bilgisayardan da yeni gorsel ekle.</p>
+                <p className="mt-1 text-xs text-[#5f6f86]">Görsele tıkla, silme onayı çıksın. Bilgisayardan da yeni görsel ekle.</p>
                 <div className="mt-3 grid grid-cols-3 gap-2">
                   {gallery.map((img, i) => (
                     <button
@@ -586,7 +586,7 @@ export default function EditListingPage({ params }: Props) {
                 </div>
                 {pendingDeleteImageIndex !== null ? (
                   <div className="mt-2 rounded-lg border border-red-300 bg-red-50 px-2 py-2 text-xs text-red-800">
-                    <p>Bu gorseli silmek istiyor musun?</p>
+                    <p>Bu görseli silmek istiyor musun?</p>
                     <div className="mt-2 flex gap-2">
                       <button
                         type="button"

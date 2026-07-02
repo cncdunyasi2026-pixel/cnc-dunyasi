@@ -53,7 +53,7 @@ function applyMockServerFilters(ads: Ad[], params: GetAdsParams): Ad[] {
 
 export async function createAd(data: Omit<Ad, "id" | "createdAt">) {
   if (!isFirebaseClientConfigured) {
-    throw new Error("Firebase tasarim modunda devre disi. Ilan eklemek icin .env.local tanimlayin.");
+    throw new Error("Firebase tasarım modunda devre dışı. İlan eklemek için .env.local tanımlayın.");
   }
 
   return createAdDoc(data);
@@ -170,12 +170,12 @@ export async function submitAdUpdateForReview(
   },
 ) {
   if (!isFirebaseClientConfigured) {
-    throw new Error("Firebase tasarim modunda devre disi. Guncelleme icin .env.local tanimlayin.");
+    throw new Error("Firebase tasarım modunda devre dışı. Güncelleme için .env.local tanımlayın.");
   }
 
   const source = await getAdDocById(sourceAdId);
   if (!source) {
-    throw new Error("Kaynak ilan bulunamadi.");
+    throw new Error("Kaynak ilan bulunamadı.");
   }
 
   // Henüz yayınlanmamış (pending / draft) ilanı düzenleme: kopya oluşturma, doğrudan güncelle.

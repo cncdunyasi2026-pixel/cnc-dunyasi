@@ -50,7 +50,7 @@ export async function signInWithEmail(
   password: string,
 ): Promise<UserCredential> {
   if (!isFirebaseClientConfigured) {
-    throw new Error("Firebase tasarim modunda devre disi. Giris icin .env.local tanimlayin.");
+    throw new Error("Firebase tasarım modunda devre dışı. Giriş için .env.local tanımlayın.");
   }
 
   return signInWithEmailAndPassword(auth, email, password);
@@ -63,7 +63,7 @@ export async function registerWithEmail(
   phone: string,
 ): Promise<UserCredential> {
   if (!isFirebaseClientConfigured) {
-    throw new Error("Firebase tasarim modunda devre disi. Kayit icin .env.local tanimlayin.");
+    throw new Error("Firebase tasarım modunda devre dışı. Kayıt için .env.local tanımlayın.");
   }
 
   const credential = await createUserWithEmailAndPassword(auth, email, password);
@@ -84,7 +84,7 @@ export async function registerWithEmail(
 
 export async function signInWithGoogle(): Promise<UserCredential> {
   if (!isFirebaseClientConfigured) {
-    throw new Error("Firebase tasarim modunda devre disi. Google girisi icin .env.local tanimlayin.");
+    throw new Error("Firebase tasarım modunda devre dışı. Google girişi için .env.local tanımlayın.");
   }
 
   return signInWithPopup(auth, googleProvider);
@@ -92,7 +92,7 @@ export async function signInWithGoogle(): Promise<UserCredential> {
 
 export async function sendPasswordReset(email: string): Promise<void> {
   if (!isFirebaseClientConfigured) {
-    throw new Error("Firebase tasarim modunda devre disi. Sifre sifirlama icin .env.local tanimlayin.");
+    throw new Error("Firebase tasarım modunda devre dışı. Şifre sıfırlama için .env.local tanımlayın.");
   }
 
   await sendPasswordResetEmail(auth, email.trim());
