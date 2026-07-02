@@ -192,13 +192,13 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
         <aside className="space-y-3">
           <div className="rounded-xl border border-[#dbe2ea] bg-white p-4 shadow-sm">
             <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">
-              {item.category === "Teknik Servis" ? "SERVIS SAHIBI" : "FIRMA"}
+              {item.category === "Teknik Servis" ? "SERVİS SAHİBİ" : "FİRMA"}
             </p>
             <p className="mt-1 text-lg font-bold text-[#0F2A4A]">{item.name}</p>
             <p className="mt-1 text-xs text-[#7A8CA5]">{item.yearLabel}</p>
             {!isTechnical && item.phone ? (
               <div className="mt-3 rounded-lg border border-[#e4eaf2] bg-[#f8fafd] p-3 text-center">
-                <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">ILETISIM</p>
+                <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">İLETİŞİM</p>
                 <div className="mt-2">
                   <PhoneContactRow phone={item.phone} />
                 </div>
@@ -231,8 +231,8 @@ export default function MarketplaceDetailContent({ item, listPath, moderation }:
 
       <div className="mt-4 rounded-xl border border-[#dbe2ea] bg-white p-4 text-sm leading-7 text-[#38506e] shadow-sm">
         <div className="flex items-center justify-between gap-2">
-          <h2 className="text-base font-bold text-[#0F2A4A] sm:text-lg">Aciklama</h2>
-          <ActionButtons fieldKey="description" label="Aciklama" editValue={item.description} moderation={moderation} />
+          <h2 className="text-base font-bold text-[#0F2A4A] sm:text-lg">Açıklama</h2>
+          <ActionButtons fieldKey="description" label="Açıklama" editValue={item.description} moderation={moderation} />
         </div>
         <p className="mt-2">{item.description}</p>
       </div>

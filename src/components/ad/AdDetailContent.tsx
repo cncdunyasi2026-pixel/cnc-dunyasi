@@ -207,7 +207,7 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
         </Link>
         <span>/</span>
         <Link href="/ilanlar" className="transition hover:text-[#0F2A4A]">
-          Ilanlar
+          İlanlar
         </Link>
         <span>/</span>
         <span className="line-clamp-1 text-[#0F2A4A]">{ad.title}</span>
@@ -221,7 +221,7 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
         <article className="space-y-4">
           <div className="overflow-hidden rounded-xl border border-[#dbe2ea] bg-white shadow-sm">
             <div className="flex items-center justify-end border-b border-[#e8edf3] px-3 py-2">
-              <ActionButtons fieldKey="images" label="Gorseller" editValue={ad.images} moderation={moderation} isChanged={changedFields?.includes("images")} />
+              <ActionButtons fieldKey="images" label="Görseller" editValue={ad.images} moderation={moderation} isChanged={changedFields?.includes("images")} />
             </div>
             <button
               type="button"
@@ -251,8 +251,8 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
 
           <div className="rounded-xl border border-[#dbe2ea] bg-white p-3 shadow-sm">
             <div className="mb-2 flex items-center justify-between gap-2">
-              <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">FOTOGRAF / VIDEO GALERISI</p>
-              <ActionButtons fieldKey="images" label="Gorseller" editValue={ad.images} moderation={moderation} isChanged={changedFields?.includes("images")} />
+              <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">FOTOĞRAF / VİDEO GALERİSİ</p>
+              <ActionButtons fieldKey="images" label="Görseller" editValue={ad.images} moderation={moderation} isChanged={changedFields?.includes("images")} />
             </div>
             <div className="grid grid-cols-4 gap-2 sm:grid-cols-6">
               {mediaItems.map((item, index) => (
@@ -274,7 +274,7 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
                   ) : (
                     <WatermarkedImage
                       src={item.src}
-                      alt={`${ad.title} gorsel ${index + 1}`}
+                      alt={`${ad.title} görsel ${index + 1}`}
                       className="h-14 w-full object-cover sm:h-16"
                       wrapperClassName="h-14 w-full sm:h-16"
                       watermarkSize="sm"
@@ -296,7 +296,7 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
               >
                 {ad.title}
               </h1>
-              <ActionButtons fieldKey="title" label="Baslik" editValue={ad.title} moderation={moderation} isChanged={changedFields?.includes("title")} />
+              <ActionButtons fieldKey="title" label="Başlık" editValue={ad.title} moderation={moderation} isChanged={changedFields?.includes("title")} />
             </div>
             {revisionNotes.title ? <p className="mt-1 text-xs font-semibold text-red-700">Admin notu: {revisionNotes.title}</p> : null}
             <div className="mt-2 flex items-center justify-between gap-2">
@@ -309,12 +309,12 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
             {isOwnerView && ad.isPaid ? (
               <div className="mt-2 inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-bold text-emerald-800">
                 <span className="inline-block h-2 w-2 rounded-full bg-emerald-500" />
-                Odeme durumu: Tamamlandi
+                Ödeme durumu: Tamamlandı
               </div>
             ) : null}
             {isOwnerView && ad.paymentDueAt ? (
               <p className="mt-2 text-xs font-semibold text-[#61748f]">
-                Odeme zamani: {formatDate(ad.paymentDueAt)}
+                Ödeme zamanı: {formatDate(ad.paymentDueAt)}
               </p>
             ) : null}
             <p className="mt-1 text-sm text-[#5f6f86]">
@@ -364,11 +364,11 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
           <div className="rounded-xl border border-[#dbe2ea] bg-white p-4 shadow-sm">
             <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">SATICI</p>
             <p className="mt-1 text-lg font-bold text-[#0F2A4A]">{ad.userName}</p>
-            <p className="mt-1 text-xs text-[#7A8CA5]">Hesap Acilis: {formatDate(ad.createdAt)}</p>
+            <p className="mt-1 text-xs text-[#7A8CA5]">Hesap açılışı: {formatDate(ad.createdAt)}</p>
 
             {contactPhone ? (
               <div className="mt-3 rounded-lg border border-[#e4eaf2] bg-[#f8fafd] p-3 text-center">
-                <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">ILETISIM</p>
+                <p className="text-xs font-semibold tracking-wide text-[#7A8CA5]">İLETİŞİM</p>
                 <div className="mt-2">
                   <PhoneContactRow phone={contactPhone} />
                 </div>
@@ -399,11 +399,11 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
           </div>
 
           <div className="rounded-xl border border-[#dbe2ea] bg-white p-4 shadow-sm">
-            <p className="text-xs font-semibold tracking-wide text-[#0F2A4A]">Guvenlik Ipuclari</p>
+            <p className="text-xs font-semibold tracking-wide text-[#0F2A4A]">Güvenlik İpuçları</p>
             <ul className="mt-2 space-y-2 text-xs leading-5 text-[#5f6f86]">
-              <li>Odeme islemlerini resmi kanallar uzerinden tamamlayin.</li>
-              <li>Makina ekspertiz raporu ve evraklarini mutlaka kontrol edin.</li>
-              <li>Fatura ve devir surecini yazili olarak kayit altina alin.</li>
+              <li>Ödeme işlemlerini resmi kanallar üzerinden tamamlayın.</li>
+              <li>Makine ekspertiz raporu ve evraklarını mutlaka kontrol edin.</li>
+              <li>Fatura ve devir sürecini yazılı olarak kayıt altına alın.</li>
             </ul>
           </div>
         </aside>
@@ -411,9 +411,9 @@ export default function AdDetailContent({ ad, revisionNotes = {}, changedFields,
         <div className="order-3 rounded-xl border border-[#dbe2ea] bg-white p-4 text-sm leading-7 text-[#38506e] shadow-sm xl:order-4 xl:col-span-3">
           <div className="flex items-center justify-between gap-2">
             <h2 className={`text-base font-bold sm:text-lg ${revisionNotes.description ? "text-red-700" : changedFields?.includes("description") ? "text-teal-900" : "text-[#0F2A4A]"}`}>
-              Ilan Aciklamasi
+              İlan Açıklaması
             </h2>
-            <ActionButtons fieldKey="description" label="Aciklama" editValue={ad.description ?? ""} moderation={moderation} isChanged={changedFields?.includes("description")} />
+            <ActionButtons fieldKey="description" label="Açıklama" editValue={ad.description ?? ""} moderation={moderation} isChanged={changedFields?.includes("description")} />
           </div>
           {revisionNotes.description ? (
             <p className="mt-1 text-xs font-semibold text-red-700">Admin notu: {revisionNotes.description}</p>

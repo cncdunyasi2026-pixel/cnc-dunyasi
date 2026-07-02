@@ -2,7 +2,7 @@ import Link from "next/link";
 import HomepageSections from "@/components/home/HomepageSections";
 import PageHeroBanner from "@/components/page/PageHeroBanner";
 import PageContentProvider from "@/components/page/PageContentProvider";
-import { BRAND_NAME } from "@/lib/constants/brand";
+import { BRAND_NAME, BRAND_NAME_UPPER } from "@/lib/constants/brand";
 import { createPageMetadata } from "@/lib/seo/metadata";
 
 export const metadata = createPageMetadata({
@@ -52,43 +52,51 @@ export default function HomePage() {
         <div className="overflow-hidden rounded-2xl border border-[#1b4a78] bg-gradient-to-r from-[#0F2A4A] via-[#11345b] to-[#0F2A4A] text-white shadow-[0_12px_30px_rgba(15,42,74,0.22)]">
           <div className="grid grid-cols-1 gap-5 p-5 md:grid-cols-[1.2fr_1.8fr] md:p-6">
             <div>
-              <p className="text-[11px] font-semibold tracking-[0.16em] text-[#7A8CA5]">HIZLI TEDARIK MERKEZI</p>
-              <h4 className="mt-1 text-2xl font-extrabold leading-tight">YEDEK PARÇA MARKETİ</h4>
-              <p className="mt-2 text-sm text-white/80">CNC bakım, takım ve sarf malzemeleri tek noktada.</p>
+              <p className="text-[11px] font-semibold tracking-[0.16em] text-[#7A8CA5]">{BRAND_NAME_UPPER}</p>
+              <h4 className="mt-1 text-2xl font-extrabold leading-tight">Tezgahtan Parçaya, Tek Platform</h4>
+              <p className="mt-2 text-sm text-white/80">
+                İkinci el CNC tezgahları, yedek parça firmaları, teknik servisler ve sektör iş ilanları {BRAND_NAME}&apos;da.
+              </p>
               <div className="mt-4 flex flex-wrap gap-2">
                 <Link
-                  href="/kategori/yedek-parca"
+                  href="/ilanlar"
                   className="rounded bg-[#F26A1B] px-4 py-2 text-sm font-bold text-white transition hover:bg-[#dd5f15]"
                 >
-                  HEMEN GÖZ AT
+                  İLANLARA GÖZ AT
                 </Link>
                 <Link
-                  href="/kategori/teknik-servis"
+                  href="/ilan-ver"
                   className="rounded border border-white/25 bg-white/10 px-4 py-2 text-sm font-bold text-white transition hover:bg-white/15"
                 >
-                  SERVİS BUL
+                  İLAN VER
                 </Link>
               </div>
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
               <div className="rounded-lg border border-white/15 bg-white/5 p-3">
-                <p className="text-[11px] font-semibold text-[#7A8CA5]">GÜVENLİ EKSPERTİZ</p>
-                <p className="mt-1 text-sm font-semibold text-white/90">Onaylı uzman ağımızla doğrulanmış tedarik.</p>
+                <p className="text-[11px] font-semibold text-[#7A8CA5]">MODERASYONLU YAYIN</p>
+                <p className="mt-1 text-sm font-semibold text-white/90">
+                  İlanlar inceleme sürecinden geçerek yayına alınır.
+                </p>
               </div>
               <div className="rounded-lg border border-white/15 bg-white/5 p-3">
-                <p className="text-[11px] font-semibold text-[#7A8CA5]">ŞEFFAF FİYATLANDIRMA</p>
-                <p className="mt-1 text-sm font-semibold text-white/90">Parça ve servis bedellerinde net teklif süreci.</p>
+                <p className="text-[11px] font-semibold text-[#7A8CA5]">SEKTÖRE ÖZEL VİTRİN</p>
+                <p className="mt-1 text-sm font-semibold text-white/90">
+                  Tezgah, parça, servis ve kariyer için ayrı listeler.
+                </p>
               </div>
               <div className="rounded-lg border border-white/15 bg-white/5 p-3">
-                <p className="text-[11px] font-semibold text-[#7A8CA5]">GENİŞ TEDARİK AĞI</p>
-                <p className="mt-1 text-sm font-semibold text-white/90">Türkiye geneline hızlı sevkiyat ve destek.</p>
+                <p className="text-[11px] font-semibold text-[#7A8CA5]">HIZLI ARAMA</p>
+                <p className="mt-1 text-sm font-semibold text-white/90">
+                  İl, marka ve kategoriye göre aradığınızı kolayca bulun.
+                </p>
               </div>
             </div>
           </div>
 
           <div className="border-t border-white/10 bg-[#0c223c] px-5 py-3 text-xs text-white/70 md:px-6">
-            Stoktan sevkiyat, uzman destek ve güvenli alışveriş deneyimi.
+            Alıcı, satıcı, servis sağlayıcı ve işvereni CNC sektöründe tek çatı altında buluşturuyoruz.
           </div>
         </div>
       </section>
