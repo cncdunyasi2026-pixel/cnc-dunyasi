@@ -593,7 +593,7 @@ export default function EditListingPage({ params }: Props) {
                         onClick={() => setPendingDeleteImageIndex(null)}
                         className="flex-1 rounded-md border border-[#d3dcea] px-2 py-1 font-semibold text-[#0F2A4A]"
                       >
-                        Vazgec
+                        Vazgeç
                       </button>
                       <button
                         type="button"

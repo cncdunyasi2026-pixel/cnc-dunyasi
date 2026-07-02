@@ -180,7 +180,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
         );
       }
 
-      await writeAudit("approve_listing", "Alan bazli red notu olmadan yayina alindi");
+      await writeAudit("approve_listing", "Alan bazlı red notu olmadan yayına alındı");
 
       const title = listingTitleFromData(data ?? {});
       await notifyOwner({
@@ -408,7 +408,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
       <div className="bg-[#0a1222] pb-12">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 pt-4">
           <Link href={`/${adminCode}/admin/moderasyon`} className="text-sm font-semibold text-blue-100 hover:underline">
-            ← Moderasyon listesine don
+            ← Moderasyon listesine dön
           </Link>
           <span className="text-xs text-blue-100/70">
             {collectionName} / {listingId}
@@ -544,7 +544,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
                   onClick={() => setRejectModal(null)}
                   className="flex-1 rounded-lg border border-white/20 px-3 py-2 text-xs font-bold text-white"
                 >
-                  Vazgec
+                  Vazgeç
                 </button>
                 <button
                   type="button"
@@ -592,7 +592,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
                           onClick={() => setPendingDeleteImageIndex(null)}
                           className="flex-1 rounded-md border border-white/20 px-2 py-1 text-[11px] font-bold text-white"
                         >
-                          Vazgec
+                          Vazgeç
                         </button>
                         <button
                           type="button"
@@ -642,7 +642,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
                   onClick={() => setEditModal(null)}
                   className="flex-1 rounded-lg border border-white/20 px-3 py-2 text-xs font-bold text-white"
                 >
-                  Vazgec
+                  Vazgeç
                 </button>
                 <button
                   type="button"

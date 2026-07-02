@@ -631,6 +631,21 @@ export default function AdminDashboardScreen({ adminCode }: Props) {
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
               {[
                 {
+                  label: "Alt Alan",
+                  desc: "Footer, KVKK ve yasal metinler",
+                  href: `/${adminCode}/admin/alt-alan`,
+                },
+                {
+                  label: "Sayfa Yönetimi",
+                  desc: "Banner ve içerik alanları",
+                  href: `/${adminCode}/admin/sayfa-yonetimi`,
+                },
+                {
+                  label: "Anasayfa Yönetimi",
+                  desc: "Öne çıkan ve haftanın fırsatları",
+                  href: `/${adminCode}/admin/anasayfa`,
+                },
+                {
                   label: "İlan Moderasyonu",
                   desc: "Bekleyen ilanları incele",
                   href: `/${adminCode}/admin/moderasyon`,
