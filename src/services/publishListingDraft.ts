@@ -50,7 +50,7 @@ export async function publishAdListingDraft(draft: AdListingDraft): Promise<stri
     ...(sellerPhone ? { phone: sellerPhone } : {}),
     status: "pending",
     isPaid: true,
-    listingFee: 2500,
+    listingFee: 499,
     discountedFee: 0,
     paymentStartedAt: now,
     paymentDueAt: now + 24 * 60 * 60 * 1000,

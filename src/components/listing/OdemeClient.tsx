@@ -128,7 +128,7 @@ export default function OdemeClient({ listingId, kind, mode, meta }: Props) {
                   <p className="text-xs font-semibold text-[#bc4f0d]">Kampanyalı tutar</p>
                   <p className="mt-1 text-3xl font-extrabold text-[#F26A1B]">0 TL</p>
                 </div>
-                <p className="pb-1 text-sm font-semibold text-[#7A8CA5] line-through">2.500 TL</p>
+                <p className="pb-1 text-sm font-semibold text-[#7A8CA5] line-through">499 TL</p>
               </div>
             </div>
 

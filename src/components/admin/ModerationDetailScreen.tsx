@@ -13,6 +13,7 @@ import { mapAdSnapshotToAd } from "@/lib/firestore/mapAdDoc";
 import { mapJobListingFromFirestore } from "@/lib/firestore/mapJobDoc";
 import { mapMarketplaceDocToProfile } from "@/lib/firestore/mapMarketplaceDoc";
 import { parseTableSizeInput } from "@/lib/constants/listingOptions";
+import { archiveListingDoc } from "@/lib/firestore/listingLifecycle";
 import { uploadUserImagesWithPaths } from "@/services/storageUpload";
 import { createNotificationForUser } from "@/services/notificationService";
 import {
@@ -33,6 +34,13 @@ type Props = {
 type FieldDef = { key: string; label: string };
 type EditableField = FieldDef & { value: string | number | string[] };
 
+const ADMIN_REMOVAL_REASONS = [
+  "Kural ihlali / uygunsuz içerik",
+  "Yinelenen veya hatalı ilan",
+  "Kullanıcı talebi üzerine",
+  "Diğer",
+] as const;
+
 export default function ModerationDetailScreen({ adminCode, collectionName, listingId }: Props) {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
@@ -47,6 +55,10 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
   const [imageEditUrls, setImageEditUrls] = useState<string[]>([]);
   const [imageEditPaths, setImageEditPaths] = useState<string[]>([]);
   const [pendingDeleteImageIndex, setPendingDeleteImageIndex] = useState<number | null>(null);
+  const [archiveModalOpen, setArchiveModalOpen] = useState(false);
+  const [archiveReason, setArchiveReason] =
+    useState<(typeof ADMIN_REMOVAL_REASONS)[number]>("Kural ihlali / uygunsuz içerik");
+  const [archiveReasonOther, setArchiveReasonOther] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
@@ -156,7 +168,6 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
     try {
       const sourceListingId = typeof data?.sourceListingId === "string" ? data.sourceListingId : null;
 
-      // Kopyayı yayınla
       await updateDoc(doc(db, collectionName, listingId), {
         status: "published",
         publishedAt: serverTimestamp(),
@@ -165,8 +176,6 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
         revisionFields: {},
       });
 
-      // Eğer bu bir güncelleme kopyasıysa (update_pending / revision_resubmitted),
-      // orijinal ilanı arşivle — aksi hâlde sitede iki ayrı yayın görünür.
       if (sourceListingId) {
         await updateDoc(doc(db, collectionName, sourceListingId), {
           status: "archived",
@@ -194,6 +203,38 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
       });
 
       router.push(`/${adminCode}/admin/moderasyon`);
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const removeListing = async () => {
+    const reason =
+      archiveReason === "Diğer"
+        ? archiveReasonOther.trim() || "Diğer"
+        : archiveReason;
+
+    setSaving(true);
+    setError(null);
+    try {
+      await archiveListingDoc(collectionName, listingId, `Admin: ${reason}`);
+      await writeAudit("admin_archive", reason);
+
+      const title = listingTitleFromData(data ?? {});
+      await notifyOwner({
+        type: "moderation",
+        action: "listing_rejected",
+        title: "İlanınız yayından kaldırıldı",
+        body: `${listingLabel(collectionName)} "${title}" kaldırıldı. Neden: ${reason}`,
+        href: listingEditHref(collectionName, listingId),
+        eventKey: `moderation:${collectionName}:${listingId}:archived`,
+        listingId,
+      });
+
+      setArchiveModalOpen(false);
+      router.push(`/${adminCode}/admin/moderasyon`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "İlan kaldırılamadı.");
     } finally {
       setSaving(false);
     }
@@ -477,15 +518,17 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
                   disabled={saving}
                   onClick={async () => {
                     setSaving(true);
+                    setError(null);
                     try {
-                      await updateDoc(doc(db, collectionName, listingId), {
-                        status: "archived",
-                        removalReason: "Admin tarafından temizlendi (orphan kopya)",
-                        deletedAt: serverTimestamp(),
-                        updatedAt: serverTimestamp(),
-                      });
+                      await archiveListingDoc(
+                        collectionName,
+                        listingId,
+                        "Admin tarafından temizlendi (orphan kopya)",
+                      );
                       await writeAudit("admin_archive", "Orphan yayın kopyası arşivlendi");
                       router.push(`/${adminCode}/admin/moderasyon`);
+                    } catch (e) {
+                      setError(e instanceof Error ? e.message : "İlan kaldırılamadı.");
                     } finally {
                       setSaving(false);
                     }
@@ -503,7 +546,9 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
               data.status === "needs_revision" ||
               data.status === "revision_resubmitted") ? (
               <div className="rounded-xl border border-white/10 bg-[#101d39] p-3">
-                <p className="text-xs text-blue-100/80">Reddetmek istedigin alanin yanindaki ✕ butonunu kullan.</p>
+                <p className="text-xs text-blue-100/80">
+                  Reddetmek istediğin alanın yanındaki ✕ butonunu kullan.
+                </p>
                 <div className="mt-2 flex gap-2">
                   <button
                     type="button"
@@ -511,7 +556,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
                     onClick={() => void requestRevision()}
                     className="flex-1 rounded-lg bg-amber-400 px-3 py-2 text-sm font-bold text-black disabled:opacity-60"
                   >
-                    Revizyona Gonder
+                    Revizyona gönder
                   </button>
                   <button
                     type="button"
@@ -522,6 +567,27 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
                     Onayla
                   </button>
                 </div>
+              </div>
+            ) : null}
+
+            {data.status !== "archived" ? (
+              <div className="rounded-xl border border-rose-400/30 bg-rose-950/20 p-3">
+                <p className="text-sm font-bold text-rose-200">İlanı yayından kaldır</p>
+                <p className="mt-1 text-xs text-rose-100/70">
+                  İlan arşive alınır, sitede görünmez. Varsa bağlı güncelleme kopyaları da kaldırılır.
+                </p>
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => {
+                    setArchiveReason("Kural ihlali / uygunsuz içerik");
+                    setArchiveReasonOther("");
+                    setArchiveModalOpen(true);
+                  }}
+                  className="mt-3 rounded-lg border border-rose-400/40 bg-rose-500/20 px-4 py-2 text-sm font-bold text-rose-100 transition hover:bg-rose-500/30 disabled:opacity-60"
+                >
+                  İlanı kaldır
+                </button>
               </div>
             ) : null}
           </div>
@@ -574,7 +640,7 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
                         type="button"
                         onClick={() => setPendingDeleteImageIndex(idx)}
                         className="group relative overflow-hidden rounded-lg border border-white/15"
-                        title="Tiklayarak sil"
+                        title="Tıklayarak sil"
                       >
                         <img src={url} alt={`Görsel ${idx + 1}`} className="h-20 w-full object-cover" />
                         <span className="absolute inset-0 hidden items-center justify-center bg-black/55 text-xs font-bold text-white group-hover:flex">
@@ -651,6 +717,55 @@ export default function ModerationDetailScreen({ adminCode, collectionName, list
                   className="flex-1 rounded-lg bg-cyan-500 px-3 py-2 text-xs font-bold text-black disabled:opacity-60"
                 >
                   Kaydet
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {archiveModalOpen ? (
+          <div className="fixed inset-0 z-50 grid place-items-center bg-black/60 px-4">
+            <div className="w-full max-w-md rounded-2xl border border-white/10 bg-[#101d39] p-4">
+              <h4 className="text-sm font-extrabold text-white">İlanı kaldır</h4>
+              <p className="mt-1 text-xs text-blue-100/70">
+                Kaldırma nedeni kayda geçer; ilan sahibine bildirim gider.
+              </p>
+              <select
+                value={archiveReason}
+                onChange={(e) =>
+                  setArchiveReason(e.target.value as (typeof ADMIN_REMOVAL_REASONS)[number])
+                }
+                className="mt-3 h-10 w-full rounded-lg border border-white/15 bg-white/5 px-2 text-sm text-white outline-none"
+              >
+                {ADMIN_REMOVAL_REASONS.map((reason) => (
+                  <option key={reason} value={reason} className="bg-[#101d39]">
+                    {reason}
+                  </option>
+                ))}
+              </select>
+              {archiveReason === "Diğer" ? (
+                <textarea
+                  value={archiveReasonOther}
+                  onChange={(e) => setArchiveReasonOther(e.target.value)}
+                  placeholder="Kaldırma nedenini yazın"
+                  className="mt-2 h-24 w-full rounded-lg border border-white/15 bg-white/5 px-2 py-1 text-xs text-white outline-none placeholder:text-blue-100/50"
+                />
+              ) : null}
+              <div className="mt-3 flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setArchiveModalOpen(false)}
+                  className="flex-1 rounded-lg border border-white/20 px-3 py-2 text-xs font-bold text-white"
+                >
+                  Vazgeç
+                </button>
+                <button
+                  type="button"
+                  disabled={saving}
+                  onClick={() => void removeListing()}
+                  className="flex-1 rounded-lg bg-rose-500 px-3 py-2 text-xs font-bold text-white disabled:opacity-60"
+                >
+                  {saving ? "Kaldırılıyor..." : "Kaldır"}
                 </button>
               </div>
             </div>
