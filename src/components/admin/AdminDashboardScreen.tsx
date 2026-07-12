@@ -658,6 +658,11 @@ export default function AdminDashboardScreen({ adminCode }: Props) {
                   href: `/${adminCode}/admin/kullanicilar`,
                 },
                 {
+                  label: "Toplu E-posta",
+                  desc: "info@cncdunyam.com ile duyuru gönder",
+                  href: `/${adminCode}/admin/bildirimler`,
+                },
+                {
                   label: "Raporlar",
                   desc: "Kullanıcı şikayetlerini gör",
                   href: `/${adminCode}/admin/raporlar`,

@@ -157,6 +157,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    /* ── Admin kayıtlı e-posta listesi (toplu mail) ─────────── */
+    match /mail_contacts/{contactId} {
+      allow read, write: if isAdmin();
+    }
+
     match /ads/{adId} {
       allow read: if listingReadOk(resource);
       allow create: if createListingOk();

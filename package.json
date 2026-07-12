@@ -25,24 +25,26 @@
     "ops:backfill-ad-search-tokens": "npm run ops:backfill-search-tokens"
   },
   "dependencies": {
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest",
     "firebase": "latest",
-    "firebase-admin": "latest"
+    "firebase-admin": "latest",
+    "next": "latest",
+    "nodemailer": "^9.0.3",
+    "react": "latest",
+    "react-dom": "latest"
   },
   "devDependencies": {
-    "esbuild": "^0.19.2",
-    "firebase-tools": "latest",
-    "typescript": "latest",
+    "@tailwindcss/postcss": "latest",
     "@types/node": "latest",
+    "@types/nodemailer": "^8.0.1",
     "@types/react": "latest",
     "@types/react-dom": "latest",
+    "autoprefixer": "latest",
+    "esbuild": "^0.19.2",
     "eslint": "latest",
     "eslint-config-next": "latest",
-    "@tailwindcss/postcss": "latest",
-    "tailwindcss": "latest",
+    "firebase-tools": "latest",
     "postcss": "latest",
-    "autoprefixer": "latest"
+    "tailwindcss": "latest",
+    "typescript": "latest"
   }
 }

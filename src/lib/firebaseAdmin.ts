@@ -1,5 +1,6 @@
 import "server-only";
 import { applicationDefault, cert, getApp, getApps, initializeApp, type App } from "firebase-admin/app";
+import { getAuth, type Auth } from "firebase-admin/auth";
 import { getFirestore, type Firestore } from "firebase-admin/firestore";
 
 function resolveProjectId(): string | undefined {
@@ -54,17 +55,8 @@ function createAdminApp(): App | null {
     }
   }
 
-  if (projectId) {
-    try {
-      return initializeApp({
-        credential: applicationDefault(),
-        projectId,
-      });
-    } catch (error) {
-      console.error("[firebaseAdmin] Fallback ADC failed:", error);
-    }
-  }
-
+  // Yerelde ADC deneme: gcloud user creds ile app "hazır" görünür ama
+  // Firestore/Auth Admin çağrıları timeout/401 üretir. Sadece Cloud Runtime.
   return null;
 }
 
@@ -72,3 +64,4 @@ const adminApp = createAdminApp();
 
 export const isFirebaseAdminConfigured = adminApp != null;
 export const adminDb: Firestore | null = adminApp ? getFirestore(adminApp) : null;
+export const adminAuth: Auth | null = adminApp ? getAuth(adminApp) : null;

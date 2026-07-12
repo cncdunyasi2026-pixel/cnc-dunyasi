@@ -43,6 +43,7 @@ export default function AdminSectionLayout({ adminCode, title, subtitle, childre
     { href: `${base}/alt-alan`, label: "Alt Alan", icon: <FooterIcon /> },
     { href: `${base}/moderasyon`, label: "İlan Moderasyonu", icon: <ShieldIcon /> },
     { href: `${base}/kullanicilar`, label: "Kullanıcılar", icon: <UsersIcon /> },
+    { href: `${base}/bildirimler`, label: "Toplu E-posta", icon: <BellIcon /> },
     { href: `${base}/raporlar`, label: "Raporlar & Analiz", icon: <FlagIcon /> },
     { href: `${base}/markalar`, label: "Site Verileri", icon: <TagIcon /> },
     { href: `${base}/audit-log`, label: "Audit Log", icon: <ListIcon /> },
@@ -236,6 +237,15 @@ function FlagIcon() {
     <svg className="h-[15px] w-[15px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
       <path strokeLinecap="round" strokeLinejoin="round" d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
       <line strokeLinecap="round" x1="4" y1="22" x2="4" y2="15" />
+    </svg>
+  );
+}
+
+function BellIcon() {
+  return (
+    <svg className="h-[15px] w-[15px]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.8}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.4-1.4A2 2 0 0118 14.2V11a6 6 0 10-12 0v3.2c0 .5-.2 1-.6 1.4L4 17h5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9.5 17a2.5 2.5 0 005 0" />
     </svg>
   );
 }
