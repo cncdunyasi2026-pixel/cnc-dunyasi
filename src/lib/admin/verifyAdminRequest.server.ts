@@ -1,7 +1,5 @@
 import "server-only";
 
-import { adminAuth, adminDb, isFirebaseAdminConfigured } from "@/lib/firebaseAdmin";
-
 export type VerifiedAdmin = {
   uid: string;
   email: string | null;
@@ -24,6 +22,16 @@ function getProjectId(): string | null {
     process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID?.trim() ||
     null
   );
+}
+
+function hasExplicitServiceAccount(): boolean {
+  return Boolean(
+    process.env.FIREBASE_CLIENT_EMAIL?.trim() && process.env.FIREBASE_PRIVATE_KEY?.trim(),
+  );
+}
+
+function isCloudRuntime(): boolean {
+  return Boolean(process.env.K_SERVICE || process.env.FUNCTION_TARGET || process.env.FIREBASE_CONFIG);
 }
 
 type LookupAccount = {
@@ -70,9 +78,9 @@ async function firestoreGetDoc(
   if (!response.ok) return null;
 
   const data = (await response.json()) as {
-    fields?: Record<string, { booleanValue?: boolean; mapValue?: { fields?: Record<string, { booleanValue?: boolean }> } }>;
+    fields?: Record<string, unknown>;
   };
-  return (data.fields as Record<string, unknown> | undefined) ?? {};
+  return data.fields ?? {};
 }
 
 function readNestedBoolean(
@@ -97,51 +105,46 @@ async function isAdminViaUserToken(idToken: string, uid: string): Promise<boolea
   return readNestedBoolean(userFields, "roles", "admin");
 }
 
-function hasExplicitServiceAccount(): boolean {
-  return Boolean(
-    process.env.FIREBASE_CLIENT_EMAIL?.trim() && process.env.FIREBASE_PRIVATE_KEY?.trim(),
-  );
-}
+async function verifyViaAdminSdk(idToken: string): Promise<VerifiedAdmin | null> {
+  // Dinamik import: Firebase Hosting/Turbopack'te statik firebase-admin/firestore
+  // importu "Cannot find package firebase-admin-xxxxx" ile route'u düşürüyor.
+  try {
+    const { adminAuth, adminDb, isFirebaseAdminConfigured } = await import("@/lib/firebaseAdmin");
+    if (!isFirebaseAdminConfigured || !adminAuth || !adminDb) return null;
 
-function isCloudRuntime(): boolean {
-  return Boolean(process.env.K_SERVICE || process.env.FUNCTION_TARGET || process.env.FIREBASE_CONFIG);
+    const decoded = await adminAuth.verifyIdToken(idToken);
+    const uid = decoded.uid;
+
+    if (decoded.admin === true) {
+      return { uid, email: decoded.email ?? null, idToken };
+    }
+
+    const [userSnap, adminSnap] = await Promise.all([
+      adminDb.collection("users").doc(uid).get(),
+      adminDb.collection("admins").doc(uid).get(),
+    ]);
+
+    const roleAdmin = userSnap.exists && userSnap.data()?.roles?.admin === true;
+    if (roleAdmin || adminSnap.exists) {
+      return { uid, email: decoded.email ?? null, idToken };
+    }
+  } catch (err) {
+    console.error("[verifyAdmin] Admin SDK doğrulama hatası:", err);
+  }
+  return null;
 }
 
 export async function verifyAdminFromRequest(request: Request): Promise<VerifiedAdmin | null> {
   const idToken = getBearerToken(request);
   if (!idToken) return null;
 
-  // 1) Yalnızca gerçek service account / Cloud Runtime — yerel ADC tuzağını atla
-  const useAdminSdk =
-    isFirebaseAdminConfigured &&
-    adminAuth &&
-    adminDb &&
-    (hasExplicitServiceAccount() || isCloudRuntime());
-
-  if (useAdminSdk) {
-    try {
-      const decoded = await adminAuth.verifyIdToken(idToken);
-      const uid = decoded.uid;
-
-      if (decoded.admin === true) {
-        return { uid, email: decoded.email ?? null, idToken };
-      }
-
-      const [userSnap, adminSnap] = await Promise.all([
-        adminDb.collection("users").doc(uid).get(),
-        adminDb.collection("admins").doc(uid).get(),
-      ]);
-
-      const roleAdmin = userSnap.exists && userSnap.data()?.roles?.admin === true;
-      if (roleAdmin || adminSnap.exists) {
-        return { uid, email: decoded.email ?? null, idToken };
-      }
-    } catch (err) {
-      console.error("[verifyAdmin] Admin SDK doğrulama hatası:", err);
-    }
+  // 1) Mümkünse Admin SDK (dinamik)
+  if (hasExplicitServiceAccount() || isCloudRuntime()) {
+    const viaSdk = await verifyViaAdminSdk(idToken);
+    if (viaSdk) return viaSdk;
   }
 
-  // 2) Identity Toolkit + Firestore REST (yerel geliştirme / service account yokken)
+  // 2) Identity Toolkit + Firestore REST (yerel / SDK kırık olsa bile)
   try {
     const account = await lookupAccountByIdToken(idToken);
     const uid = account?.localId;

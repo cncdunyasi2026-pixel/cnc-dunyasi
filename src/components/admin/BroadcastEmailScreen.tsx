@@ -157,12 +157,22 @@ export default function BroadcastEmailScreen({ adminCode }: Props) {
         }),
       });
 
-      const data = (await res.json()) as {
+      const raw = await res.text();
+      let data: {
         error?: string;
         sentCount?: number;
         recipientCount?: number;
         failureCount?: number;
-      };
+      } = {};
+      try {
+        data = raw ? (JSON.parse(raw) as typeof data) : {};
+      } catch {
+        throw new Error(
+          res.status >= 500
+            ? "Sunucu hatası. Dev sunucusunu yeniden başlatıp tekrar deneyin."
+            : raw.slice(0, 180) || "E-posta gönderilemedi.",
+        );
+      }
 
       if (!res.ok) {
         throw new Error(data.error || "E-posta gönderilemedi.");
